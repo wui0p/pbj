@@ -1,5 +1,5 @@
 ---
-import { categoryLabel, formatDate, isoDate, itemHref, langOf, type Post } from '../utils';
+import { categoryLabel, dateText, isoDate, itemHref, langOf, type Post } from '../utils';
 
 interface Props {
   posts: Post[];
@@ -42,7 +42,7 @@ const wordSize = (w: string) => (w.length <= 5 ? 'l' : w.length <= 8 ? 'm' : 's'
                     {word(post)}
                   </span>
                   <span class="news__meta eyebrow">
-                    {categoryLabel(post.data.category)} · <time datetime={isoDate(date)}>{formatDate(date)}</time>
+                    {categoryLabel(post.data.category)} · <time datetime={isoDate(date)}>{dateText(post)}</time>
                   </span>
                   <span class="news__name">{post.data.title}</span>
                   {post.data.summary && <span class="news__summary">{post.data.summary}</span>}

@@ -1,6 +1,6 @@
 ---
 title: "A Comparative Single FPGA SoC Accelerator for Rate, Temporal, and Delta-Encoded SNN"
-date: 2026-10-01
+date: 2026-11-01
 category: research
 section: academic
 keyword: "SNN"

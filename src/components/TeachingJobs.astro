@@ -1,0 +1,358 @@
+---
+// TEACHING JOB on the Teaching page (mockup v15, pages 19–22): one sand block per job. Clicking a block lights
+// its border butter and opens the job's details right under it (photo, title, dates, my description, stats),
+// pushing the other jobs down; × or clicking the block again closes it. Arriving at /category/teaching/#<id>
+// (e.g. from Newest News) opens that job.
+import { Image } from 'astro:assets';
+import { render } from 'astro:content';
+import { dateText, isoDate, langOf, type Post } from '../utils';
+
+interface Props {
+  posts: Post[];
+}
+
+const jobs = await Promise.all(
+  Astro.props.posts.map(async (post) => ({ post, Content: (await render(post)).Content })),
+);
+---
+
+<ol class="jobs">
+  {
+    jobs.map(({ post, Content }) => {
+      const { title, summary, date, popup } = post.data;
+      const [role, where] = title.split(' · ');
+      const when = dateText(post);
+      const detailId = `${post.id}-detail`;
+      return (
+        <li class="jobs__item">
+          <button
+            type="button"
+            class="jobs__card"
+            id={post.id}
+            aria-expanded="false"
+            aria-controls={detailId}
+            data-job
+            lang={langOf(title)}
+          >
+            {when && date && (
+              <time class="eyebrow jobs__when" datetime={isoDate(date)}>
+                {when}
+              </time>
+            )}
+            <span class="jobs__title">{title}</span>
+            {summary && <span class="jobs__summary">{summary}</span>}
+          </button>
+
+          {popup && (
+            <div class="job-pop" id={detailId} role="region" aria-label={title} hidden data-job-pop>
+              <button type="button" class="job-pop__close" aria-label={`Close ${title}`} data-job-close>
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M6 6l12 12M18 6 6 18" />
+                </svg>
+              </button>
+              <figure class="job-pop__fig">
+                <Image
+                  src={popup.image}
+                  alt={popup.alt}
+                  widths={[480, 760, 1100]}
+                  sizes="(max-width: 860px) 100vw, 420px"
+                  class="job-pop__img"
+                  loading="lazy"
+                />
+                {popup.caption && <figcaption class="job-pop__caption">{popup.caption}</figcaption>}
+              </figure>
+              <div class="job-pop__body">
+                <h3 class="job-pop__title">
+                  {role}
+                  {where && (
+                    <>
+                      {' '}
+                      <span class="job-pop__dot">·</span> <span class="job-pop__where">{where}</span>
+                    </>
+                  )}
+                </h3>
+                {when && <p class="job-pop__dates">{when}</p>}
+                <div class="job-pop__text">
+                  <Content />
+                </div>
+                {popup.stats.length > 0 && (
+                  <dl class="job-pop__stats">
+                    {popup.stats.map(([n, label]) => (
+                      <div class="job-pop__stat">
+                        <dt class="job-pop__num">{n}</dt>
+                        <dd class="job-pop__label">{label}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                )}
+              </div>
+            </div>
+          )}
+        </li>
+      );
+    })
+  }
+</ol>
+
+<script>
+  const cards = [...document.querySelectorAll<HTMLButtonElement>('[data-job]')];
+  const pop = (card: HTMLButtonElement) => document.getElementById(card.getAttribute('aria-controls') ?? '');
+
+  const setOpen = (card: HTMLButtonElement, open: boolean) => {
+    const panel = pop(card);
+    if (!panel) return;
+    card.setAttribute('aria-expanded', String(open));
+    panel.hidden = !open;
+    if (open) {
+      panel.classList.remove('is-pop');
+      void panel.offsetWidth;
+      panel.classList.add('is-pop');
+    }
+  };
+
+  // one job open at a time
+  const open = (card: HTMLButtonElement) => {
+    cards.forEach((c) => c !== card && setOpen(c, false));
+    setOpen(card, true);
+    pop(card)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  };
+
+  cards.forEach((card) => {
+    card.addEventListener('click', () => (card.getAttribute('aria-expanded') === 'true' ? setOpen(card, false) : open(card)));
+    pop(card)
+      ?.querySelector('[data-job-close]')
+      ?.addEventListener('click', () => {
+        setOpen(card, false);
+        card.focus();
+      });
+  });
+
+  addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    const card = cards.find((c) => c.getAttribute('aria-expanded') === 'true');
+    if (card) {
+      setOpen(card, false);
+      card.focus();
+    }
+  });
+
+  // reached at #<job id> (Newest News, a shared link): open that job
+  const fromHash = () => {
+    const card = cards.find((c) => c.id === decodeURIComponent(location.hash.slice(1)));
+    if (card) open(card);
+  };
+  fromHash();
+  addEventListener('hashchange', fromHash);
+</script>
+
+<style>
+  .jobs {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: clamp(18px, 2.2vw, 30px);
+  }
+
+  /* the block: like the other small blocks, but it opens its details instead of a page */
+  .jobs__card {
+    appearance: none;
+    display: block;
+    width: 100%;
+    text-align: left;
+    font: inherit;
+    color: var(--ink);
+    cursor: pointer;
+    background: var(--sand);
+    border: 3px solid var(--sand);
+    border-radius: clamp(22px, 2.4vw, 34px);
+    padding: clamp(20px, 2.4vw, 34px) clamp(22px, 2.6vw, 38px);
+    scroll-margin-top: 80px; /* clear of the top bar, which comes back when you jump up */
+    transition: border-color 0.25s var(--ease);
+  }
+
+  /* hover, keyboard focus, and the job that's open: the border lights up butter */
+  .jobs__card:hover,
+  .jobs__card:focus-visible,
+  .jobs__card[aria-expanded='true'] {
+    border-color: var(--butter);
+    outline: none;
+  }
+
+  .jobs__when {
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  .jobs__title {
+    display: block;
+    font-size: clamp(1.3rem, 2vw, 1.85rem);
+    font-weight: 700;
+    line-height: 1.25;
+    margin-bottom: 0.4rem;
+    text-wrap: balance;
+  }
+
+  .jobs__summary {
+    display: block;
+    color: var(--ink-soft);
+    font-size: 0.98rem;
+    line-height: 1.6;
+  }
+
+  /* ----- the details ----- */
+  .job-pop {
+    position: relative;
+    margin-top: 14px;
+    background: var(--sand);
+    border-radius: clamp(22px, 2.4vw, 34px);
+    padding: clamp(24px, 3vw, 44px);
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: clamp(22px, 3vw, 44px);
+    align-items: start;
+  }
+
+  .job-pop[hidden] {
+    display: none;
+  }
+
+  .job-pop.is-pop {
+    animation: job-open 0.35s var(--ease);
+  }
+
+  @keyframes job-open {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+  }
+
+  .job-pop__close {
+    position: absolute;
+    top: clamp(12px, 1.6vw, 20px);
+    right: clamp(12px, 1.6vw, 20px);
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    background: var(--paper);
+    color: var(--ink);
+    cursor: pointer;
+    transition:
+      background-color 0.2s var(--ease),
+      transform 0.25s var(--ease);
+  }
+
+  .job-pop__close:hover,
+  .job-pop__close:focus-visible {
+    background: var(--butter);
+    transform: rotate(90deg);
+  }
+
+  .job-pop__close svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+  }
+
+  .job-pop__fig {
+    margin: 0;
+  }
+
+  .job-pop__fig :global(.job-pop__img) {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 440px;
+    object-fit: cover;
+    border-radius: 14px;
+  }
+
+  .job-pop__caption {
+    margin-top: 0.7rem;
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    line-height: 1.45;
+    color: var(--ink-soft);
+    text-align: justify;
+  }
+
+  .job-pop__title {
+    margin: 0 0 0.2rem;
+    padding-right: 3rem; /* clear of the × */
+    font-size: clamp(1.25rem, 1.8vw, 1.6rem);
+    font-weight: 800;
+    line-height: 1.25;
+  }
+
+  .job-pop__dot {
+    color: var(--ink-soft);
+    font-weight: 400;
+  }
+
+  .job-pop__where {
+    font-weight: 700;
+  }
+
+  .job-pop__dates {
+    margin: 0 0 1rem;
+    color: var(--ink-soft);
+    font-size: 0.95rem;
+  }
+
+  .job-pop__text :global(p) {
+    margin: 0 0 0.8em;
+    font-family: var(--font-display);
+    font-size: clamp(1.05rem, 1.3vw, 1.18rem);
+    line-height: 1.6;
+    text-align: justify;
+    hyphens: auto;
+  }
+
+  /* each stat: big figure, label under it, a thin rule on the left; one under another, all the same size */
+  .job-pop__stats {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 22px;
+    margin: clamp(18px, 2.2vw, 28px) 0 0;
+  }
+
+  .job-pop__stat {
+    border-left: 2px solid var(--ink);
+    padding-left: 14px;
+  }
+
+  .job-pop__num {
+    font-weight: 800;
+    font-size: clamp(2rem, 3.2vw, 2.9rem);
+    line-height: 1;
+  }
+
+  .job-pop__label {
+    margin: 0.3rem 0 0;
+    font-size: clamp(1rem, 1.3vw, 1.2rem);
+    line-height: 1.3;
+  }
+
+  @media (max-width: 860px) {
+    .job-pop {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .job-pop__fig {
+      margin-top: 2.6rem; /* below the × */
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .job-pop.is-pop {
+      animation: none;
+    }
+  }
+</style>

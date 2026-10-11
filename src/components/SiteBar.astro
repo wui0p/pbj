@@ -12,7 +12,11 @@ interface Props {
 const { floating = false, current } = Astro.props;
 ---
 
-<header class:list={['sitebar', { 'sitebar--floating': floating }]} data-sitebar={floating ? '' : undefined}>
+<header
+  class:list={['sitebar', floating ? 'sitebar--floating' : 'sitebar--sticky']}
+  data-sitebar={floating ? '' : undefined}
+  data-sitebar-sticky={floating ? undefined : ''}
+>
   <div class="wrap sitebar__inner">
     <a class="sitebar__home" href={url('/')} aria-label="Jeffrey Wu — home">
       <Logo class="sitebar__logo" />
@@ -64,6 +68,39 @@ const { floating = false, current } = Astro.props;
     addEventListener('resize', update);
     update();
   }
+
+  // Category and post pages (2026-10-11): the bar stays at the top of the screen; it slides away while you
+  // scroll down (more room to read) and comes back as soon as you scroll up.
+  const sticky = document.querySelector<HTMLElement>('[data-sitebar-sticky]');
+  if (sticky) {
+    let lastY = scrollY;
+    let hidden = false;
+    const setHidden = (h: boolean) => {
+      if (h === hidden) return;
+      hidden = h;
+      sticky.classList.toggle('is-hidden', h);
+    };
+    const update = () => {
+      const y = scrollY;
+      const dy = y - lastY;
+      if (y <= sticky.offsetHeight) setHidden(false); // near the top: always there
+      else if (dy > 6) setHidden(true); // scrolling down
+      else if (dy < -6) setHidden(false); // scrolling up
+      else return; // tiny moves: keep it as it is (and keep measuring from here)
+      lastY = y;
+    };
+    let raf = 0;
+    addEventListener(
+      'scroll',
+      () => {
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(update);
+      },
+      { passive: true },
+    );
+    // tabbing into the bar always shows it
+    sticky.addEventListener('focusin', () => setHidden(false));
+  }
 </script>
 
 <style>
@@ -82,6 +119,17 @@ const { floating = false, current } = Astro.props;
 
   .sitebar--floating.is-shown {
     transform: none;
+  }
+
+  .sitebar--sticky {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    transition: transform 0.35s var(--ease);
+  }
+
+  .sitebar--sticky.is-hidden {
+    transform: translateY(-100%);
   }
 
   .sitebar__inner {
@@ -183,12 +231,12 @@ const { floating = false, current } = Astro.props;
       font-size: 28px;
     }
     .sitebar__nav {
-      gap: 2px 10px;
+      gap: 2px 8px;
       flex-wrap: nowrap; /* links and the "i" stay on one line */
       align-items: center;
     }
     .sitebar__nav a {
-      font-size: 0.8rem;
+      font-size: 0.74rem; /* four categories + "i" next to the logo on one row */
       padding: 2px 0;
       white-space: nowrap;
     }

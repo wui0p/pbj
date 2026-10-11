@@ -1,49 +1,9 @@
 ---
 import { Image } from 'astro:assets';
 import athens from '../assets/education/school-of-athens.jpg';
-import taNote from '../assets/education/ta-note.jpg';
-import physicsWorld from '../assets/education/physics-world.jpg';
-import manual from '../assets/education/solution-manual.jpg';
-
-// The three teaching jobs, in my words (grammar fixed only).
-const work = [
-  {
-    role: 'TA',
-    where: 'Electronics (II)',
-    when: 'Jan – Jun 2026',
-    img: taNote,
-    alt: 'My handwritten notes for the Electronics (II) midterm session, with circuit sketches',
-    text: 'Typically, undergraduate students in my major are not allowed to serve as teaching assistants. However, based on my performance and dedication to securing this role, I was accepted as the TA for the Electronics (II) course. In this role, I authored original problem sets and solution manuals. I worked closely with the professor and the other teaching assistants to fix an issue in a solution. Before the midterm, I held a TA session to help the undergraduates (mainly sophomores) understand confusing concepts.',
-    note: '*This picture is a note I made for myself before the midterm session, so I could give more detailed explanations when answering their questions.',
-    stats: [
-      ['21', 'original problems & solutions written'],
-      ['30+', 'students attended the TA session'],
-    ],
-  },
-  {
-    role: 'Educator',
-    where: 'Physics World (Inc. and Delta Electronics)',
-    when: 'Feb 2026',
-    img: physicsWorld,
-    alt: 'High-school volunteers in blue vests at the Physics World exhibition, holding a red star sign for Group A; faces blurred',
-    text: 'I guided and trained students from Taichung Municipal Taichung First Senior High School, preparing them to serve effectively as educational volunteers for the “Physics World” exhibition project, a collaborative initiative supported by the Delta Electronics Foundation. My main objective was to coordinate exhibition timelines and mentor the volunteer teams as the floor supervisor.',
-    note: '*A picture from my phone showing the high schoolers at the exhibition. This photo shows Group A (students blurred).',
-    stats: [['20+', 'high schoolers supervised']],
-  },
-  {
-    role: 'Physics TA & Tutor',
-    where: 'Private Institute',
-    when: 'Jul – Aug 2024',
-    img: manual,
-    alt: 'Handwritten physics solutions on a desk next to a laptop showing the typed solution manual',
-    text: 'I solved 950+ problems using LaTeX formatting and collected them into one solution manual for the physics midterm and final exams from 2020 to 2023 for high schoolers. I also guided students through experiments and critiqued their research writing.',
-    note: '*My handwritten work is on the left, and the typed solution manuals are on the laptop.',
-    stats: [
-      ['990+', 'solutions written'],
-      ['30+', 'students guided through experiments'],
-    ],
-  },
-];
+import { categoryUrl } from '../utils';
+// The teaching jobs themselves (photos, descriptions, stats) live on the Teaching page since v15:
+// src/content/blog/teaching-*.md
 ---
 
 <section class="edu" id="education" aria-labelledby="edu-heading">
@@ -71,13 +31,8 @@ const work = [
         <li class="depth">21 original problems written</li>
       </ul>
 
-      <button
-        type="button"
-        class="btn-3d btn-3d--butter depth edu__open"
-        aria-expanded="false"
-        aria-controls="edu-work"
-        data-work-toggle>See detailed teaching work</button
-      >
+      <!-- goes to the Teaching page, where each job opens with its photo and details -->
+      <a class="btn-3d btn-3d--butter depth" href={categoryUrl('teaching')}>See detailed teaching work</a>
     </div>
 
     <!-- EDUCATION travels down this column as you scroll, leaving outlined "shells" behind -->
@@ -98,36 +53,6 @@ const work = [
       <div class="edu__shells" data-shells aria-hidden="true"></div>
       <h2 class="heading edu__word edu__word--main" id="edu-heading" data-word>Education</h2>
     </div>
-  </div>
-
-  <!-- the teaching work: opens under the section and pushes the page down -->
-  <div class="edu__work depth" id="edu-work" data-work hidden>
-    <button type="button" class="edu__close" data-work-close aria-label="Close the teaching work">×</button>
-    {
-      work.map((w) => (
-        <article class="job">
-          <figure class="job__fig">
-            <Image src={w.img} alt={w.alt} widths={[480, 760, 1100]} sizes="(max-width: 900px) 100vw, 40vw" class="job__img" />
-            <figcaption class="job__note">{w.note}</figcaption>
-          </figure>
-          <div class="job__body">
-            <h3 class="job__title">
-              {w.role} <span class="job__dot">·</span> <span class="job__where">{w.where}</span>
-            </h3>
-            <p class="job__when">{w.when}</p>
-            <p class="job__text">{w.text}</p>
-            <dl class="job__stats">
-              {w.stats.map(([n, label]) => (
-                <div class="job__stat">
-                  <dt class="job__num">{n}</dt>
-                  <dd class="job__label">{label}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-        </article>
-      ))
-    }
   </div>
 </section>
 
@@ -203,27 +128,6 @@ const work = [
     document.fonts?.ready.then(layout);
     new ResizeObserver(layout).observe(art);
     layout();
-  }
-
-  // ---------- See the teaching work ----------
-  const panel = document.querySelector<HTMLElement>('[data-work]');
-  const toggle = document.querySelector<HTMLButtonElement>('[data-work-toggle]');
-  const close = document.querySelector<HTMLButtonElement>('[data-work-close]');
-  if (panel && toggle && close) {
-    const set = (open: boolean) => {
-      panel.hidden = !open;
-      toggle.setAttribute('aria-expanded', String(open));
-      if (open) {
-        panel.classList.remove('is-pop');
-        void panel.offsetWidth;
-        panel.classList.add('is-pop');
-        panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      } else {
-        toggle.focus();
-      }
-    };
-    toggle.addEventListener('click', () => set(Boolean(panel.hidden))); // open if it's closed
-    close.addEventListener('click', () => set(false));
   }
 </script>
 
@@ -393,137 +297,6 @@ const work = [
     -webkit-text-stroke: 0;
   }
 
-  /* ----- the teaching work panel ----- */
-  .edu__work {
-    --depth: 10px;
-    position: relative;
-    width: min(100% - 2 * var(--gutter) - 10px, 1400px);
-    margin: clamp(32px, 4vw, 56px) auto 10px;
-    background: var(--sand);
-    border-radius: clamp(28px, 4vw, 60px);
-    padding: clamp(28px, 4vw, 64px);
-    display: grid;
-    gap: clamp(36px, 5vw, 64px);
-  }
-
-  .edu__work[hidden] {
-    display: none;
-  }
-
-  .edu__work.is-pop {
-    animation: open 0.3s var(--ease);
-  }
-
-  @keyframes open {
-    from {
-      opacity: 0;
-      transform: translateY(12px);
-    }
-  }
-
-  .edu__close {
-    position: absolute;
-    top: clamp(14px, 2vw, 28px);
-    right: clamp(18px, 2.4vw, 36px);
-    appearance: none;
-    border: 0;
-    background: none;
-    font-size: 2rem;
-    line-height: 1;
-    color: var(--ink);
-    cursor: pointer;
-  }
-
-  .job {
-    display: grid;
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-    gap: clamp(24px, 3.5vw, 52px);
-    align-items: start;
-  }
-
-  .job + .job {
-    border-top: 1px solid var(--ink-faint);
-    padding-top: clamp(36px, 5vw, 64px);
-  }
-
-  .job__fig {
-    margin: 0;
-  }
-
-  .job__img {
-    display: block;
-    width: 100%;
-    height: auto;
-    max-height: 460px;
-    object-fit: cover;
-    border-radius: 14px;
-  }
-
-  .job__note {
-    margin-top: 0.7rem;
-    font-family: var(--font-display);
-    font-size: 0.95rem;
-    line-height: 1.45;
-    color: var(--ink-soft);
-  }
-
-  .job__title {
-    margin: 0 0 0.2rem;
-    font-size: clamp(1.25rem, 1.8vw, 1.6rem);
-    font-weight: 800;
-    line-height: 1.25;
-    padding-right: 2.2rem;
-  }
-
-  .job__dot {
-    color: var(--ink-soft);
-    font-weight: 400;
-  }
-
-  .job__where {
-    font-weight: 700;
-  }
-
-  .job__when {
-    margin: 0 0 1rem;
-    color: var(--ink-soft);
-    font-size: 0.95rem;
-  }
-
-  .job__text {
-    margin: 0;
-    font-family: var(--font-display);
-    font-size: clamp(1.05rem, 1.3vw, 1.18rem);
-    line-height: 1.6;
-    text-align: justify;
-  }
-
-  /* each job's numbers: big figure, label under it, a thin rule on the left */
-  .job__stats {
-    display: flex;
-    flex-direction: column; /* one stat under another, the same in every job */
-    align-items: flex-start;
-    gap: 22px;
-    margin: clamp(22px, 2.6vw, 34px) 0 0;
-  }
-
-  .job__stat {
-    border-left: 2px solid var(--ink);
-    padding-left: 14px;
-  }
-
-  .job__num {
-    font-weight: 800;
-    font-size: clamp(2rem, 3.2vw, 2.9rem);
-    line-height: 1;
-  }
-
-  .job__label {
-    margin: 0.3rem 0 0;
-    font-size: clamp(1rem, 1.3vw, 1.2rem);
-    line-height: 1.3;
-  }
-
   @media (max-width: 900px) {
     .edu__grid {
       grid-template-columns: minmax(0, 1fr);
@@ -531,15 +304,6 @@ const work = [
     .edu__art {
       order: -1;
       padding-bottom: 12cqi;
-    }
-    .job {
-      grid-template-columns: minmax(0, 1fr);
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .edu__work.is-pop {
-      animation: none;
     }
   }
 </style>

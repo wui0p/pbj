@@ -78,8 +78,7 @@ const toc = h2.length >= 2 ? h2 : headings.filter((h) => h.depth === 3);
                   </a>
                   {isCurrent && toc.length > 0 && (
                     <div class="drawer__toc">
-                      <p class="drawer__toc-label">On this page</p>
-                      <ul>
+                      <ul aria-label="On this page">
                         {toc.map((h) => (
                           <li>
                             <a href={`#${h.slug}`} data-drawer-jump>
@@ -321,8 +320,7 @@ const toc = h2.length >= 2 ? h2 : headings.filter((h) => h.depth === 3);
     margin-top: 1.5rem;
   }
 
-  .drawer__group-label,
-  .drawer__toc-label {
+  .drawer__group-label {
     margin: 0 0 0.4rem;
     font-size: 0.7rem;
     font-weight: 600;

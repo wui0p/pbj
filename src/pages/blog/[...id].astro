@@ -3,7 +3,7 @@ import { Image } from 'astro:assets';
 import { render } from 'astro:content';
 import Page from '../../layouts/Page.astro';
 import PostDrawer from '../../components/PostDrawer.astro';
-import { categoryLabel, categoryUrl, formatDate, getPosts, hasPage, isoDate, langOf, postUrl, type Post } from '../../utils';
+import { categoryLabel, categoryUrl, dateText, getPosts, hasPage, isoDate, langOf, postUrl, type Post } from '../../utils';
 
 export async function getStaticPaths() {
   // outside links and button blocks have no page of their own
@@ -42,7 +42,7 @@ const lang = langOf(title);
         {date && (
           <>
             {' · '}
-            <time datetime={isoDate(date)}>{formatDate(date)}</time>
+            <time datetime={isoDate(date)}>{dateText(post)}</time>
           </>
         )}
         {!date && label && <>{` · ${label}`}</>}
@@ -169,11 +169,11 @@ const lang = langOf(title);
     font-size: 1.55rem;
     padding-bottom: 0.4em;
     border-bottom: 2px solid var(--ink);
-    scroll-margin-top: 24px;
+    scroll-margin-top: 80px; /* clear of the top bar, which comes back when you jump up */
   }
 
   .prose :global(h3) {
-    scroll-margin-top: 24px;
+    scroll-margin-top: 80px; /* clear of the top bar, which comes back when you jump up */
   }
 
   /* a line in italics right after a picture is its caption: small, grey, centred, close under it */

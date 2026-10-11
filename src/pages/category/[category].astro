@@ -6,11 +6,13 @@ import ItemCard from '../../components/ItemCard.astro';
 import BackLink from '../../components/BackLink.astro';
 import SnnDemo from '../../components/SnnDemo.astro';
 import TopRecs from '../../components/TopRecs.astro';
+import TeachingJobs from '../../components/TeachingJobs.astro';
 import { CATEGORIES, CATEGORY_SLUGS, SECTIONS, type CategorySlug } from '../../consts';
 import { bySectionOrder, formatDate, getPosts, isoDate, postUrl, url, type Post } from '../../utils';
 import waterLilies from '../../assets/research/water-lilies.jpg';
 import starryRhone from '../../assets/thoughts/starry-night-rhone.jpg';
 import wanderer from '../../assets/travel/wanderer.jpg';
+import sunsetLavacourt from '../../assets/teaching/sunset-lavacourt.jpg';
 
 export async function getStaticPaths() {
   const posts = await getPosts();
@@ -38,7 +40,8 @@ const PAINTINGS: Record<
     artist: string;
     title: string;
     date: string;
-    titleAt: 'center' | 'left';
+    // where the white page name sits on the painting ("teaching": its own layout, with EDU/CAT/ION beside it)
+    titleAt: 'center' | 'left' | 'teaching';
     note: string;
   }
 > = {
@@ -58,7 +61,16 @@ const PAINTINGS: Record<
     title: 'Water Lilies and Japanese Bridge',
     date: '1899',
     titleAt: 'center',
-    note: 'Monet is one of my favorite artists. His garden is somewhere I want to visit in my lifetime; it’s on my bucket list. Somewhere peaceful for you to ponder and collect your thoughts.',
+    note: 'Monet is one of my favorite artists. His garden is somewhere I want to visit in my lifetime; it’s on my bucket list. Somewhere peaceful for you to ponder and collect your thoughts. (This is my mother’s favorite old painting.)',
+  },
+  teaching: {
+    src: sunsetLavacourt,
+    alt: "Claude Monet's Sunset on the Seine at Lavacourt, Winter Effect: an orange sun setting over a misty blue river, with bare trees on the banks",
+    artist: 'Claude Monet',
+    title: 'Sunset on the Seine at Lavacourt, Winter Effect',
+    date: '1880',
+    titleAt: 'teaching',
+    note: 'This painting was chosen by my brother. He is someone who has positively influenced me, making me work harder, even though he does not know it.',
   },
   travel: {
     src: wanderer,
@@ -145,25 +157,53 @@ const lines = (text = '') => text.split(/(?<=\.)\s+/).filter(Boolean);
       </div>
     ) : (
       <>
-        <figure class="banner">
-          <div class="banner__paint">
-            <Image
-              src={art.src}
-              alt={art.alt}
-              widths={[700, 1100, 1600, 2400]}
-              sizes="100vw"
-              class="banner__img"
-              loading="eager"
-            />
-            <h1 class:list={['heading', 'banner__title', `banner__title--${art.titleAt}`]}>{label}</h1>
-          </div>
-          <figcaption
-            class:list={['art-caption', 'banner__caption', `banner__caption--${art.titleAt}`]}
-            data-note={art.note}
-          >
-            * {art.artist}, <em>{art.title}</em>, {art.date}
-          </figcaption>
-        </figure>
+        {art.titleAt === 'teaching' ? (
+          // Teaching (mockup v15, page 18): the painting on the left with TEACHING in white on it, and
+          // E D U / C A T / I O N as a 3 x 3 block on the right, its last row level with TEACHING
+          <figure class="tbanner">
+            <div class="tbanner__row">
+              <div class="tbanner__paint">
+                <Image
+                  src={art.src}
+                  alt={art.alt}
+                  widths={[700, 1100, 1600, 1946]}
+                  sizes="70vw"
+                  class="banner__img"
+                  loading="eager"
+                />
+                <h1 class="heading tbanner__title">{label}</h1>
+              </div>
+              <p class="heading tbanner__edu" aria-hidden="true">
+                {'EDUCATION'.split('').map((c) => (
+                  <span>{c}</span>
+                ))}
+              </p>
+            </div>
+            <figcaption class="art-caption banner__caption" data-note={art.note}>
+              * {art.artist}, <em>{art.title}</em>, {art.date}
+            </figcaption>
+          </figure>
+        ) : (
+          <figure class="banner">
+            <div class="banner__paint">
+              <Image
+                src={art.src}
+                alt={art.alt}
+                widths={[700, 1100, 1600, 2400]}
+                sizes="100vw"
+                class="banner__img"
+                loading="eager"
+              />
+              <h1 class:list={['heading', 'banner__title', `banner__title--${art.titleAt}`]}>{label}</h1>
+            </div>
+            <figcaption
+              class:list={['art-caption', 'banner__caption', `banner__caption--${art.titleAt}`]}
+              data-note={art.note}
+            >
+              * {art.artist}, <em>{art.title}</em>, {art.date}
+            </figcaption>
+          </figure>
+        )}
 
         {columns.map((list, ci) => (
           <Fragment>
@@ -187,6 +227,8 @@ const lines = (text = '') => text.split(/(?<=\.)\s+/).filter(Boolean);
                     <TopRecs compact />
                   </li>
                 </ul>
+              ) : s.id === 'jobs' ? (
+                <TeachingJobs posts={s.posts} />
               ) : (
                 <ol class="cat__list">
                   {s.posts.map((post) => (
@@ -260,6 +302,63 @@ const lines = (text = '') => text.split(/(?<=\.)\s+/).filter(Boolean);
     bottom: 0.06em;
   }
 
+  /* ----- Teaching: painting (70%) + E D U / C A T / I O N, with TEACHING level with the last row ----- */
+  .tbanner {
+    margin: 0;
+  }
+
+  .tbanner__row {
+    --h: clamp(220px, 29vw, 440px);
+    container-type: inline-size;
+    display: grid;
+    grid-template-columns: 70% minmax(0, 1fr);
+    height: var(--h);
+  }
+
+  /* one letter size for TEACHING and the 3 x 3 block, so their bottom lines match; it fits both
+     the band's height and (on narrow screens) the painting's width */
+  .tbanner__paint,
+  .tbanner__edu {
+    --fs: min(calc(var(--h) * 0.27), 12.4cqi);
+    --pad: calc(var(--fs) * 0.12);
+  }
+
+  .tbanner__paint {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .tbanner__paint :global(.banner__img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 50%;
+  }
+
+  .tbanner__title {
+    position: absolute;
+    right: 3cqi;
+    bottom: var(--pad);
+    margin: 0;
+    color: var(--paper);
+    font-size: var(--fs);
+    line-height: 0.76;
+    white-space: nowrap;
+  }
+
+  .tbanner__edu {
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    align-content: space-between;
+    justify-items: center;
+    padding: var(--pad) 1.5cqi var(--pad) 2.5cqi;
+    color: var(--ink);
+    font-size: var(--fs);
+    line-height: 0.76;
+  }
+
   /* as wide as its words, so only the words show the description on hover */
   .banner__caption {
     width: fit-content;
@@ -300,7 +399,7 @@ const lines = (text = '') => text.split(/(?<=\.)\s+/).filter(Boolean);
 
   /* jumping to a block (e.g. "Dive deeper" → #snn-capstone) leaves a little room above it */
   .cat :global(.item) {
-    scroll-margin-top: 28px;
+    scroll-margin-top: 80px; /* clear of the top bar, which comes back when you jump up */
   }
 
   .cat__sec + .cat__sec {
