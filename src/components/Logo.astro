@@ -1,0 +1,51 @@
+---
+// The site logo (v14, 2026-10-11): the "PB & of J" wordmark — Portfolio & Blogs of Jeffrey — in butter:
+// big PB and J, with a small "&" stacked over "of" between them. Size it with font-size.
+interface Props {
+  class?: string;
+}
+const { class: cls } = Astro.props;
+---
+
+<span class:list={['pbj', cls]} aria-hidden="true">
+  <span class="pbj__big">PB</span><span class="pbj__mid"
+    ><span class="pbj__amp">&amp;</span><span class="pbj__of">of</span></span
+  ><span class="pbj__big">J</span>
+</span>
+
+<style>
+  .pbj {
+    display: inline-flex;
+    align-items: flex-end;
+    font-family: var(--font-sans);
+    font-weight: 800;
+    color: var(--butter);
+    line-height: 1;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+
+  /* trim the line box to the capitals so "of" sits on the same baseline */
+  .pbj__big {
+    display: block;
+    line-height: 0.74;
+  }
+
+  .pbj__mid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 0.07em 0 0.06em;
+    font-size: 0.48em;
+  }
+
+  .pbj__amp {
+    font-size: 1.3em;
+    line-height: 0.8;
+    margin-bottom: 0.02em;
+  }
+
+  .pbj__of {
+    line-height: 0.74;
+  }
+</style>

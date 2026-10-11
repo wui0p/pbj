@@ -1,0 +1,37 @@
+---
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import Message from '../components/Message.astro';
+import Portfolio from '../components/Portfolio.astro';
+import Education from '../components/Education.astro';
+import Story from '../components/Story.astro';
+import MenuPinned from '../components/MenuPinned.astro';
+import Features from '../components/Features.astro';
+import Information from '../components/Information.astro';
+import SiteBar from '../components/SiteBar.astro';
+import Reveal from '../components/Reveal.astro';
+import { getPosts } from '../utils';
+
+const posts = await getPosts();
+---
+
+<Base bodyClass="home">
+  <!-- the top bar appears from the message section (#about) down -->
+  <SiteBar floating />
+  <Hero />
+  <!-- One solid sheet above the fixed boards: scrolling slides it over them,
+       and having a single layer means no hairline seams between sections. -->
+  <div class="sheet">
+    <main>
+      <Message />
+      <Portfolio />
+      <Education />
+      <Story />
+      <MenuPinned posts={posts} />
+      <Features posts={posts} />
+      <!-- the SNN demo moved to the Research page (v14): "Try demo" on the capstone block -->
+    </main>
+    <Information />
+  </div>
+  <Reveal />
+</Base>

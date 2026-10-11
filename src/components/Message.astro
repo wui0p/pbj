@@ -1,0 +1,251 @@
+---
+import { Image } from 'astro:assets';
+import ocean from '../assets/message/lonely-ocean.jpg';
+import monet from '../assets/message/impression-sunrise.jpg';
+import sunflowers from '../assets/message/sunflowers.jpg';
+
+// "Important message" scrolling moments (replaced the old About Me).
+// Every word is either fully on the page (ink) or fully on a painting (white): never split.
+---
+
+<section class="msg" id="about" aria-label="About me">
+  <!-- 1. my own painting, wall to wall -->
+  <div class="ocean" data-reveal>
+    <div class="ocean__band">
+      <Image
+        src={ocean}
+        alt="Jeffrey Wu's painting Lonely Ocean: a small green sea turtle swimming alone in deep blue water"
+        widths={[1024]}
+        sizes="100vw"
+        class="ocean__img"
+        loading="lazy"
+      />
+      <p class="heading msg__words ocean__title">
+        <span class="ocean__out">Electrical</span>
+        <span class="ocean__in">Engineer</span>
+      </p>
+    </div>
+    <!-- caption left, IC DESIGN right, both right under the painting -->
+    <div class="ocean__under">
+      <div class="ocean__about">
+        <p class="art-caption ocean__caption">* Jeffrey Wu, <em>Lonely Ocean</em>, 2023–2024</p>
+        <!-- about my painting: drawing is something I enjoy doing -->
+        <p class="ocean__desc">
+          <span class="hl">This is my favorite painting I’ve made.</span> The first version was drawn in 2023 to capture
+          the beauty of ocean blue and the feeling of heading somewhere unknown. After a year, I came back to this drawing
+          and made it richer in depth, using oil paint. The detail I enjoy the most is <span
+            class="hl"
+            style="--hl-delay: 0.6s">the sunlight hitting the head of the sea turtle, as if it is heading somewhere
+            brighter</span
+          >.
+        </p>
+      </div>
+      <p class="heading msg__words ocean__ic">IC Design</p>
+    </div>
+  </div>
+
+  <!-- 2. Monet on the left wall; Van Gogh on the right wall, the words under it -->
+  <div class="share" data-reveal>
+    <figure class="share__monet">
+      <Image
+        src={monet}
+        alt="Claude Monet's Impression, Sunrise: an orange sun over a blue harbour with small boats"
+        widths={[600, 985]}
+        sizes="(max-width: 760px) 100vw, 57vw"
+        class="share__img"
+        loading="lazy"
+      />
+      <figcaption
+        class="art-caption"
+        data-note="I like how oil paintings have these heavy brushstrokes, making them feel raw and real. It heavily influenced my Lonely Ocean painting."
+        >* Claude Monet, <em>Impression, Sunrise</em>, 1872</figcaption>
+    </figure>
+    <div class="share__right">
+      <figure class="share__sun">
+        <figcaption
+          class="art-caption"
+          data-note="To me, what a dying sunflower shows is the strength of life. It withered with grace and shone even in the last part of its life."
+          >* Vincent van Gogh, <em>Sunflowers</em>, 1887</figcaption>
+        <Image
+          src={sunflowers}
+          alt="Detail of Vincent van Gogh's Sunflowers: the orange seed head on a sky-blue cloth"
+          widths={[877]}
+          sizes="(max-width: 760px) 100vw, 41vw"
+          class="share__img"
+          loading="lazy"
+        />
+      </figure>
+      <p class="heading msg__words share__words">
+        I want to share what I think is beautiful about IC and myself as a person.
+      </p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .msg {
+    background: var(--paper);
+    /* extra room: these are big paintings, give them space to breathe */
+    padding: calc(var(--sec-top) * 1.3) 0 calc(var(--sec-top) * 1.1);
+    overflow: hidden;
+  }
+
+  .msg__words {
+    margin: 0;
+    line-height: 1;
+  }
+
+  /* entrance: the words rise in when the section scrolls into view */
+  [data-reveal] .msg__words {
+    opacity: 0;
+    translate: 0 0.35em;
+    transition:
+      opacity 0.9s var(--ease) 0.15s,
+      translate 0.9s var(--ease) 0.15s;
+  }
+
+  [data-reveal].is-in .msg__words {
+    opacity: 1;
+    translate: 0 0;
+  }
+
+  /* ---------- 1. Lonely Ocean ---------- */
+  .ocean {
+    --fs: clamp(2.4rem, 6.2vw, 6.4rem);
+  }
+
+  .ocean__band {
+    position: relative;
+    margin-top: var(--fs); /* room for ELECTRICAL above the painting */
+  }
+
+  .ocean__img {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-height: 220px;
+    aspect-ratio: 1024 / 254;
+    object-fit: cover;
+  }
+
+  /* ELECTRICAL sits on the painting's top edge (grey, on the page);
+     ENGINEER starts just inside it (white, on the painting) */
+  .ocean__title {
+    position: absolute;
+    left: var(--gutter);
+    top: 0;
+    font-size: var(--fs);
+  }
+
+  .ocean__title span {
+    display: block;
+  }
+
+  .ocean__out {
+    color: var(--ink);
+    margin-top: -0.93em; /* baseline just above the edge */
+  }
+
+  .ocean__in {
+    color: var(--paper);
+    margin-top: 0.1em;
+  }
+
+  .ocean__under {
+    display: flex;
+    flex-wrap: wrap-reverse; /* when narrow, IC DESIGN stays on top, the caption goes under it */
+    justify-content: space-between;
+    align-items: flex-end; /* with wrap-reverse, "end" is the top: the caption hugs the painting */
+    gap: 0.4rem 1.5rem;
+    padding: 0 var(--gutter);
+  }
+
+  .ocean__caption {
+    margin: 0.45rem 0 0;
+  }
+
+  .ocean__about {
+    flex: 0 1 min(36rem, 38vw);
+  }
+
+  /* Times-like serif, justified (like the other story paragraphs) */
+  .ocean__desc {
+    margin: clamp(14px, 1.6vw, 22px) 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(1rem, 1.25vw, 1.15rem);
+    line-height: 1.65;
+    text-align: justify;
+    color: var(--ink);
+  }
+
+  /* IC DESIGN right under the painting, grey */
+  .ocean__ic {
+    margin-left: auto;
+    font-size: var(--fs);
+    color: var(--ink);
+    transition-delay: 0.5s !important; /* arrives a moment after the first two words */
+  }
+
+  /* ---------- 2. Monet + Van Gogh ---------- */
+  .share {
+    container-type: inline-size;
+    margin-top: calc(var(--sec-top) * 1.6);
+    display: grid;
+    grid-template-columns: 57cqi 1fr;
+    column-gap: 2cqi;
+    align-items: start;
+  }
+
+  .share figure {
+    margin: 0;
+  }
+
+  .share__img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .share__monet figcaption {
+    margin-left: var(--gutter);
+  }
+
+  /* the Sunflowers caption sits above the painting */
+  .share__sun figcaption {
+    margin: 0 0 0.5rem 0.1rem;
+  }
+
+  .share__words {
+    margin-top: clamp(28px, 4cqi, 64px);
+    padding-right: var(--gutter);
+    font-size: clamp(1.7rem, 3.6cqi, 4rem);
+    line-height: 1.14;
+    color: var(--ink);
+  }
+
+  @media (max-width: 760px) {
+    /* the caption + description take the full width under IC DESIGN */
+    .ocean__about {
+      flex-basis: 100%;
+    }
+    /* phones: stack Monet, then the Sunflowers and the words */
+    .share {
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: 28px;
+    }
+    .share__right {
+      padding-left: var(--gutter);
+    }
+    .share__words {
+      font-size: 1.8rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-reveal] .msg__words {
+      opacity: 1;
+      translate: none;
+      transition: none;
+    }
+  }
+</style>

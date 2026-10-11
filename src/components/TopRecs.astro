@@ -1,0 +1,331 @@
+---
+// Top Recommendations: four flat icons with a small card on hover; clicking opens the link.
+// Used in STORY = ART on the home page and on the Thoughts page.
+interface Props {
+  /** smaller icons in one row (the Thoughts page, where it shares a grid cell with the blocks) */
+  compact?: boolean;
+}
+
+const { compact = false } = Astro.props;
+
+const recs = [
+  {
+    id: 'helmet',
+    title: 'Song of Achilles · novel',
+    desc: 'The <em>Iliad</em> retold as a love story through the eyes of Achilles’ companion, Patroclus',
+    cta: 'Click to find the book',
+    url: 'https://www.goodreads.com/book/show/13623848-the-song-of-achilles',
+  },
+  {
+    id: 'record',
+    title: 'EPIC · musical',
+    desc: 'Odysseus fights his way home and learns that each act of mercy, cunning, and cruelty has a price',
+    cta: 'Click to listen',
+    url: 'https://www.youtube.com/playlist?list=PLbtGX7d5QSn8',
+  },
+  {
+    id: 'sword',
+    title: 'Frieren · anime',
+    desc: 'An elf who outlives her friends sets out to finally understand the people she lost',
+    cta: 'Click to go watch',
+    url: 'https://www.imdb.com/title/tt22248376/',
+  },
+  {
+    id: 'meteor',
+    title: 'Your Name · movie',
+    desc: 'Two strangers who swap bodies in their dreams race against time to find each other',
+    cta: 'Click to go watch',
+    url: 'https://www.imdb.com/title/tt5311514/',
+  },
+];
+---
+
+<div class:list={['top-recs', { 'top-recs--compact': compact }]}>
+  <h3 class="heading recs-title">Top Recommendations</h3>
+  <ul class="recs">
+    {
+      recs.map((r, i) => (
+        <li class:list={['rec', `rec--${r.id}`, { 'rec--end': i >= 2 }]}>
+          <a class="rec__link" href={r.url} target="_blank" rel="noopener noreferrer" aria-describedby={`rec-${r.id}`}>
+            <span class="sr-only">{r.title.split(' · ')[0]}</span>
+            {r.id === 'helmet' && (
+              <svg class="rec__icon" viewBox="0 0 96 96" aria-hidden="true">
+                <g class="i-lift">
+                  <path class="i-sky" d="M28 24 C30 6 66 6 68 24 C62 14 34 14 28 24 Z" />
+                  <path
+                    class="i-butter"
+                    d="M18 54 C18 28 32 16 48 16 C64 16 78 28 78 54 L78 80 Q78 86 72 86 L62 86 Q58 86 58 82 L58 62 L52 56 L52 50 L44 50 L44 56 L38 62 L38 82 Q38 86 34 86 L24 86 Q18 86 18 80 Z"
+                  />
+                  <path class="i-ink" d="M26 42 L44 42 L44 50 L31 50 Q26 48 26 42 Z" />
+                  <path class="i-ink" d="M70 42 L52 42 L52 50 L65 50 Q70 48 70 42 Z" />
+                </g>
+              </svg>
+            )}
+            {r.id === 'record' && (
+              <svg class="rec__icon" viewBox="0 0 96 96" aria-hidden="true">
+                <g class="i-spin">
+                  <circle class="i-ink" cx="48" cy="48" r="40" />
+                  <path class="i-groove" d="M48 22 A26 26 0 0 1 74 48" />
+                  <circle class="i-butter" cx="48" cy="48" r="15" />
+                  <circle class="i-paper" cx="48" cy="48" r="4" />
+                </g>
+              </svg>
+            )}
+            {r.id === 'sword' && (
+              <svg class="rec__icon" viewBox="0 0 96 96" aria-hidden="true">
+                <g class="i-pull">
+                  <rect class="i-sky" x="44.5" y="20" width="7" height="50" rx="1.5" />
+                  <rect class="i-ink" x="45" y="6" width="6" height="13" rx="2" />
+                  <rect class="i-butter" x="33" y="17" width="30" height="7" rx="3" />
+                  <circle class="i-butter" cx="48" cy="5" r="3.5" />
+                </g>
+                <path class="i-sand" d="M12 86 C16 66 32 58 48 58 C64 58 80 66 84 86 Z" />
+              </svg>
+            )}
+            {r.id === 'meteor' && (
+              <svg class="rec__icon" viewBox="0 0 96 96" aria-hidden="true">
+                <g class="i-meteor m1">
+                  <path class="i-trail" d="M32 30 L56 6" />
+                  <path class="i-butter" d="M22 20 l5 10 11 1.6 -8 7.8 1.9 11 -9.9 -5.2 -9.9 5.2 1.9 -11 -8 -7.8 11 -1.6 z" />
+                </g>
+                <g class="i-meteor m2">
+                  <path class="i-trail" d="M76 28 L92 12" />
+                  <path class="i-butter" d="M70 20 l3.6 7.2 8 1.2 -5.8 5.6 1.4 8 -7.2 -3.8 -7.2 3.8 1.4 -8 -5.8 -5.6 8 -1.2 z" />
+                </g>
+                <g class="i-meteor m3">
+                  <path class="i-trail" d="M56 68 L84 40" />
+                  <path class="i-butter" d="M44 56 l5 10 11 1.6 -8 7.8 1.9 11 -9.9 -5.2 -9.9 5.2 1.9 -11 -8 -7.8 11 -1.6 z" />
+                </g>
+              </svg>
+            )}
+          </a>
+          <div class="rec__tip depth" id={`rec-${r.id}`} role="tooltip">
+            <p class="rec__name">{r.title}</p>
+            <p class="rec__desc" set:html={r.desc} />
+            <p class="rec__cta">{r.cta} →</p>
+          </div>
+        </li>
+      ))
+    }
+  </ul>
+</div>
+
+<style>
+  .recs-title {
+    font-size: clamp(1.25rem, 1.8vw, 1.6rem);
+    margin: 0 0 clamp(14px, 1.6vw, 20px);
+  }
+
+  .recs {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: clamp(18px, 3vw, 40px);
+  }
+
+  .rec {
+    position: relative;
+  }
+
+  .top-recs--compact .recs {
+    flex-wrap: nowrap;
+    gap: clamp(6px, 1.4vw, 20px);
+  }
+
+  .top-recs--compact .rec__icon {
+    width: clamp(52px, 5vw, 72px);
+  }
+
+  .rec__link {
+    display: block;
+    border-radius: 16px;
+    padding: 6px;
+  }
+
+  .rec__link:focus-visible {
+    outline: 3px solid var(--ink);
+  }
+
+  .rec__icon {
+    display: block;
+    width: clamp(64px, 6.5vw, 84px);
+    height: auto;
+    overflow: visible;
+  }
+
+  /* one flat family: ink outline, palette fills, no inner detail */
+  .rec__icon :global(path),
+  .rec__icon :global(circle),
+  .rec__icon :global(rect) {
+    stroke: var(--ink);
+    stroke-width: 3.5;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+  .rec__icon .i-butter {
+    fill: var(--butter);
+  }
+  .rec__icon .i-sky {
+    fill: var(--sky);
+  }
+  .rec__icon .i-sand {
+    fill: var(--sand);
+  }
+  .rec__icon .i-ink {
+    fill: var(--ink);
+  }
+  .rec__icon .i-paper {
+    fill: var(--paper);
+    stroke: none;
+  }
+  .rec__icon .i-groove {
+    fill: none;
+    stroke: var(--sky);
+    stroke-width: 3;
+  }
+  .rec__icon .i-trail {
+    fill: none;
+    stroke: var(--butter);
+    stroke-width: 5;
+  }
+
+  .rec__icon g {
+    transform-box: fill-box;
+    transform-origin: 50% 50%;
+    transition: transform 0.45s var(--ease);
+  }
+
+  /* hover / keyboard focus: each icon moves its own way */
+  .rec--helmet .rec__link:is(:hover, :focus-visible) .i-lift {
+    transform: translateY(-12px) rotate(-8deg);
+  }
+
+  .rec--record .rec__link:is(:hover, :focus-visible) .i-spin {
+    animation: spin 3.2s linear infinite;
+  }
+
+  .rec--sword .i-pull {
+    transform-origin: 50% 100%;
+  }
+  .rec--sword .rec__link:is(:hover, :focus-visible) .i-pull {
+    transform: translateY(-18px);
+  }
+
+  .rec--meteor .rec__link:is(:hover, :focus-visible) .i-meteor {
+    animation: fall 1.3s linear infinite;
+  }
+  .rec--meteor .rec__link:is(:hover, :focus-visible) .m2 {
+    animation-delay: 0.35s;
+  }
+  .rec--meteor .rec__link:is(:hover, :focus-visible) .m3 {
+    animation-delay: 0.7s;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes fall {
+    0% {
+      transform: translate(0, 0);
+      opacity: 1;
+    }
+    70% {
+      opacity: 1;
+    }
+    100% {
+      transform: translate(-16px, 16px);
+      opacity: 0;
+    }
+  }
+
+  /* the small card that says what it is */
+  .rec__tip {
+    --depth: 6px;
+    position: absolute;
+    z-index: 5;
+    top: calc(100% + 10px);
+    left: 0;
+    width: 250px;
+    padding: 14px 16px;
+    background: var(--sand);
+    border-radius: 16px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(6px);
+    transition:
+      opacity 0.2s var(--ease),
+      transform 0.2s var(--ease),
+      visibility 0.2s;
+    pointer-events: none;
+  }
+
+  .rec--end .rec__tip {
+    left: auto;
+    right: 0;
+  }
+
+  .rec:is(:hover, :focus-within) .rec__tip {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+
+  .rec__tip p {
+    margin: 0;
+  }
+
+  .rec__name {
+    font-weight: 800;
+    font-size: 1rem;
+    margin-bottom: 0.3rem !important;
+  }
+
+  .rec__desc {
+    font-size: 0.9rem;
+    line-height: 1.45;
+    color: var(--ink-soft);
+  }
+
+  .rec__cta {
+    margin-top: 0.6rem !important;
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+
+  /* phones / touch: no hover, so the cards are always shown under the icons */
+  @media (hover: none) {
+    .recs {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+    }
+    .rec {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .rec__tip {
+      position: static;
+      width: auto;
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+      box-shadow: none;
+      background: none;
+      padding: 4px 0 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rec__icon g,
+    .rec__icon .i-spin,
+    .rec__icon .i-meteor {
+      animation: none !important;
+      transition: none;
+    }
+  }
+</style>

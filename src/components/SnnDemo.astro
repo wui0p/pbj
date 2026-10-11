@@ -1,0 +1,1183 @@
+---
+import { url } from '../utils';
+
+// Order and names as in the board's demo app (encoder-structure).
+const modes = [
+  { id: 'TEMP', label: 'TEMP-TEMP' },
+  { id: 'RATE', label: 'RATE-RATE' },
+  { id: 'DELTA_TEMP', label: 'DELTA-TEMP' },
+  { id: 'DELTA_RATE', label: 'DELTA-RATE' },
+];
+
+// the four parts of the network, placed on the brain (centre, % of the brain box)
+const nodes = [
+  { id: 'input', name: 'Input', role: 'Eyes', x: 20.8, y: 51 },
+  { id: 'l1', name: 'Layer 1', role: 'Process', x: 41.7, y: 29.5 },
+  { id: 'l2', name: 'Layer 2', role: 'Process', x: 65.3, y: 36.4 },
+  { id: 'out', name: 'Output', role: 'Answer', x: 75.7, y: 60.2 },
+];
+---
+
+<!-- Lives on the Research page (v14, 2026-10-11): hidden until "Try demo" on the SNN capstone block opens it,
+     right under Academic Studies. Any button with data-demo-toggle + aria-controls="snn-demo" opens / closes it. -->
+<section class="snn" id="snn-demo" aria-labelledby="snn-heading" hidden>
+  <div class="wrap">
+    <div class="snn__top">
+      <div class="snn__intro">
+        <p class="eyebrow">Capstone project · Lab EE612</p>
+        <h2 class="heading snn__heading" id="snn-heading">SNN Accelerator</h2>
+        <p class="snn__lede">
+          My capstone is a spiking neural network accelerator written in SystemVerilog for the PYNQ-Z2. On this
+          website, it runs as a software simulation rather than true RTL and is structurally simpler.
+        </p>
+        <p class="snn__lede">
+          Draw a digit and watch a simple brain simulation read it. The eyes see your drawing, create nerve impulses
+          (spikes), pass them through two layers of neurons to process them, and at the end, it gives us its guess.
+        </p>
+      </div>
+      <button type="button" class="snn__close" data-demo-close aria-label="Close the demo">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6 6 18"></path></svg>
+      </button>
+    </div>
+
+    <div class="lab" data-snn data-model={url('/snn/model.bin')}>
+      <div class="lab__modes" role="radiogroup" aria-label="Encoder and network mode">
+        {
+          modes.map((m, i) => (
+            <button type="button" class="mode" role="radio" aria-checked={i === 0 ? 'true' : 'false'} data-mode={m.id}>
+              {m.label}
+            </button>
+          ))
+        }
+      </div>
+
+      <div class="flow">
+        <!-- 1. draw -->
+        <div class="flow__in">
+          <p class="lab__label">Draw a digit</p>
+          <div class="pad">
+            <canvas class="pad__canvas" width="280" height="280" data-pad aria-label="Drawing area for a digit"
+            ></canvas>
+            <span class="pad__guide" aria-hidden="true"></span>
+            <span class="pad__hint" data-hint>Draw here</span>
+          </div>
+          <div class="lab__buttons">
+            <button type="button" class="btn" data-test>Test digit</button>
+            <button type="button" class="btn btn--quiet" data-clear>Clear</button>
+          </div>
+        </div>
+
+        <!-- 2. the brain: click a part to look inside -->
+        <div class="flow__brain">
+          <div class="brain">
+            <svg class="brain__art" viewBox="0 0 720 440" aria-hidden="true" focusable="false">
+              <defs>
+                <marker
+                  id="snn-arrow"
+                  viewBox="0 0 10 10"
+                  refX="7"
+                  refY="5"
+                  markerWidth="3.6"
+                  markerHeight="3.6"
+                  orient="auto-start-reverse"
+                >
+                  <path d="M0 0 L10 5 L0 10 Z" fill="#404040"></path>
+                </marker>
+              </defs>
+              <!-- brainstem + cerebellum (behind) -->
+              <path
+                class="b-back"
+                d="M440 322 C446 360 456 392 450 428 L492 428 C488 392 492 356 500 326 Z"
+              ></path>
+              <ellipse class="b-back" cx="530" cy="334" rx="66" ry="38"></ellipse>
+              <path class="b-back-line" d="M482 326 C505 334 545 334 575 324 M478 343 C505 352 548 352 584 340"
+              ></path>
+              <!-- cerebrum -->
+              <path
+                class="b-main"
+                d="M140 318 C95 300 80 245 102 200 C88 150 120 108 165 100 C180 62 235 45 275 58 C305 32 365 30 395 52 C430 34 490 42 510 72 C560 70 600 105 598 150 C630 175 632 235 600 262 C600 300 560 318 520 312 C490 336 430 342 400 328 C360 348 290 346 262 330 C230 345 170 342 140 318 Z"
+              ></path>
+              <path
+                class="b-fold"
+                d="M332 64 C346 118 318 172 350 228 M176 256 C238 236 330 244 418 272 M190 142 C228 154 252 122 290 136 M432 112 C470 142 518 130 540 170 M470 222 C510 232 540 252 572 242 M232 302 C270 292 312 302 352 300"
+              ></path>
+              <!-- arrows: pad -> input -> layer 1 -> layer 2 -> output -> answer -->
+              <g class="b-arrows" marker-end="url(#snn-arrow)">
+                <path class="b-ext" d="M4 225 L84 225"></path>
+                <path d="M180 196 L250 154"></path>
+                <path d="M362 133 L406 146"></path>
+                <path d="M492 188 L526 234"></path>
+                <path class="b-ext" d="M612 265 L712 265"></path>
+              </g>
+            </svg>
+            {
+              nodes.map((n) => (
+                <button
+                  type="button"
+                  class="node"
+                  data-node={n.id}
+                  aria-expanded="false"
+                  aria-controls="snn-detail"
+                  style={`left:${n.x}%;top:${n.y}%`}
+                >
+                  <span class="node__name">{n.name}</span>
+                  <span class="node__role">({n.role})</span>
+                </button>
+              ))
+            }
+          </div>
+          <p class="flow__hint">Click a part of the brain to look inside.</p>
+        </div>
+
+        <!-- 3. the answer -->
+        <div class="flow__out">
+          <div class="answer" aria-live="polite">
+            <p class="lab__label">Predicted digit</p>
+            <p class="answer__cls" data-cls>–</p>
+            <p class="answer__line" data-ts></p>
+            <p class="answer__line" data-lat></p>
+            <p class="lab__small" data-note>Loading…</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- the part you clicked opens here -->
+      <div class="detail depth" id="snn-detail" data-detail hidden></div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { layer1Channels, parseModel, run, toMnist, type Mode, type Model, type RunResult } from '../snn/engine';
+  import meta from '../snn/meta.json';
+
+  type Cycles = Record<string, Record<string, number>>;
+  type Part = 'input' | 'l1' | 'l2' | 'out';
+
+  const PARTS: Record<Part, { title: string; about: string }> = {
+    input: {
+      title: 'Input · the eyes',
+      about:
+        'The picture is turned into spikes. Each panel is one timestep, and every yellow dot is a spike in your neuron.',
+    },
+    l1: {
+      title: 'Layer 1 · thinking',
+      about:
+        'Each channel looks for its own pattern, like how your brain works through problems, sending signals to the correlating neurons. Even though it looks messy, they are all coordinated.',
+    },
+    l2: {
+      title: 'Layer 2 · thinking',
+      about: 'Each channel combines the patterns from layer 1 into a bigger picture.',
+    },
+    out: {
+      title: 'Output · the answer',
+      about: 'Ten neurons, one for each digit. The digit whose neuron fires wins.',
+    },
+  };
+
+  const root = document.querySelector<HTMLElement>('[data-snn]');
+  if (root) init(root);
+
+  function init(root: HTMLElement) {
+    const $ = <T extends Element>(sel: string) => root.querySelector<T>(sel)!;
+    const pad = $<HTMLCanvasElement>('[data-pad]');
+    const ctx = pad.getContext('2d', { willReadFrequently: true })!;
+    const hint = $<HTMLElement>('[data-hint]');
+    const detail = $<HTMLElement>('[data-detail]');
+    const modeBtns = [...root.querySelectorAll<HTMLButtonElement>('[data-mode]')];
+    const nodeBtns = [...root.querySelectorAll<HTMLButtonElement>('[data-node]')];
+
+    // colors from the site palette
+    const INK = [64, 64, 64];
+    const BUTTER = [253, 219, 136];
+
+    let model: Model | null = null;
+    let mode: Mode = 'TEMP';
+    let pixels: Uint8Array = new Uint8Array(784);
+    let fromTest = false;
+    let testIndex = -1;
+    let result: RunResult | null = null;
+    let open: Part | null = null;
+    let selT = 0;
+    let ch1 = 0;
+    let ch2 = 0;
+
+    // ---------------------------------------------------------------- model
+    let loading: Promise<void> | null = null;
+    const load = () =>
+      (loading ??= fetch(root.dataset.model!)
+        .then((r) => {
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          return r.arrayBuffer();
+        })
+        .then((buf) => {
+          model = parseModel(buf);
+          if (!pixels.some(Boolean)) nextTestDigit();
+          else compute();
+        })
+        .catch((e) => {
+          setText('[data-note]', `Couldn't load the weights (${e.message}).`);
+        }));
+
+    // only download the ~200 KB of weights when the demo is near the screen
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(
+        (entries) => {
+          if (entries.some((e) => e.isIntersecting)) {
+            io.disconnect();
+            load();
+          }
+        },
+        { rootMargin: '600px 0px' },
+      );
+      io.observe(root);
+    } else {
+      load();
+    }
+
+    // ---------------------------------------------------------------- drawing
+    const BRUSH = 20;
+    let drawing = false;
+    let last: [number, number] | null = null;
+
+    const toPad = (e: PointerEvent): [number, number] => {
+      const r = pad.getBoundingClientRect();
+      return [((e.clientX - r.left) / r.width) * 280, ((e.clientY - r.top) / r.height) * 280];
+    };
+
+    const clearPad = () => {
+      ctx.clearRect(0, 0, 280, 280);
+      hint.hidden = false;
+    };
+
+    pad.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      if (fromTest) {
+        clearPad();
+        fromTest = false;
+      }
+      pad.setPointerCapture(e.pointerId);
+      drawing = true;
+      hint.hidden = true;
+      last = toPad(e);
+      ctx.fillStyle = 'rgb(64 64 64)';
+      ctx.beginPath();
+      ctx.arc(last[0], last[1], BRUSH / 2, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    pad.addEventListener('pointermove', (e) => {
+      if (!drawing || !last) return;
+      const p = toPad(e);
+      ctx.strokeStyle = 'rgb(64 64 64)';
+      ctx.lineWidth = BRUSH;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.moveTo(last[0], last[1]);
+      ctx.lineTo(p[0], p[1]);
+      ctx.stroke();
+      last = p;
+    });
+
+    const penUp = () => {
+      if (!drawing) return;
+      drawing = false;
+      last = null;
+      // ink amount = alpha of the strokes
+      const rgba = ctx.getImageData(0, 0, 280, 280).data;
+      const ink = new Uint8ClampedArray(280 * 280);
+      for (let i = 0; i < ink.length; i++) ink[i] = rgba[i * 4 + 3];
+      pixels = toMnist(ink, 280);
+      load();
+      compute();
+    };
+    pad.addEventListener('pointerup', penUp);
+    pad.addEventListener('pointercancel', penUp);
+
+    $('[data-clear]').addEventListener('click', () => {
+      clearPad();
+      fromTest = false;
+      pixels = new Uint8Array(784);
+      result = null;
+      render();
+    });
+
+    // ---------------------------------------------------------------- test digits
+    function nextTestDigit() {
+      if (!model) {
+        load();
+        return;
+      }
+      testIndex = (testIndex + 1) % model.testImages.length;
+      fromTest = true;
+      pixels = model.testImages[testIndex].slice();
+      hint.hidden = true;
+      const img = ctx.createImageData(28, 28);
+      pixels.forEach((v, k) => img.data.set([...INK, v], k * 4));
+      const tmp = document.createElement('canvas');
+      tmp.width = tmp.height = 28;
+      tmp.getContext('2d')!.putImageData(img, 0, 0);
+      ctx.clearRect(0, 0, 280, 280);
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(tmp, 0, 0, 280, 280);
+      compute();
+    }
+    $('[data-test]').addEventListener('click', nextTestDigit);
+
+    // ---------------------------------------------------------------- mode
+    modeBtns.forEach((b) =>
+      b.addEventListener('click', () => {
+        mode = b.dataset.mode as Mode;
+        modeBtns.forEach((o) => o.setAttribute('aria-checked', String(o === b)));
+        compute();
+      }),
+    );
+    $('.lab__modes').addEventListener('keydown', (e) => {
+      const ev = e as KeyboardEvent;
+      if (!['ArrowLeft', 'ArrowRight'].includes(ev.key)) return;
+      const i = modeBtns.findIndex((b) => b.getAttribute('aria-checked') === 'true');
+      const next = modeBtns[(i + (ev.key === 'ArrowRight' ? 1 : modeBtns.length - 1)) % modeBtns.length];
+      next.focus();
+      next.click();
+    });
+
+    // ---------------------------------------------------------------- brain parts
+    nodeBtns.forEach((b) =>
+      b.addEventListener('click', () => {
+        const part = b.dataset.node as Part;
+        open = open === part ? null : part; // click again to close
+        renderDetail(true);
+      }),
+    );
+
+    // clicks inside the panel (timesteps, channel pager, close)
+    detail.addEventListener('click', (e) => {
+      const t = (e.target as HTMLElement).closest<HTMLElement>('[data-act]');
+      if (!t || !result) return;
+      const act = t.dataset.act;
+      if (act === 'close') open = null;
+      else if (act === 't') selT = Number(t.dataset.t);
+      else if (act === 'ch') {
+        const d = Number(t.dataset.dir);
+        if (open === 'l1') ch1 = (ch1 + d + layer1Channels(mode)) % layer1Channels(mode);
+        else ch2 = (ch2 + d + 64) % 64;
+      }
+      renderDetail(false);
+    });
+
+    // ---------------------------------------------------------------- run + render
+    function compute() {
+      if (!model || !pixels.some(Boolean)) {
+        result = null;
+        render();
+        return;
+      }
+      // run every timestep for the panels; cls / ts are still the board's (early-exit) answer
+      result = run(pixels, mode, model.weights[mode], { full: true });
+      selT = 0;
+      // start on the busiest channels so there is something to look at
+      ch1 = busiest(result.l1[0], layer1Channels(mode), 196);
+      ch2 = busiest(result.l2[0], 64, 49);
+      render();
+    }
+
+    function busiest(s: Uint8Array, channels: number, size: number) {
+      let best = 0;
+      let bestN = -1;
+      for (let c = 0; c < channels; c++) {
+        let n = 0;
+        for (let i = 0; i < size; i++) n += s[c * size + i];
+        if (n > bestN) {
+          bestN = n;
+          best = c;
+        }
+      }
+      return best;
+    }
+
+    const count = (s: Uint8Array, from = 0, len = s.length) => {
+      let n = 0;
+      for (let i = from; i < from + len; i++) n += s[i];
+      return n;
+    };
+
+    /** n x n spike map: butter spikes on ink, as a small canvas scaled up crisply. */
+    function spikeMap(data: ArrayLike<number>, offset: number, n: number, cls: string) {
+      const cv = document.createElement('canvas');
+      cv.width = cv.height = n;
+      cv.className = `map ${cls}`;
+      const c = cv.getContext('2d')!;
+      const img = c.createImageData(n, n);
+      for (let i = 0; i < n * n; i++) {
+        const col = data[offset + i] ? BUTTER : INK;
+        img.data.set([col[0], col[1], col[2], 255], i * 4);
+      }
+      c.putImageData(img, 0, 0);
+      return cv;
+    }
+
+    function setText(sel: string, text: string) {
+      $(sel).textContent = text;
+    }
+
+    function latency(r: RunResult): string {
+      const cyc = (meta.cycles as Cycles)[r.mode] ?? {};
+      if (cyc[r.ts]) return `${(cyc[r.ts] / 100).toFixed(1)} µs on the FPGA`;
+      const known = Object.keys(cyc).map(Number);
+      if (!known.length) return '';
+      const near = known.reduce((a, b) => (Math.abs(b - r.ts) < Math.abs(a - r.ts) ? b : a));
+      const step = r.mode === 'RATE' || r.mode === 'DELTA_RATE' ? 9017 : 9591;
+      return `≈ ${((cyc[near] + (r.ts - near) * step) / 100).toFixed(0)} µs on the FPGA`;
+    }
+
+    function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls = '', text = '') {
+      const e = document.createElement(tag);
+      if (cls) e.className = cls;
+      if (text) e.textContent = text;
+      return e;
+    }
+
+    function render() {
+      const r = result;
+      if (r) {
+        setText('[data-cls]', String(r.cls));
+        setText('[data-ts]', `${r.ts} of ${r.T} timesteps`);
+        setText('[data-lat]', latency(r));
+        setText('[data-note]', '');
+      } else {
+        setText('[data-cls]', '–');
+        setText('[data-ts]', '');
+        setText('[data-lat]', '');
+        setText('[data-note]', model ? 'Draw a digit, or press Test digit.' : 'Loading…');
+      }
+      renderDetail(false);
+    }
+
+    /** the panel for the part of the brain that is open (only one at a time) */
+    function renderDetail(pop: boolean) {
+      nodeBtns.forEach((b) => b.setAttribute('aria-expanded', String(b.dataset.node === open)));
+      const r = result;
+      if (!open || !r) {
+        detail.hidden = true;
+        detail.replaceChildren();
+        return;
+      }
+      // the panels show every timestep (the network keeps running after its answer)
+      const T = r.T;
+      selT = Math.min(selT, T - 1);
+      const part = PARTS[open];
+      const head = el('div', 'detail__head');
+      head.append(el('h3', 'detail__title', part.title));
+      const close = el('button', 'detail__close', '×');
+      close.type = 'button';
+      close.dataset.act = 'close';
+      close.setAttribute('aria-label', 'Close');
+      head.append(close);
+      const body = el('div', 'detail__body');
+
+      if (open === 'input') {
+        const row = el('div', 'steps');
+        for (let t = 0; t < T; t++) {
+          const fig = el('figure', 'step');
+          fig.append(spikeMap(r.input[t], 0, 28, 'map--in'));
+          fig.append(el('figcaption', '', `Timestep ${t + 1} · ${count(r.input[t])} spikes`));
+          row.append(fig);
+        }
+        body.append(row);
+      } else if (open === 'l1' || open === 'l2') {
+        const isL1 = open === 'l1';
+        const chans = isL1 ? layer1Channels(mode) : 64;
+        const ch = isL1 ? ch1 : ch2;
+        const size = isL1 ? 196 : 49;
+        const data = (isL1 ? r.l1 : r.l2)[selT];
+        const ctrl = el('div', 'layer__ctrl');
+        const pager = el('div', 'pager');
+        const prev = el('button', 'pager__btn', '‹');
+        const next = el('button', 'pager__btn', '›');
+        prev.type = next.type = 'button';
+        prev.dataset.act = next.dataset.act = 'ch';
+        prev.dataset.dir = '-1';
+        next.dataset.dir = '1';
+        prev.setAttribute('aria-label', 'Previous channel');
+        next.setAttribute('aria-label', 'Next channel');
+        pager.append(prev, el('span', '', `channel ${ch + 1} / ${chans}`), next);
+        ctrl.append(el('p', 'lab__label', 'Channel'), pager);
+        ctrl.append(el('p', 'layer__count', `${count(data, ch * size, size)} spikes in this channel`));
+        // small timestep chooser: 1 2 3 4 5 (or 1 2 3)
+        const ts = el('div', 'chips');
+        ts.setAttribute('role', 'group');
+        ts.setAttribute('aria-label', 'Timestep');
+        for (let t = 0; t < T; t++) {
+          const c = el('button', 'chip', String(t + 1));
+          c.type = 'button';
+          c.dataset.act = 't';
+          c.dataset.t = String(t);
+          c.setAttribute('aria-pressed', String(t === selT));
+          c.setAttribute('aria-label', `Timestep ${t + 1}`);
+          ts.append(c);
+        }
+        ctrl.append(el('p', 'lab__label', 'Timestep'), ts);
+        const wrap = el('div', 'layer');
+        wrap.append(spikeMap(data, ch * size, isL1 ? 14 : 7, isL1 ? 'map--l1' : 'map--l2'), ctrl);
+        body.append(wrap);
+      } else {
+        // all ten neurons, every timestep; a firing neuron lights up
+        const grid = el('div', 'raster');
+        grid.style.setProperty('--cols', String(T));
+        grid.append(el('span'));
+        for (let t = 0; t < T; t++) grid.append(el('span', 'raster__t', String(t + 1)));
+        for (let d = 0; d < 10; d++) {
+          grid.append(el('span', 'raster__digit' + (d === r.cls ? ' is-win' : ''), String(d)));
+          for (let t = 0; t < T; t++) {
+            const fired = !!r.out[t][d];
+            const c = el('span', 'raster__cell' + (fired ? ' is-spike' : ''));
+            c.style.setProperty('--i', String(t));
+            c.title = `Neuron ${d}, timestep ${t + 1}: ${fired ? 'fired' : 'quiet'}`;
+            grid.append(c);
+          }
+        }
+        const legend = el('p', 'raster__legend', 'Rows: neurons 0–9 · columns: timesteps');
+        body.append(grid, legend);
+      }
+
+      detail.replaceChildren(head, el('p', 'detail__about', part.about), body);
+      detail.hidden = false;
+      if (pop) {
+        detail.classList.remove('is-pop');
+        void detail.offsetWidth;
+        detail.classList.add('is-pop');
+      }
+    }
+
+    // ---------------------------------------------------------------- open / close ("Try demo")
+    const section = root.closest<HTMLElement>('#snn-demo');
+    const toggles = [...document.querySelectorAll<HTMLButtonElement>('[data-demo-toggle]')];
+
+    const setShown = (show: boolean) => {
+      if (!section) return;
+      section.hidden = !show;
+      toggles.forEach((t) => t.setAttribute('aria-expanded', String(show)));
+      if (!show) return;
+      section.classList.remove('is-pop');
+      void section.offsetWidth;
+      section.classList.add('is-pop');
+      // Input (Eyes) starts selected, to show that the parts of the brain can be clicked
+      open = 'input';
+      load();
+      renderDetail(true);
+      // bring it into view if it opened mostly below the screen (the button stays in sight)
+      const top = section.getBoundingClientRect().top;
+      if (top > innerHeight * 0.6) scrollBy({ top: top - innerHeight * 0.3, behavior: 'smooth' });
+    };
+
+    toggles.forEach((t) => t.addEventListener('click', () => setShown(!!section?.hidden)));
+    section?.querySelector('[data-demo-close]')?.addEventListener('click', () => {
+      setShown(false);
+      toggles[0]?.focus();
+    });
+
+    render();
+  }
+</script>
+
+<style>
+  /* opens as a full-width sand band between Academic Studies and Side Curiosity */
+  .snn {
+    background: var(--sand);
+    padding: clamp(44px, 5.5vw, 84px) 0;
+  }
+
+  .snn.is-pop {
+    animation: snn-in 0.45s var(--ease);
+  }
+
+  @keyframes snn-in {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+  }
+
+  .snn__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: clamp(24px, 3vw, 40px);
+  }
+
+  .snn__intro {
+    max-width: 68ch;
+  }
+
+  .snn__close {
+    flex: none;
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    background: var(--paper);
+    color: var(--ink);
+    cursor: pointer;
+    transition:
+      background-color 0.2s var(--ease),
+      transform 0.25s var(--ease);
+  }
+
+  .snn__close:hover,
+  .snn__close:focus-visible {
+    background: var(--butter);
+    transform: rotate(90deg);
+  }
+
+  .snn__close svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+  }
+
+  .snn__heading {
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    margin: 0.4rem 0 1rem;
+  }
+
+  .snn__lede {
+    margin: 0 0 1rem;
+    font-size: clamp(1.05rem, 1.5vw, 1.25rem);
+    line-height: 1.6;
+    text-align: justify;
+  }
+
+  .snn__lede:last-child {
+    margin-bottom: 0;
+  }
+
+  /* ----- the lab panel ----- */
+  .lab {
+    background: var(--paper);
+    border-radius: var(--radius-card);
+    padding: clamp(18px, 2.6vw, 32px);
+  }
+
+  .lab__modes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .mode {
+    appearance: none;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 0.55rem 1rem;
+    border-radius: 999px;
+    border: 2px solid var(--sand);
+    background: var(--sand);
+    color: var(--ink);
+    cursor: pointer;
+    transition:
+      border-color 0.2s var(--ease),
+      background-color 0.2s var(--ease);
+  }
+
+  .mode:hover {
+    border-color: var(--butter);
+  }
+
+  .mode[aria-checked='true'] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--butter);
+  }
+
+  .lab__label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 0 0 0.6rem;
+  }
+
+  .lab__small {
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
+  /* draw -> brain -> answer */
+  .flow {
+    display: grid;
+    grid-template-columns: minmax(200px, 250px) minmax(0, 1fr) minmax(170px, 210px);
+    gap: 4px;
+    align-items: center;
+    margin-top: 1.6rem;
+  }
+
+  /* drawing pad */
+  .pad {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .pad__canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+    cursor: crosshair;
+    z-index: 1;
+  }
+
+  .pad__guide {
+    position: absolute;
+    inset: 14.3%;
+    border: 2px dashed var(--sand);
+    border-radius: 6px;
+    pointer-events: none;
+  }
+
+  .pad__hint {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    color: var(--ink-faint);
+    pointer-events: none;
+  }
+
+  .pad__hint[hidden] {
+    display: none;
+  }
+
+  .lab__buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .btn {
+    appearance: none;
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    border: 2px solid var(--ink);
+    background: var(--ink);
+    color: var(--paper);
+    cursor: pointer;
+  }
+
+  .btn:hover {
+    border-color: var(--butter);
+  }
+
+  .btn--quiet {
+    background: transparent;
+    color: var(--ink);
+  }
+
+  /* ----- the brain ----- */
+  .brain {
+    position: relative;
+    aspect-ratio: 720 / 440;
+  }
+
+  .brain__art {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .b-main {
+    fill: var(--sky);
+    stroke: var(--sky-deep);
+    stroke-width: 6;
+    stroke-linejoin: round;
+  }
+
+  .b-fold {
+    fill: none;
+    stroke: var(--sky-deep);
+    stroke-width: 5;
+    stroke-linecap: round;
+  }
+
+  .b-back {
+    fill: var(--sand);
+    stroke: var(--sand-deep);
+    stroke-width: 6;
+    stroke-linejoin: round;
+  }
+
+  .b-back-line {
+    fill: none;
+    stroke: var(--sand-deep);
+    stroke-width: 4;
+    stroke-linecap: round;
+  }
+
+  .b-arrows path {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 7;
+    stroke-linecap: round;
+  }
+
+  /* the four parts: size is a share of the brain box, so the arrows always meet them */
+  .node {
+    position: absolute;
+    width: 17%;
+    height: 14.5%;
+    translate: -50% -50%;
+    display: grid;
+    place-content: center;
+    gap: 1px;
+    appearance: none;
+    font: inherit;
+    line-height: 1.15;
+    color: var(--ink);
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 3px 3px 0 var(--sky-deep);
+    transition:
+      background-color 0.2s var(--ease),
+      transform 0.15s var(--ease);
+  }
+
+  .node:hover {
+    background: var(--sand);
+  }
+
+  .node[aria-expanded='true'] {
+    background: var(--butter);
+  }
+
+  .node:active {
+    transform: translate(2px, 2px);
+  }
+
+  .node__name {
+    font-weight: 700;
+    font-size: clamp(0.72rem, 1.05vw, 0.98rem);
+  }
+
+  .node__role {
+    font-size: clamp(0.62rem, 0.85vw, 0.8rem);
+    color: var(--ink-soft);
+  }
+
+  .flow__hint {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+    margin: 0.6rem 0 0;
+  }
+
+  /* ----- the answer ----- */
+  .answer {
+    border: 2px solid var(--ink);
+    border-radius: 22px;
+    padding: 20px 22px;
+    background: var(--paper);
+  }
+
+  .answer__cls {
+    font-weight: 800;
+    font-size: clamp(4rem, 7vw, 5.6rem);
+    line-height: 0.95;
+    margin: 0 0 0.5rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .answer__line {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+
+  /* ----- the panel that jumps out ----- */
+  .detail {
+    --depth: 8px;
+    margin-top: clamp(20px, 2.6vw, 32px);
+    margin-right: 8px;
+    background: var(--sand);
+    border-radius: 18px;
+    padding: clamp(18px, 2.2vw, 26px);
+  }
+
+  .detail.is-pop {
+    animation: pop 0.22s var(--ease);
+  }
+
+  @keyframes pop {
+    from {
+      opacity: 0;
+      transform: translateY(8px) scale(0.985);
+    }
+  }
+
+  /* panel contents are built by the script, so they're styled with :global */
+  .detail :global(.detail__head) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .detail :global(.lab__label) {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .detail :global(.detail__title) {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 800;
+  }
+
+  .detail :global(.detail__close) {
+    appearance: none;
+    border: 0;
+    background: none;
+    font-size: 1.6rem;
+    line-height: 1;
+    color: var(--ink);
+    cursor: pointer;
+    padding: 0 4px;
+  }
+
+  .detail :global(.detail__about) {
+    margin: 0.3rem 0 1.1rem;
+    color: var(--ink-soft);
+    font-size: 0.95rem;
+  }
+
+  .detail :global(.map) {
+    display: block;
+    image-rendering: pixelated;
+    border-radius: 8px;
+    background: var(--ink);
+  }
+
+  .detail :global(.steps) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .detail :global(.step) {
+    margin: 0;
+  }
+
+  .detail :global(.map--in) {
+    width: 120px;
+    height: 120px;
+  }
+
+  .detail :global(figcaption) {
+    margin-top: 6px;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--ink-soft);
+  }
+
+  .detail :global(.layer) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px 28px;
+    align-items: flex-start;
+  }
+
+  .detail :global(.map--l1),
+  .detail :global(.map--l2) {
+    width: 168px;
+    height: 168px;
+  }
+
+  .detail :global(.layer__ctrl) {
+    display: grid;
+    align-content: start;
+    gap: 2px;
+  }
+
+  .detail :global(.layer__ctrl .lab__label) {
+    margin: 0.4rem 0 0.3rem;
+  }
+
+  .detail :global(.chips) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .detail :global(.chip) {
+    appearance: none;
+    font: inherit;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 999px;
+    border: 2px solid var(--paper);
+    background: var(--paper);
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  .detail :global(.chip[aria-pressed='true']) {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--butter);
+  }
+
+  .detail :global(.pager) {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  .detail :global(.pager__btn) {
+    appearance: none;
+    flex: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 2px solid var(--paper);
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .detail :global(.pager__btn:hover),
+  .detail :global(.chip:hover) {
+    border-color: var(--butter);
+  }
+
+  .detail :global(.layer__count) {
+    margin: 0.8rem 0 0;
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+  }
+
+  .detail :global(.raster) {
+    display: grid;
+    grid-template-columns: 1.4em repeat(var(--cols, 5), 30px);
+    gap: 7px 10px;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+  }
+
+  .detail :global(.raster__t) {
+    color: var(--ink-soft);
+    font-size: 0.7rem;
+    text-align: center;
+  }
+
+  .detail :global(.raster__digit) {
+    color: var(--ink-soft);
+    text-align: right;
+  }
+
+  .detail :global(.raster__digit.is-win) {
+    color: var(--ink);
+    font-weight: 800;
+  }
+
+  .detail :global(.raster__cell) {
+    width: 20px;
+    height: 20px;
+    justify-self: center;
+    border-radius: 50%;
+    border: 2px solid var(--sand-deep);
+    background: var(--paper);
+  }
+
+  /* a firing neuron lights up (timestep by timestep, left to right) */
+  .detail :global(.raster__cell.is-spike) {
+    background: var(--butter);
+    border-color: var(--ink);
+    box-shadow: 0 0 0 4px rgb(253 219 136 / 0.5);
+    animation: fire 0.45s var(--ease) calc(var(--i, 0) * 0.18s) both;
+  }
+
+  @keyframes fire {
+    from {
+      transform: scale(0.3);
+      box-shadow: 0 0 0 0 rgb(253 219 136 / 0);
+    }
+    60% {
+      transform: scale(1.25);
+      box-shadow: 0 0 0 8px rgb(253 219 136 / 0.6);
+    }
+  }
+
+  .detail :global(.raster__legend) {
+    margin: 0.9rem 0 0;
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+  }
+
+  @media (max-width: 900px) {
+    .flow {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 20px;
+    }
+    .flow__in {
+      max-width: 320px;
+    }
+    .b-ext {
+      display: none;
+    }
+  }
+
+  /* phone: bigger part labels on the small brain */
+  @media (max-width: 600px) {
+    .node {
+      width: 23%;
+      height: 18%;
+      border-radius: 8px;
+    }
+    .node__name {
+      font-size: 0.72rem;
+    }
+    .node__role {
+      font-size: 0.6rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .detail.is-pop {
+      animation: none;
+    }
+  }
+</style>

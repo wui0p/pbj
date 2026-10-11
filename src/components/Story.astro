@@ -1,0 +1,197 @@
+---
+import { Image } from 'astro:assets';
+import bookworm from '../assets/story/bookworm.jpg';
+import { categoryUrl } from '../utils';
+import TopRecs from './TopRecs.astro';
+---
+
+<section class="story" id="story" aria-labelledby="story-heading">
+  <div class="wrap story__grid">
+    <div class="story__art">
+      <h2 class="heading story__title" id="story-heading"><span>Story</span> = art</h2>
+      <div class="story__paint">
+        <Image
+          src={bookworm}
+          alt="Carl Spitzweg's The Bookworm: an old man on a library ladder, reading among tall shelves"
+          widths={[400, 700, 1000]}
+          sizes="(max-width: 900px) 60vw, 300px"
+          class="story__img"
+          loading="lazy"
+        />
+        <!-- white copy: only the part on the painting shows -->
+        <p class="heading story__title story__title--knock" aria-hidden="true"><span>Story</span> = art</p>
+      </div>
+      <p
+        class="art-caption"
+        data-note="This painting depicts a librarian who only knows reading. Head all in the book, hands full of books, back toward the light, and even though he climbed high, he only climbed as high as the bookshelves go. Independent thinking and seeing the world are as important as reading knowledge."
+      >
+        * Carl Spitzweg, <em>The Bookworm</em>, c. 1851</p>
+    </div>
+
+    <div class="story__text">
+      <div class="serif-text" data-reveal>
+        <p>
+          Many people treat non-fiction as the only serious way to learn and look down on fiction. I see it differently.
+          A self-help book tells you what to believe. <span class="hl"
+            >A good story makes you live through it, and what you learn that way runs deeper than any advice on a
+            page.</span
+          >
+        </p>
+        <p>
+          That’s why I love stories in every form, from novels like <em>The Song of Achilles</em> to musicals
+          like <em>Epic: The Musical</em> to anime like <em>Frieren</em>. <span class="hl" style="--hl-delay: 0.5s"
+            >It’s also why I’m writing a fantasy novel.</span
+          > I don’t expect it to make me famous. I just want to see one of the worlds I imagine finished and published
+          someday, somewhere.
+        </p>
+        <p class="story__quote">
+          <span class="hl" style="--hl-delay: 1.2s"
+            >“I probably just want someone to remember who I am.<br />Even if only a little.”</span
+          > — Himmel, <em>Frieren: Beyond Journey’s End</em>
+        </p>
+      </div>
+
+      <div class="story__recs">
+        <TopRecs />
+      </div>
+      <a class="story__more" href={`${categoryUrl('thoughts')}#recommendations`}>More recommendations <span aria-hidden="true">→</span></a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .story {
+    background: var(--paper);
+    padding: var(--sec-top) 0 var(--sec-bot);
+  }
+
+  .story__grid {
+    --ts: clamp(2.6rem, 5.2vw, 4.8rem); /* title size */
+    display: grid;
+    grid-template-columns: minmax(0, 0.34fr) minmax(0, 1fr);
+    gap: clamp(28px, 4vw, 60px);
+    align-items: start;
+  }
+
+  /* ----- the painting, with the title starting on it ----- */
+  .story__art {
+    position: relative;
+    z-index: 1; /* the title runs over into the text column */
+  }
+
+  .story__title {
+    font-size: var(--ts);
+    line-height: 1;
+    margin: 0;
+    white-space: nowrap;
+    padding-left: 12%;
+  }
+
+  .story__art > .story__title {
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: var(--ink);
+  }
+
+  /* a torn top edge, like AI & BRAIN */
+  .story__paint {
+    position: relative;
+    z-index: 1;
+    margin-top: calc(var(--ts) * 0.36);
+    overflow: hidden;
+    /* torn edge: higher on the left, sloping down to the right, with soft uneven bumps */
+    clip-path: polygon(
+      0% 1%,
+      4% 1.9%,
+      8% 1.5%,
+      12% 2.6%,
+      16% 3.3%,
+      20% 3%,
+      24% 3.9%,
+      28% 4.8%,
+      32% 4.4%,
+      36% 5.2%,
+      40% 6.1%,
+      44% 5.7%,
+      48% 6.4%,
+      52% 7.4%,
+      56% 7%,
+      60% 7.6%,
+      64% 8.6%,
+      68% 8.3%,
+      72% 9%,
+      76% 9.9%,
+      80% 9.5%,
+      84% 10.2%,
+      88% 11.1%,
+      92% 10.7%,
+      96% 11.6%,
+      100% 12.2%,
+      100% 100%,
+      0% 100%
+    );
+  }
+
+  .story__img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .story__title--knock {
+    position: absolute;
+    left: 0;
+    top: calc(var(--ts) * -0.36);
+    color: var(--paper);
+    pointer-events: none;
+  }
+
+  /* ----- the words ----- */
+  .story__text {
+    padding-top: calc(var(--ts) * 1.25); /* start below the title */
+  }
+
+  .story__text .serif-text p {
+    margin: 0 0 1em;
+  }
+
+  .story__quote {
+    text-align: left !important;
+  }
+
+  .story__recs {
+    margin-top: clamp(28px, 3vw, 40px);
+  }
+
+  /* same marker sweep as the menu */
+  .story__more {
+    display: inline-block;
+    margin-top: clamp(14px, 1.6vw, 22px);
+    font-weight: 600;
+    font-size: 0.98rem;
+    text-decoration: none;
+    background-image: linear-gradient(var(--butter), var(--butter));
+    background-repeat: no-repeat;
+    background-position: 0 88%;
+    background-size: 0% 0.42em;
+    transition: background-size 0.45s var(--ease);
+  }
+
+  .story__more:hover,
+  .story__more:focus-visible {
+    background-size: 100% 0.42em;
+  }
+
+  @media (max-width: 900px) {
+    .story__grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .story__art {
+      max-width: 300px;
+    }
+    .story__text {
+      padding-top: 0;
+    }
+  }
+</style>

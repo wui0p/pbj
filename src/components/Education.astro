@@ -1,0 +1,545 @@
+---
+import { Image } from 'astro:assets';
+import athens from '../assets/education/school-of-athens.jpg';
+import taNote from '../assets/education/ta-note.jpg';
+import physicsWorld from '../assets/education/physics-world.jpg';
+import manual from '../assets/education/solution-manual.jpg';
+
+// The three teaching jobs, in my words (grammar fixed only).
+const work = [
+  {
+    role: 'TA',
+    where: 'Electronics (II)',
+    when: 'Jan – Jun 2026',
+    img: taNote,
+    alt: 'My handwritten notes for the Electronics (II) midterm session, with circuit sketches',
+    text: 'Typically, undergraduate students in my major are not allowed to serve as teaching assistants. However, based on my performance and dedication to securing this role, I was accepted as the TA for the Electronics (II) course. In this role, I authored original problem sets and solution manuals. I worked closely with the professor and the other teaching assistants to fix an issue in a solution. Before the midterm, I held a TA session to help the undergraduates (mainly sophomores) understand confusing concepts.',
+    note: '*This picture is a note I made for myself before the midterm session, so I could give more detailed explanations when answering their questions.',
+    stats: [
+      ['21', 'original problems & solutions written'],
+      ['30+', 'students attended the TA session'],
+    ],
+  },
+  {
+    role: 'Educator',
+    where: 'Physics World (Inc. and Delta Electronics)',
+    when: 'Feb 2026',
+    img: physicsWorld,
+    alt: 'High-school volunteers in blue vests at the Physics World exhibition, holding a red star sign for Group A; faces blurred',
+    text: 'I guided and trained students from Taichung Municipal Taichung First Senior High School, preparing them to serve effectively as educational volunteers for the “Physics World” exhibition project, a collaborative initiative supported by the Delta Electronics Foundation. My main objective was to coordinate exhibition timelines and mentor the volunteer teams as the floor supervisor.',
+    note: '*A picture from my phone showing the high schoolers at the exhibition. This photo shows Group A (students blurred).',
+    stats: [['20+', 'high schoolers supervised']],
+  },
+  {
+    role: 'Physics TA & Tutor',
+    where: 'Private Institute',
+    when: 'Jul – Aug 2024',
+    img: manual,
+    alt: 'Handwritten physics solutions on a desk next to a laptop showing the typed solution manual',
+    text: 'I solved 950+ problems using LaTeX formatting and collected them into one solution manual for the physics midterm and final exams from 2020 to 2023 for high schoolers. I also guided students through experiments and critiqued their research writing.',
+    note: '*My handwritten work is on the left, and the typed solution manuals are on the laptop.',
+    stats: [
+      ['990+', 'solutions written'],
+      ['30+', 'students guided through experiments'],
+    ],
+  },
+];
+---
+
+<section class="edu" id="education" aria-labelledby="edu-heading">
+  <div class="wrap edu__grid">
+    <div class="edu__text serif-text" data-reveal>
+      <p class="edu__quote">
+        <span class="hl">“Anyone can cook.”</span> — Gusteau, <em>Ratatouille</em>
+      </p>
+      <p>
+        In elementary school, I was among the bottom students. But the teacher noticed my improvement and told me,
+        giving me encouragement. <span class="hl" style="--hl-delay: 0.6s"
+          >From what I've experienced, every small validation can accumulate into greatness.</span
+        >
+      </p>
+      <p>Now I try to be that teacher. Here is where I’ve been doing that:</p>
+      <ul class="edu__list">
+        <li>TA, Electronics (II)</li>
+        <li>Educator, “Physics World” exhibition</li>
+        <li>Physics TA &amp; tutor, private institute</li>
+      </ul>
+
+      <ul class="edu__stats">
+        <li class="depth">90+ students taught</li>
+        <li class="depth">1020+ solutions written</li>
+        <li class="depth">21 original problems written</li>
+      </ul>
+
+      <button
+        type="button"
+        class="btn-3d btn-3d--butter depth edu__open"
+        aria-expanded="false"
+        aria-controls="edu-work"
+        data-work-toggle>See detailed teaching work</button
+      >
+    </div>
+
+    <!-- EDUCATION travels down this column as you scroll, leaving outlined "shells" behind -->
+    <div class="edu__art" data-edu-art>
+      <p class="art-caption edu__caption" data-note="The next Renaissance is near us.">* Raphael, <em>The School of Athens</em>, 1509–1511</p>
+      <div class="edu__paint" data-paint>
+        <Image
+          src={athens}
+          alt="Raphael's The School of Athens: philosophers gathered on the steps of a great hall"
+          widths={[700, 1100, 1600, 2000]}
+          sizes="(max-width: 900px) 100vw, 46vw"
+          class="edu__img"
+          loading="lazy"
+        />
+        <!-- white copy of the word, only visible where it sits on the painting -->
+        <span class="heading edu__word edu__word--knock" aria-hidden="true">Education</span>
+      </div>
+      <div class="edu__shells" data-shells aria-hidden="true"></div>
+      <h2 class="heading edu__word edu__word--main" id="edu-heading" data-word>Education</h2>
+    </div>
+  </div>
+
+  <!-- the teaching work: opens under the section and pushes the page down -->
+  <div class="edu__work depth" id="edu-work" data-work hidden>
+    <button type="button" class="edu__close" data-work-close aria-label="Close the teaching work">×</button>
+    {
+      work.map((w) => (
+        <article class="job">
+          <figure class="job__fig">
+            <Image src={w.img} alt={w.alt} widths={[480, 760, 1100]} sizes="(max-width: 900px) 100vw, 40vw" class="job__img" />
+            <figcaption class="job__note">{w.note}</figcaption>
+          </figure>
+          <div class="job__body">
+            <h3 class="job__title">
+              {w.role} <span class="job__dot">·</span> <span class="job__where">{w.where}</span>
+            </h3>
+            <p class="job__when">{w.when}</p>
+            <p class="job__text">{w.text}</p>
+            <dl class="job__stats">
+              {w.stats.map(([n, label]) => (
+                <div class="job__stat">
+                  <dt class="job__num">{n}</dt>
+                  <dd class="job__label">{label}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        </article>
+      ))
+    }
+  </div>
+</section>
+
+<script>
+  // ---------- EDUCATION follows the scroll down its column, leaving shells ----------
+  const art = document.querySelector<HTMLElement>('[data-edu-art]');
+  const word = art?.querySelector<HTMLElement>('[data-word]');
+  const paint = art?.querySelector<HTMLElement>('[data-paint]');
+  const shellsEl = art?.querySelector<HTMLElement>('[data-shells]');
+
+  if (art && word && paint && shellsEl) {
+    let y0 = 0;
+    let y1 = 0;
+    let shells: { el: HTMLElement; y: number }[] = [];
+    const moving = matchMedia('(min-width: 901px) and (prefers-reduced-motion: no-preference)');
+
+    const shell = (cls: string, y: number, o: number, parent: HTMLElement) => {
+      const s = document.createElement('span');
+      s.className = `edu__shell heading ${cls}`;
+      s.textContent = 'Education';
+      s.setAttribute('aria-hidden', 'true');
+      s.style.top = `${y}px`;
+      s.style.setProperty('--o', String(o));
+      parent.append(s);
+      return s;
+    };
+
+    const layout = () => {
+      const wordH = word.offsetHeight;
+      const paintBottom = paint.offsetTop + paint.offsetHeight;
+      art.style.setProperty('--pt', `${paint.offsetTop}px`);
+      y0 = paintBottom - wordH * 0.55; // starts half on the painting
+      y1 = Math.max(y0, art.offsetHeight - wordH); // ends level with the bottom of the text column
+      shellsEl.replaceChildren();
+      paint.querySelectorAll('.edu__shell').forEach((s) => s.remove());
+      shells = [];
+      if (moving.matches && y1 - y0 > wordH) {
+        const fs = parseFloat(getComputedStyle(word).fontSize);
+        // dense, even rhythm from the painting down to where the word stops
+        const n = Math.max(1, Math.round((y1 - y0) / (fs * 0.4)));
+        const step = (y1 - y0) / n;
+        for (let k = 0; k < n; k++) {
+          const y = y0 + k * step;
+          // older shells are lighter; the first one (under the painting) a bit stronger
+          const s = shell('', y, k === 0 ? 0.65 : 0.3 + 0.5 * (k / n), shellsEl);
+          shells.push({ el: s, y });
+        }
+        // where the word started, it stays printed white on the painting
+        const w = shell('edu__shell--paint', y0 - paint.offsetTop, 1, paint);
+        shells.push({ el: w, y: y0 });
+      }
+      update();
+    };
+
+    const update = () => {
+      let wy = y0;
+      if (moving.matches) {
+        const r = art.getBoundingClientRect();
+        const target = innerHeight * 0.55 - r.top - word.offsetHeight / 2; // keep it near mid-screen
+        wy = Math.min(y1, Math.max(y0, target));
+      }
+      art.style.setProperty('--wy', `${wy}px`);
+      for (const s of shells) s.el.classList.toggle('is-left', wy >= s.y + 4);
+    };
+
+    let raf = 0;
+    addEventListener('scroll', () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(update);
+    }, { passive: true });
+    addEventListener('resize', layout);
+    moving.addEventListener('change', layout);
+    document.fonts?.ready.then(layout);
+    new ResizeObserver(layout).observe(art);
+    layout();
+  }
+
+  // ---------- See the teaching work ----------
+  const panel = document.querySelector<HTMLElement>('[data-work]');
+  const toggle = document.querySelector<HTMLButtonElement>('[data-work-toggle]');
+  const close = document.querySelector<HTMLButtonElement>('[data-work-close]');
+  if (panel && toggle && close) {
+    const set = (open: boolean) => {
+      panel.hidden = !open;
+      toggle.setAttribute('aria-expanded', String(open));
+      if (open) {
+        panel.classList.remove('is-pop');
+        void panel.offsetWidth;
+        panel.classList.add('is-pop');
+        panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      } else {
+        toggle.focus();
+      }
+    };
+    toggle.addEventListener('click', () => set(Boolean(panel.hidden))); // open if it's closed
+    close.addEventListener('click', () => set(false));
+  }
+</script>
+
+<style>
+  .edu {
+    background: var(--paper);
+    padding: var(--sec-top) 0 var(--sec-bot);
+  }
+
+  .edu__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: clamp(32px, 4.5vw, 72px);
+  }
+
+  /* ----- the text column ----- */
+  .edu__text p,
+  .edu__text li {
+    margin: 0 0 1em;
+  }
+
+  .edu__quote {
+    font-size: clamp(1.2rem, 1.6vw, 1.45rem) !important;
+  }
+
+  .edu__list {
+    margin: -0.4em 0 1.6em;
+    padding-left: 1.3em;
+  }
+
+  .edu__list li {
+    margin: 0.15em 0 !important;
+    text-align: left;
+  }
+
+  /* all three bars identical: one font size that always fits the longest line on one row */
+  .edu__stats {
+    list-style: none;
+    margin: 0 0 1.8rem;
+    padding: 0 10px 10px 0;
+    display: grid;
+    gap: 22px;
+    container-type: inline-size;
+  }
+
+  .edu__stats li {
+    --depth: 8px;
+    margin: 0 !important;
+    font-family: var(--font-sans) !important;
+    font-size: min(2rem, 5.3cqi) !important;
+    font-weight: 800;
+    line-height: 1.15 !important;
+    white-space: nowrap;
+    color: var(--ink);
+    background: var(--sand);
+    border-radius: 18px;
+    padding: 0.55em 0.8em;
+  }
+
+  /* ----- the painting column ----- */
+  .edu__art {
+    position: relative;
+    container-type: inline-size;
+  }
+
+  /* sits just above the torn edge (the cut-away top is ~17% of the painting's height) */
+  .edu__caption {
+    position: relative;
+    z-index: 2;
+    margin: 0 0 calc(0.4rem - 6.4cqi);
+  }
+
+  /* cut along the philosophers' heads (the hall above is cut away), like AI & BRAIN;
+     the clip also keeps the white copy of the word on the painting only */
+  .edu__paint {
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+    clip-path: polygon(
+      0% 18%,
+      3% 14%,
+      6% 16%,
+      9% 21%,
+      13% 15.5%,
+      17% 17%,
+      21% 15.5%,
+      24.5% 19.5%,
+      28% 18%,
+      31% 16.5%,
+      34.5% 19.5%,
+      38% 21.5%,
+      41% 19%,
+      44.5% 16.5%,
+      47.5% 19%,
+      51% 17%,
+      54.5% 20%,
+      58% 19%,
+      61.5% 17.5%,
+      65% 21%,
+      68.5% 23.5%,
+      72% 26%,
+      75.5% 22%,
+      79% 20.5%,
+      82.5% 23%,
+      85.5% 19%,
+      88.5% 19.5%,
+      91% 22%,
+      94% 19%,
+      97% 17.5%,
+      100% 20.5%,
+      100% 100%,
+      0% 100%
+    );
+  }
+
+  .edu__img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .edu__word {
+    margin: 0;
+    font-size: 15.6cqi; /* "EDUCATION" fills the column width */
+    line-height: 0.8;
+    white-space: nowrap;
+    letter-spacing: -0.005em;
+  }
+
+  .edu__word--main {
+    position: absolute;
+    left: 0;
+    top: var(--wy, 0px);
+    color: var(--ink);
+  }
+
+  .edu__word--knock {
+    position: absolute;
+    left: 0;
+    top: calc(var(--wy, 0px) - var(--pt, 0px));
+    color: var(--paper);
+    pointer-events: none;
+  }
+
+  .edu__art :global(.edu__shell) {
+    position: absolute;
+    left: 0;
+    margin: 0;
+    font-size: 15.6cqi;
+    line-height: 0.8;
+    white-space: nowrap;
+    letter-spacing: -0.005em;
+    color: transparent;
+    -webkit-text-stroke: 1.2px var(--ink);
+    opacity: 0;
+    transition: opacity 0.35s var(--ease);
+    pointer-events: none;
+  }
+
+  .edu__art :global(.edu__shell.is-left) {
+    opacity: var(--o, 0.5);
+  }
+
+  /* the copy left on the painting where the word started: white, like the word was */
+  .edu__art :global(.edu__shell--paint) {
+    color: var(--paper);
+    -webkit-text-stroke: 0;
+  }
+
+  /* ----- the teaching work panel ----- */
+  .edu__work {
+    --depth: 10px;
+    position: relative;
+    width: min(100% - 2 * var(--gutter) - 10px, 1400px);
+    margin: clamp(32px, 4vw, 56px) auto 10px;
+    background: var(--sand);
+    border-radius: clamp(28px, 4vw, 60px);
+    padding: clamp(28px, 4vw, 64px);
+    display: grid;
+    gap: clamp(36px, 5vw, 64px);
+  }
+
+  .edu__work[hidden] {
+    display: none;
+  }
+
+  .edu__work.is-pop {
+    animation: open 0.3s var(--ease);
+  }
+
+  @keyframes open {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+  }
+
+  .edu__close {
+    position: absolute;
+    top: clamp(14px, 2vw, 28px);
+    right: clamp(18px, 2.4vw, 36px);
+    appearance: none;
+    border: 0;
+    background: none;
+    font-size: 2rem;
+    line-height: 1;
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  .job {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: clamp(24px, 3.5vw, 52px);
+    align-items: start;
+  }
+
+  .job + .job {
+    border-top: 1px solid var(--ink-faint);
+    padding-top: clamp(36px, 5vw, 64px);
+  }
+
+  .job__fig {
+    margin: 0;
+  }
+
+  .job__img {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 460px;
+    object-fit: cover;
+    border-radius: 14px;
+  }
+
+  .job__note {
+    margin-top: 0.7rem;
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    line-height: 1.45;
+    color: var(--ink-soft);
+  }
+
+  .job__title {
+    margin: 0 0 0.2rem;
+    font-size: clamp(1.25rem, 1.8vw, 1.6rem);
+    font-weight: 800;
+    line-height: 1.25;
+    padding-right: 2.2rem;
+  }
+
+  .job__dot {
+    color: var(--ink-soft);
+    font-weight: 400;
+  }
+
+  .job__where {
+    font-weight: 700;
+  }
+
+  .job__when {
+    margin: 0 0 1rem;
+    color: var(--ink-soft);
+    font-size: 0.95rem;
+  }
+
+  .job__text {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.05rem, 1.3vw, 1.18rem);
+    line-height: 1.6;
+    text-align: justify;
+  }
+
+  /* each job's numbers: big figure, label under it, a thin rule on the left */
+  .job__stats {
+    display: flex;
+    flex-direction: column; /* one stat under another, the same in every job */
+    align-items: flex-start;
+    gap: 22px;
+    margin: clamp(22px, 2.6vw, 34px) 0 0;
+  }
+
+  .job__stat {
+    border-left: 2px solid var(--ink);
+    padding-left: 14px;
+  }
+
+  .job__num {
+    font-weight: 800;
+    font-size: clamp(2rem, 3.2vw, 2.9rem);
+    line-height: 1;
+  }
+
+  .job__label {
+    margin: 0.3rem 0 0;
+    font-size: clamp(1rem, 1.3vw, 1.2rem);
+    line-height: 1.3;
+  }
+
+  @media (max-width: 900px) {
+    .edu__grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .edu__art {
+      order: -1;
+      padding-bottom: 12cqi;
+    }
+    .job {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .edu__work.is-pop {
+      animation: none;
+    }
+  }
+</style>

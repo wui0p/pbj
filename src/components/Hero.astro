@@ -1,0 +1,211 @@
+---
+import { Image } from 'astro:assets';
+import Boards from './Boards.astro';
+import almond from '../assets/hero/almond-blossom.jpg';
+---
+
+<header class="hero">
+  <Boards />
+
+  <div class="frame">
+    <!-- Van Gogh, Almond Blossom (1890, public domain), at the back of the block -->
+    <Image
+      src={almond}
+      alt=""
+      widths={[800, 1300, 1900, 2400]}
+      sizes="min(66vw, 1120px)"
+      class="frame__art"
+      loading="eager"
+      fetchpriority="high"
+    />
+    <h1 class="title">
+      <span class="sr-only">Jeffrey Wu</span>
+      <!-- The SVG is stretched to fill its box (preserveAspectRatio="none"):
+           width stays the frame width, only the height grows. The viewBox is
+           tightened to the real glyph bounds by the script below. -->
+      <svg
+        class="title__svg"
+        viewBox="2 -73 633.2 74"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <text x="0" y="0">JEFFREY WU</text>
+      </svg>
+    </h1>
+    <p class="subtitle heading">Portfolio &amp; Blogs</p>
+    <p
+      class="art-caption hero__caption"
+      data-note="The most beautiful painting, in my opinion. Different from his normal work, it is a symbol of hope and a symbol of care."
+    >
+      * Vincent van Gogh, <em>Almond Blossom</em>, 1890</p>
+  </div>
+
+  <a class="scroll-hint" href="#about">
+    <span class="sr-only">Skip to the next section</span>
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"
+      ><path d="M5 9l7 7 7-7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"
+      ></path></svg
+    >
+  </a>
+</header>
+
+<script>
+  // Fit the title's viewBox to the actual ink bounds of "JEFFREY WU" (same font as
+  // ELECTRICAL BLOG), so the stretched letters touch the edges of their box exactly.
+  async function fitTitle() {
+    const svg = document.querySelector<SVGSVGElement>('.title__svg');
+    const text = svg?.querySelector('text');
+    if (!svg || !text) return;
+    const style = getComputedStyle(text);
+    const font = `${style.fontWeight} 100px ${style.fontFamily}`;
+    try {
+      await document.fonts.load(font, 'JEFFREY WU');
+    } catch {
+      /* keep the default viewBox */
+    }
+    const ctx = document.createElement('canvas').getContext('2d');
+    if (!ctx) return;
+    ctx.font = font;
+    const m = ctx.measureText('JEFFREY WU');
+    const left = m.actualBoundingBoxLeft;
+    const width = left + m.actualBoundingBoxRight;
+    const top = m.actualBoundingBoxAscent;
+    const height = top + m.actualBoundingBoxDescent;
+    if (width > 0 && height > 0) {
+      svg.setAttribute('viewBox', `${-left} ${-top} ${width} ${height}`);
+    }
+  }
+  fitTitle();
+</script>
+
+<style>
+  .hero {
+    /* frame width; everything inside scales from it */
+    --fw: min(66vw, 1120px);
+    position: relative;
+    min-height: 100vh;
+    min-height: 100svh;
+    display: grid;
+    place-items: center;
+    padding: 9vh var(--gutter);
+    /* transparent: the sky comes from the page background behind the boards */
+    background: transparent;
+  }
+
+  .frame {
+    position: relative;
+    width: var(--fw);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: calc(var(--fw) * 0.018);
+    padding: calc(var(--fw) * 0.04) calc(var(--fw) * 0.045) calc(var(--fw) * 0.032);
+  }
+
+  /* the painting fills the block; under the boards and the text */
+  .frame__art {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 40%;
+  }
+
+  /* the thin butter rectangle, drawn on top of the painting's edge; under the boards */
+  .frame::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border: max(3px, calc(var(--fw) * 0.0055)) solid var(--butter);
+    pointer-events: none;
+  }
+
+  .title,
+  .subtitle {
+    position: relative;
+    z-index: 2; /* above the boards */
+    margin: 0;
+  }
+
+  /* painting credit, just under the frame */
+  .hero__caption {
+    position: absolute;
+    z-index: 2;
+    left: 0;
+    top: 100%;
+    margin-top: 0.7rem;
+    color: rgb(64 64 64 / 0.62);
+  }
+
+  .title {
+    font-weight: 400;
+    line-height: 0;
+  }
+
+  .title__svg {
+    display: block;
+    width: 100%;
+    /* stretch vertically until it nearly meets ELECTRICAL BLOG,
+       capped relative to the width so it never gets absurd */
+    height: min(36vh, calc(var(--fw) * 0.36));
+    min-height: calc(var(--fw) * 0.12);
+    overflow: visible;
+  }
+
+  /* same face as ELECTRICAL BLOG (the .heading style) */
+  .title__svg text {
+    font-family: var(--font-sans);
+    font-size: 100px;
+    font-weight: 800;
+    fill: var(--butter);
+    text-rendering: geometricPrecision;
+  }
+
+  .subtitle {
+    color: var(--butter);
+    text-align: center;
+    font-size: calc(var(--fw) * 0.064);
+    letter-spacing: 0.005em;
+    line-height: 0.9;
+    white-space: nowrap;
+  }
+
+  .scroll-hint {
+    position: absolute;
+    z-index: 2;
+    left: 50%;
+    bottom: max(16px, 3vh);
+    translate: -50% 0;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    color: var(--ink);
+    opacity: 0.55;
+    transition:
+      opacity 0.25s var(--ease),
+      color 0.25s var(--ease);
+  }
+
+  .scroll-hint:hover,
+  .scroll-hint:focus-visible {
+    opacity: 1;
+  }
+
+  @media (max-width: 700px) {
+    .hero {
+      --fw: calc(100vw - 2 * var(--gutter));
+    }
+    .title__svg {
+      height: min(30vh, calc(var(--fw) * 0.42));
+    }
+    .subtitle {
+      font-size: calc(var(--fw) * 0.072);
+    }
+  }
+</style>

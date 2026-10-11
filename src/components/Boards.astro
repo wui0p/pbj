@@ -1,0 +1,74 @@
+---
+import { url } from '../utils';
+
+// Hard-coded "random" scatter: same on every load, mostly around the edges.
+// x/y = top-left position (vw / vh), w = width (vw), rx/ry/rz = 3D tilt in degrees.
+// m* = overrides for narrow screens; hideSmall removes the board on phones.
+const boards = [
+  { x: 12.5, y: 4, w: 12, rx: 18, ry: -24, rz: -13, mx: 3, my: 5, mw: 34 },
+  { x: 47.5, y: -8, w: 19, rx: -30, ry: 14, rz: 8, mx: 56, my: -2, mw: 44 },
+  { x: 81, y: 17, w: 11, rx: 38, ry: 26, rz: 21, hideSmall: true },
+  { x: 2, y: 48, w: 16.5, rx: -16, ry: -36, rz: -9, mx: -8, my: 68, mw: 38 },
+  { x: 68, y: 69, w: 25, rx: 24, ry: 9, rz: -17, mx: 48, my: 76, mw: 56 },
+  { x: 91.5, y: 0.5, w: 7.5, rx: 52, ry: -42, rz: 62, mx: 80, my: 21, mw: 20 },
+  { x: 23, y: 85, w: 9.5, rx: -42, ry: 31, rz: 141, hideSmall: true },
+];
+---
+
+<div class="boards" aria-hidden="true">
+  {
+    boards.map((b, i) => (
+      <img
+        class:list={['board', { 'board--hide-small': b.hideSmall }]}
+        src={url('/boards/pynq-z2-643.webp')}
+        srcset={`${url('/boards/pynq-z2-360.webp')} 360w, ${url('/boards/pynq-z2-643.webp')} 643w`}
+        sizes={`(max-width: 700px) ${b.mw ?? 30}vw, ${b.w}vw`}
+        width="643"
+        height="473"
+        alt=""
+        decoding="async"
+        fetchpriority={i < 2 ? 'high' : 'auto'}
+        style={`--x:${b.x}vw; --y:${b.y}vh; --w:${b.w}vw; --rx:${b.rx}deg; --ry:${b.ry}deg; --rz:${b.rz}deg;` +
+          (b.mw !== undefined ? ` --mx:${b.mx}vw; --my:${b.my}svh; --mw:${b.mw}vw;` : '')}
+      />
+    ))
+  }
+</div>
+
+<style>
+  /* Pinned to the viewport. Sits above the sky page background but below the hero
+     text; every section after the hero has a solid background and a higher z-index,
+     so it slides over the boards while scrolling. */
+  .boards {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .board {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: var(--w);
+    max-width: none;
+    height: auto;
+    transform: perspective(1100px) rotateX(var(--rx)) rotateY(var(--ry)) rotateZ(var(--rz));
+    transform-origin: 50% 50%;
+    filter: drop-shadow(0 1.4vw 1.6vw rgb(64 64 64 / 0.22));
+    user-select: none;
+  }
+
+  @media (max-width: 700px) {
+    .board {
+      left: var(--mx, var(--x));
+      top: var(--my, var(--y));
+      width: var(--mw, var(--w));
+      filter: drop-shadow(0 10px 12px rgb(64 64 64 / 0.2));
+    }
+    .board--hide-small {
+      display: none;
+    }
+  }
+</style>

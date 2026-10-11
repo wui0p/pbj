@@ -1,0 +1,169 @@
+---
+import { LINKS } from '../consts';
+
+// The email is never written as plain text in the HTML. It's stored reversed
+// in two parts and assembled by the script below.
+const user = 'kasmykas2233'.split('').reverse().join('');
+const domain = 'gmail.com'.split('').reverse().join('');
+const year = new Date().getFullYear();
+---
+
+<footer class="info" id="information" aria-labelledby="info-heading">
+  <div class="wrap">
+    <h2 class="heading info__heading" id="info-heading">Information</h2>
+
+    <div class="info__body">
+      <div class="info__who">
+        <p class="info__name">Jeffrey Wu</p>
+        <p class="info__line">NCHU Electrical Engineering · Undergraduate, Senior</p>
+        <p class="info__line">Lab EE612</p>
+      </div>
+
+      <dl class="info__contact">
+        <div>
+          <dt class="eyebrow">Email</dt>
+          <dd>
+            <span class="info__email" data-u={user} data-d={domain}>
+              <noscript>Turn on JavaScript to see the email address.</noscript>
+            </span>
+            <button class="info__copy" type="button" data-copy hidden>Copy</button>
+          </dd>
+        </div>
+        <div>
+          <dt class="eyebrow">GitHub</dt>
+          <dd>
+            <a class="info__link" href={LINKS.github} rel="me">github.com/wui0p</a>
+          </dd>
+        </div>
+        <div>
+          <dt class="eyebrow">LinkedIn</dt>
+          <dd>
+            <a class="info__link" href={LINKS.linkedin} rel="me">linkedin.com/in/jeffrey-wu</a>
+          </dd>
+        </div>
+      </dl>
+    </div>
+
+    <p class="info__fine">© {year} Jeffrey Wu</p>
+  </div>
+</footer>
+
+<script>
+  const holder = document.querySelector<HTMLElement>('.info__email');
+  const copyBtn = document.querySelector<HTMLButtonElement>('[data-copy]');
+  if (holder) {
+    const rev = (s = '') => s.split('').reverse().join('');
+    const address = `${rev(holder.dataset.u)}@${rev(holder.dataset.d)}`;
+    const link = document.createElement('a');
+    link.className = 'info__link';
+    link.href = `mailto:${address}`;
+    link.textContent = address;
+    holder.replaceChildren(link);
+
+    if (copyBtn && navigator.clipboard) {
+      copyBtn.hidden = false;
+      copyBtn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(address);
+          copyBtn.textContent = 'Copied';
+        } catch {
+          copyBtn.textContent = 'Copy failed';
+        }
+        window.setTimeout(() => (copyBtn.textContent = 'Copy'), 1800);
+      });
+    }
+  }
+</script>
+
+<style>
+  .info {
+    background: var(--sky);
+    padding: clamp(72px, 10vw, 140px) 0 clamp(40px, 5vw, 64px);
+  }
+
+  .info__heading {
+    font-size: clamp(2.2rem, 5vw, 4rem);
+    margin-bottom: clamp(36px, 5vw, 64px);
+  }
+
+  .info__body {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    gap: clamp(36px, 6vw, 96px);
+    border-top: 1px solid var(--ink-faint);
+    padding-top: clamp(36px, 5vw, 64px);
+  }
+
+  .info__name {
+    font-family: var(--font-display);
+    font-size: clamp(2.6rem, 5.4vw, 4.4rem);
+    line-height: 1.05;
+    margin: 0 0 1rem;
+  }
+
+  .info__line {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 0.98rem;
+  }
+
+  .info__contact {
+    margin: 0;
+    display: grid;
+    gap: 1.6rem;
+    align-content: start;
+    padding-top: 0.6rem;
+  }
+
+  .info__contact dd {
+    margin: 0.3rem 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.4rem 1rem;
+  }
+
+  .info__email :global(.info__link),
+  .info__link {
+    font-size: 1.1rem;
+    color: var(--ink);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+
+  .info__email :global(.info__link:hover),
+  .info__link:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+  }
+
+  .info__copy {
+    appearance: none;
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+
+  .info__copy:hover {
+    color: var(--ink);
+  }
+
+  .info__fine {
+    margin: clamp(64px, 9vw, 120px) 0 0;
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+  }
+
+  @media (max-width: 760px) {
+    .info__body {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

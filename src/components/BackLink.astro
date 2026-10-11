@@ -1,0 +1,67 @@
+---
+// A small, quiet "← MAIN PAGE" link (2026-10-10). On the category pages it sits just above the first heading,
+// aligned left: less loud than the heading, but easy to find. It goes back to The Menu on the home page.
+interface Props {
+  href: string;
+  label: string;
+  class?: string;
+}
+
+const { href, label, class: className } = Astro.props;
+---
+
+<a class:list={['back-link', className]} href={href}>
+  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 12H5.5M11 6l-6 6 6 6"></path></svg>
+  <span class="back-link__text">{label}</span>
+</a>
+
+<style>
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--ink-soft);
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: color 0.2s var(--ease);
+  }
+
+  .back-link svg {
+    flex: none;
+    width: 15px;
+    height: 15px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform 0.3s var(--ease);
+  }
+
+  /* hover: darker, the arrow nudges left and the butter marker sweeps in (like The Menu) */
+  .back-link__text {
+    background-image: linear-gradient(var(--butter), var(--butter));
+    background-repeat: no-repeat;
+    background-position: 0 88%;
+    background-size: 0% 0.5em;
+    transition: background-size 0.4s var(--ease);
+  }
+
+  .back-link:hover,
+  .back-link:focus-visible {
+    color: var(--ink);
+  }
+
+  .back-link:hover svg,
+  .back-link:focus-visible svg {
+    transform: translateX(-3px);
+  }
+
+  .back-link:hover .back-link__text,
+  .back-link:focus-visible .back-link__text {
+    background-size: 100% 0.5em;
+  }
+</style>

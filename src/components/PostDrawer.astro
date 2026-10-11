@@ -1,0 +1,441 @@
+---
+// The hidden side bar on post pages (mockup v12, pages 23–24): a small ink tab with a white chevron on the left
+// edge opens a sand panel listing the category's posts, grouped like the category page. The post you're on is
+// highlighted, with its big headings under it ("On this page"); the page behind dims. "← RESEARCH" goes back to
+// the category page.
+import type { MarkdownHeading } from 'astro';
+import { CATEGORIES, SECTIONS, type CategorySlug } from '../consts';
+import { bySectionOrder, categoryUrl, langOf, metaText, postUrl, type Post } from '../utils';
+
+interface Props {
+  category: CategorySlug;
+  /** the category's posts that have their own page */
+  posts: Post[];
+  current: Post;
+  headings: MarkdownHeading[];
+}
+
+const { category, posts, current, headings } = Astro.props;
+const { label } = CATEGORIES[category];
+
+// grouped like the category page; anything without a known section goes in one unnamed group at the end
+const known = new Set(SECTIONS[category].map((s) => s.id));
+const groups = [
+  ...SECTIONS[category].map((s) => ({ label: s.label, posts: posts.filter((p) => p.data.section === s.id) })),
+  { label: '', posts: posts.filter((p) => !p.data.section || !known.has(p.data.section)) },
+]
+  .map((g) => ({ ...g, posts: [...g.posts].sort(bySectionOrder) }))
+  .filter((g) => g.posts.length > 0);
+
+// "On this page": the big headings; a post with fewer than two uses the next level down instead
+const h2 = headings.filter((h) => h.depth === 2);
+const toc = h2.length >= 2 ? h2 : headings.filter((h) => h.depth === 3);
+---
+
+<div class="drawer-root" data-drawer-root>
+  <button
+    class="drawer-tab"
+    type="button"
+    aria-controls="post-drawer"
+    aria-expanded="false"
+    aria-label={`Show all ${label} posts`}
+    data-drawer-tab
+  >
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path class="chev chev--1" d="M6.5 5.5 12 12l-5.5 6.5"></path>
+      <path class="chev chev--2" d="M12 5.5 17.5 12 12 18.5"></path>
+    </svg>
+  </button>
+
+  <div class="drawer-scrim" data-drawer-scrim></div>
+
+  <nav class="drawer" id="post-drawer" aria-label={`${label} posts`} data-drawer inert>
+    <a class="drawer__back" href={categoryUrl(category)}>
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 12H5.5M11 6l-6 6 6 6"></path></svg>
+      <span class="drawer__back-text">{label}</span>
+    </a>
+
+    {
+      groups.map((g) => (
+        <section class="drawer__group">
+          {g.label && <p class="drawer__group-label">{g.label}</p>}
+          <ul class="drawer__list">
+            {g.posts.map((p) => {
+              const isCurrent = p.id === current.id;
+              const meta = metaText(p);
+              return (
+                <li>
+                  <a
+                    class:list={['drawer__item', { 'is-current': isCurrent }]}
+                    href={postUrl(p)}
+                    aria-current={isCurrent ? 'page' : undefined}
+                    lang={langOf(p.data.title)}
+                  >
+                    <span class="drawer__title">
+                      <span class="drawer__mark">{p.data.title}</span>
+                    </span>
+                    {meta && <span class="drawer__meta">{meta}</span>}
+                  </a>
+                  {isCurrent && toc.length > 0 && (
+                    <div class="drawer__toc">
+                      <p class="drawer__toc-label">On this page</p>
+                      <ul>
+                        {toc.map((h) => (
+                          <li>
+                            <a href={`#${h.slug}`} data-drawer-jump>
+                              <span class="drawer__mark">{h.text}</span>
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ))
+    }
+  </nav>
+</div>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-drawer-root]');
+  const tab = root?.querySelector<HTMLButtonElement>('[data-drawer-tab]');
+  const drawer = root?.querySelector<HTMLElement>('[data-drawer]');
+  const scrim = root?.querySelector<HTMLElement>('[data-drawer-scrim]');
+
+  if (root && tab && drawer && scrim) {
+    const label = tab.getAttribute('aria-label') ?? '';
+    // everything else on the page goes quiet (and can't be tabbed into) while the bar is open
+    const others = () => [...document.body.children].filter((el) => el !== root && !el.matches('script, .art-notes'));
+
+    const setOpen = (open: boolean) => {
+      root.classList.toggle('is-open', open);
+      document.documentElement.classList.toggle('drawer-open', open);
+      tab.setAttribute('aria-expanded', String(open));
+      tab.setAttribute('aria-label', open ? 'Hide the list' : label);
+      drawer.inert = !open;
+      others().forEach((el) => ((el as HTMLElement).inert = open));
+      if (open) {
+        // keep the page from jumping when its scrollbar goes away
+        const bar = innerWidth - document.documentElement.clientWidth;
+        document.documentElement.style.setProperty('--scrollbar', `${bar}px`);
+        drawer.querySelector<HTMLElement>('.drawer__back')?.focus({ preventScroll: true });
+      }
+    };
+
+    tab.addEventListener('click', () => setOpen(!root.classList.contains('is-open')));
+    scrim.addEventListener('click', () => setOpen(false));
+    addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && root.classList.contains('is-open')) {
+        setOpen(false);
+        tab.focus();
+      }
+    });
+    // "On this page" links: close the bar, then jump
+    drawer.querySelectorAll('[data-drawer-jump]').forEach((a) => a.addEventListener('click', () => setOpen(false)));
+  }
+</script>
+
+<style>
+  .drawer-root {
+    --drawer-w: min(360px, 86vw);
+    --tab-w: 40px;
+  }
+
+  /* ----- the tab: a small ink block on the left edge with a thin white double chevron ----- */
+  .drawer-tab {
+    position: fixed;
+    z-index: 42;
+    left: 0;
+    top: clamp(96px, 18vh, 160px);
+    width: var(--tab-w);
+    height: 76px;
+    padding: 0 0 0 4px;
+    border: 0;
+    border-radius: 0 14px 14px 0;
+    background: var(--ink);
+    color: var(--paper);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition:
+      transform 0.45s var(--ease),
+      width 0.25s var(--ease),
+      border-radius 0.45s var(--ease);
+  }
+
+  .drawer-tab:hover,
+  .drawer-tab:focus-visible {
+    width: calc(var(--tab-w) + 6px);
+  }
+
+  .drawer-tab:focus-visible {
+    outline: 3px solid var(--butter);
+    outline-offset: 2px;
+  }
+
+  .drawer-tab svg {
+    width: 22px;
+    height: 22px;
+    overflow: visible;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform 0.45s var(--ease);
+  }
+
+  .chev {
+    transition: transform 0.3s var(--ease);
+  }
+
+  /* hover: the chevrons spread a little, pointing the way */
+  .drawer-tab:hover .chev--2,
+  .drawer-tab:focus-visible .chev--2 {
+    transform: translateX(2.5px);
+  }
+
+  /* open: the tab rides on the panel's edge and the chevrons turn back */
+  .is-open .drawer-tab {
+    transform: translateX(var(--drawer-w));
+  }
+
+  .is-open .drawer-tab svg {
+    transform: rotate(180deg);
+  }
+
+  /* ----- the panel ----- */
+  .drawer {
+    position: fixed;
+    z-index: 41;
+    inset: 0 auto 0 0;
+    width: var(--drawer-w);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: var(--sand);
+    padding: clamp(80px, 14vh, 120px) clamp(22px, 2.6vw, 34px) 48px;
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition:
+      transform 0.45s var(--ease),
+      visibility 0s linear 0.45s;
+  }
+
+  .is-open .drawer {
+    transform: none;
+    visibility: visible;
+    transition:
+      transform 0.45s var(--ease),
+      visibility 0s;
+  }
+
+  /* the page behind goes grey and dim */
+  .drawer-scrim {
+    position: fixed;
+    z-index: 40;
+    inset: 0;
+    background: rgb(64 64 64 / 0.32);
+    -webkit-backdrop-filter: grayscale(1);
+    backdrop-filter: grayscale(1);
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 0.35s var(--ease),
+      visibility 0s linear 0.35s;
+  }
+
+  .is-open .drawer-scrim {
+    opacity: 1;
+    visibility: visible;
+    transition:
+      opacity 0.35s var(--ease),
+      visibility 0s;
+  }
+
+  :global(html.drawer-open) {
+    overflow: hidden;
+    padding-right: var(--scrollbar, 0px);
+  }
+
+  /* ----- ← RESEARCH ----- */
+  .drawer__back {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 0.7rem;
+    border-bottom: 2px solid var(--ink);
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 800;
+    font-size: 1.3rem;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+  }
+
+  .drawer__back svg {
+    flex: none;
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform 0.3s var(--ease);
+  }
+
+  .drawer__back:hover svg,
+  .drawer__back:focus-visible svg {
+    transform: translateX(-4px);
+  }
+
+  .drawer__back-text,
+  .drawer__mark {
+    background-image: linear-gradient(var(--butter), var(--butter));
+    background-repeat: no-repeat;
+    background-position: 0 88%;
+    background-size: 0% 0.42em;
+    transition: background-size 0.4s var(--ease);
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+
+  .drawer__back:hover .drawer__back-text,
+  .drawer__back:focus-visible .drawer__back-text {
+    background-size: 100% 0.42em;
+  }
+
+  .drawer__back:focus-visible,
+  .drawer__item:focus-visible,
+  .drawer__toc a:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+  }
+
+  /* ----- the posts ----- */
+  .drawer__group {
+    margin-top: 1.5rem;
+  }
+
+  .drawer__group-label,
+  .drawer__toc-label {
+    margin: 0 0 0.4rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .drawer__list,
+  .drawer__toc ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .drawer__item {
+    display: block;
+    margin: 0 -10px;
+    padding: 0.5rem 10px;
+    border-radius: 10px;
+    color: var(--ink-soft);
+    text-decoration: none;
+    line-height: 1.3;
+    transition: color 0.2s var(--ease);
+  }
+
+  .drawer__title {
+    display: block;
+    font-size: 1rem;
+    font-weight: 500;
+  }
+
+  .drawer__meta {
+    display: block;
+    margin-top: 0.15rem;
+    font-size: 0.74rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  /* hover: the butter marker sweeps in, like The Menu */
+  .drawer__item:hover,
+  .drawer__item:focus-visible {
+    color: var(--ink);
+  }
+
+  .drawer__item:hover .drawer__mark,
+  .drawer__item:focus-visible .drawer__mark {
+    background-size: 100% 0.42em;
+  }
+
+  /* the post you're on: a solid butter block, bold */
+  .drawer__item.is-current {
+    background: var(--butter);
+    color: var(--ink);
+  }
+
+  .drawer__item.is-current .drawer__title {
+    font-weight: 700;
+  }
+
+  .drawer__item.is-current .drawer__mark {
+    background-image: none;
+  }
+
+  /* ----- On this page ----- */
+  .drawer__toc {
+    margin: 0.7rem 0 0.4rem 2px;
+    padding-left: 0.9rem;
+    border-left: 2px solid var(--ink-faint);
+  }
+
+  .drawer__toc li + li {
+    margin-top: 0.3rem;
+  }
+
+  .drawer__toc a {
+    color: var(--ink-soft);
+    text-decoration: none;
+    font-size: 0.88rem;
+    line-height: 1.35;
+    transition: color 0.2s var(--ease);
+  }
+
+  .drawer__toc a:hover,
+  .drawer__toc a:focus-visible {
+    color: var(--ink);
+  }
+
+  .drawer__toc a:hover .drawer__mark,
+  .drawer__toc a:focus-visible .drawer__mark {
+    background-size: 100% 0.42em;
+  }
+
+  @media (max-width: 600px) {
+    .drawer-root {
+      --tab-w: 32px;
+    }
+    .drawer-tab {
+      top: 76px;
+      height: 60px;
+      border-radius: 0 12px 12px 0;
+    }
+    .drawer-tab svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  @media print {
+    .drawer-root {
+      display: none;
+    }
+  }
+</style>

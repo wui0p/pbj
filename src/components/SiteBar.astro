@@ -1,0 +1,206 @@
+---
+import Logo from './Logo.astro';
+import { CATEGORIES, CATEGORY_SLUGS, type CategorySlug } from '../consts';
+import { categoryUrl, url } from '../utils';
+
+interface Props {
+  /** home page: fixed bar that only shows from the portfolio section downwards */
+  floating?: boolean;
+  current?: CategorySlug;
+}
+
+const { floating = false, current } = Astro.props;
+---
+
+<header class:list={['sitebar', { 'sitebar--floating': floating }]} data-sitebar={floating ? '' : undefined}>
+  <div class="wrap sitebar__inner">
+    <a class="sitebar__home" href={url('/')} aria-label="Jeffrey Wu — home">
+      <Logo class="sitebar__logo" />
+    </a>
+    <nav aria-label="Categories">
+      <ul class="sitebar__nav">
+        {
+          CATEGORY_SLUGS.map((slug) => (
+            <li>
+              <a href={categoryUrl(slug)} aria-current={slug === current ? 'page' : undefined}>
+                {CATEGORIES[slug].label}
+              </a>
+            </li>
+          ))
+        }
+        <li>
+          <!-- jumps to the Information section at the very end of the page -->
+          <a class="sitebar__info" href="#information" aria-label="Information">
+            <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+              <path
+                fill-rule="evenodd"
+                d="M16 0a16 16 0 1 1 0 32a16 16 0 1 1 0-32Zm0 6.6a2.3 2.3 0 1 0 0 4.6a2.3 2.3 0 1 0 0-4.6Zm-2.2 7.6v10.4a2.2 2.2 0 0 0 4.4 0V14.2a2.2 2.2 0 0 0-4.4 0Z"
+              ></path>
+            </svg>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<script>
+  // Floating bar (home page only): show it once About Me reaches the top of the screen,
+  // and keep it for the rest of the page; hide it again when scrolling back above.
+  const bar = document.querySelector<HTMLElement>('[data-sitebar]');
+  const start = document.getElementById('about');
+  if (bar && start) {
+    let shown: boolean | null = null;
+    const update = () => {
+      // 100px: a little below the 84px jump offset, so "Learn More" lands with the bar showing
+      const show = start.getBoundingClientRect().top <= 100;
+      if (show === shown) return;
+      shown = show;
+      bar.classList.toggle('is-shown', show);
+      bar.inert = !show;
+    };
+    bar.inert = true;
+    addEventListener('scroll', () => requestAnimationFrame(update), { passive: true });
+    addEventListener('resize', update);
+    update();
+  }
+</script>
+
+<style>
+  .sitebar {
+    background: var(--sky);
+    padding: 12px 0;
+  }
+
+  .sitebar--floating {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 20;
+    transform: translateY(-100%);
+    transition: transform 0.35s var(--ease);
+  }
+
+  .sitebar--floating.is-shown {
+    transform: none;
+  }
+
+  .sitebar__inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 28px;
+  }
+
+  .sitebar__home {
+    display: block;
+    line-height: 0;
+  }
+
+  /* the logo lives in its own component, so reach it with :global */
+  .sitebar__home {
+    padding: 4px 0;
+  }
+
+  .sitebar__home :global(.sitebar__logo) {
+    font-size: clamp(34px, 3.4vw, 44px);
+    transition: transform 0.25s var(--ease);
+  }
+
+  .sitebar__home:hover :global(.sitebar__logo),
+  .sitebar__home:focus-visible :global(.sitebar__logo) {
+    transform: translateY(-1px) scale(1.03);
+  }
+
+  .sitebar__nav {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px clamp(14px, 2.2vw, 30px);
+  }
+
+  .sitebar__nav a {
+    font-size: clamp(0.95rem, 1.2vw, 1.1rem);
+    font-weight: 500;
+    text-decoration: none;
+    padding: 4px 0;
+    border-bottom: 2px solid transparent;
+    transition: border-color 0.25s var(--ease);
+  }
+
+  .sitebar__nav a:hover,
+  .sitebar__nav a:focus-visible {
+    border-bottom-color: var(--ink);
+  }
+
+  .sitebar__nav a[aria-current='page'] {
+    border-bottom-color: var(--butter);
+  }
+
+  .sitebar__nav li:has(.sitebar__info) {
+    display: flex;
+    align-items: center;
+  }
+
+  /* the "i": an ink disc with the i cut out (so the bar's blue shows through); all butter on hover */
+  .sitebar__nav .sitebar__info {
+    display: block;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 0;
+    color: var(--ink);
+    transition:
+      color 0.25s var(--ease),
+      transform 0.25s var(--ease);
+  }
+
+  .sitebar__nav .sitebar__info:hover,
+  .sitebar__nav .sitebar__info:focus-visible {
+    color: var(--butter);
+    border: 0;
+    transform: scale(1.06);
+  }
+
+  .sitebar__info svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+  }
+
+  /* phone: compact, logo and links on one tidy block */
+  @media (max-width: 600px) {
+    .sitebar {
+      padding: 8px 0;
+    }
+    .sitebar__inner {
+      gap: 6px 16px;
+    }
+    .sitebar__home :global(.sitebar__logo) {
+      font-size: 28px;
+    }
+    .sitebar__nav {
+      gap: 2px 10px;
+      flex-wrap: nowrap; /* links and the "i" stay on one line */
+      align-items: center;
+    }
+    .sitebar__nav a {
+      font-size: 0.8rem;
+      padding: 2px 0;
+      white-space: nowrap;
+    }
+    .sitebar__nav .sitebar__info {
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sitebar--floating {
+      transition: none;
+    }
+  }
+</style>

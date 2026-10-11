@@ -1,0 +1,163 @@
+---
+import { Image } from 'astro:assets';
+import adam from '../assets/portfolio/creation-of-adam.jpg';
+import { categoryUrl } from '../utils';
+---
+
+<!-- The portfolio starts here: About Me's "Learn More" jumps to this section,
+     and the top bar with the logo appears from here down. -->
+<section class="ai" id="portfolio" aria-labelledby="ai-heading">
+  <div class="wrap ai__grid">
+    <div class="ai__art">
+      <!-- dark where it sits on the page ... -->
+      <h2 class="heading ai__title" id="ai-heading">
+        <span>AI</span><span>&amp;</span><span>Brain</span>
+      </h2>
+      <div class="ai__paint">
+        <!-- Michelangelo, The Creation of Adam (c. 1512, public domain) -->
+        <Image
+          src={adam}
+          alt="Michelangelo's The Creation of Adam: Adam reaching out to touch God's hand"
+          widths={[700, 1100, 1600, 2000]}
+          sizes="(max-width: 900px) 100vw, 55vw"
+          class="ai__img"
+          loading="lazy"
+        />
+        <!-- ... and white where it sits on the painting: an identical copy, clipped to the painting -->
+        <p class="heading ai__title ai__title--knock" aria-hidden="true">
+          <span>AI</span><span>&amp;</span><span>Brain</span>
+        </p>
+      </div>
+      <p
+        class="art-caption"
+        data-note="If you look closely, what is behind God is a drawing of the brain. In this situation, the human symbolizes AI, and God symbolizes a brain, as we try to mimic only a part of nature."
+      >
+        * Michelangelo, <em>The Creation of Adam</em>, c. 1508–1512</p>
+    </div>
+
+    <div class="ai__text serif-text" data-reveal>
+      <p>
+        Do you think AI is smart? It is, but it isn't efficient. <span class="hl"
+          >Training GPT-3 used as much energy as 370 human brains running for 20 years</span
+        >. That's just training, and keeping it running will take more energy, land, water, and other resources.
+      </p>
+      <p>
+        What I want is something that can help our planet, for example, <span class="hl" style="--hl-delay: 0.55s"
+          >reverse-engineering our brain</span
+        > to make AI better, safer, and more environmentally friendly.
+      </p>
+      <p>
+        I've been implementing and studying Spiking Neural Networks (SNNs), which are a <span
+          class="hl"
+          style="--hl-delay: 0.95s">newer version of AI computation that mimics our neurons</span
+        >.
+      </p>
+      <div class="ai__cta">
+        <span>Interested?</span>
+        <!-- the SNN capstone on the Research page: the same place its Pinned Items card goes -->
+        <a class="btn-3d btn-3d--butter depth" href={`${categoryUrl('research')}#snn-capstone`}>Dive deeper</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .ai {
+    background: var(--paper);
+    padding: var(--sec-top) 0 var(--sec-bot);
+  }
+
+  .ai__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    gap: clamp(32px, 5vw, 80px);
+    /* "AI & BRAIN" starts level with the first line of the paragraph */
+    align-items: start;
+  }
+
+  /* --ts: title size; --y: how far the painting starts below the title's top */
+  .ai__art {
+    --ts: clamp(2.4rem, 4.6vw, 4.4rem);
+    --y: calc(var(--ts) * 0.42);
+    position: relative;
+  }
+
+  .ai__title {
+    font-size: var(--ts);
+    line-height: 1;
+    margin: 0;
+    display: flex;
+    gap: 0.75em;
+    padding-left: 8%;
+    white-space: nowrap;
+  }
+
+  .ai__art > .ai__title {
+    position: absolute;
+    inset: 0 0 auto 0;
+    color: var(--ink);
+  }
+
+  /* the painting, with a torn top edge where the plain plaster was cut away */
+  .ai__paint {
+    position: relative;
+    z-index: 1;
+    margin-top: var(--y);
+    clip-path: polygon(
+      0% 30%,
+      7% 28.5%,
+      15% 29.5%,
+      23% 26%,
+      31% 27.5%,
+      39% 24%,
+      46% 25%,
+      52% 18%,
+      56% 10%,
+      61% 5%,
+      66% 1.5%,
+      74% 0%,
+      100% 0%,
+      100% 100%,
+      0% 100%
+    );
+  }
+
+  .ai__img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* the copy that shows on top of the painting, in the page colour */
+  .ai__title--knock {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(-1 * var(--y));
+    color: var(--paper);
+    pointer-events: none;
+  }
+
+  .ai__text p {
+    margin: 0 0 1em;
+  }
+
+  .ai__text p:first-child {
+    margin-top: -0.25em; /* first line's cap height level with the title's */
+  }
+
+  .ai__cta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px 18px;
+    margin-top: 1.6rem;
+    font-size: clamp(1rem, 1.3vw, 1.18rem);
+  }
+
+  @media (max-width: 900px) {
+    .ai__grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

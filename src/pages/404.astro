@@ -1,0 +1,31 @@
+---
+import Page from '../layouts/Page.astro';
+import { url } from '../utils';
+---
+
+<Page title="Not found">
+  <div class="wrap nf">
+    <p class="eyebrow">Error 404</p>
+    <h1 class="heading nf__title">Open circuit</h1>
+    <p class="nf__text">This page isn't connected to anything. <a href={url('/')}>Back to the front page</a>.</p>
+  </div>
+</Page>
+
+<style>
+  .nf {
+    max-width: 720px;
+  }
+  .nf__title {
+    font-size: clamp(2.6rem, 7vw, 5rem);
+    margin: 0.5rem 0 1rem;
+  }
+  .nf__text {
+    color: var(--ink-soft);
+  }
+  .nf__text a {
+    color: var(--ink);
+    text-decoration-color: var(--sky);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+  }
+</style>

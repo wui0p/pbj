@@ -1,0 +1,202 @@
+---
+import { CATEGORIES, CATEGORY_SLUGS } from '../consts';
+import { categoryLabel, categoryUrl, itemHref, langOf, metaText, type Post } from '../utils';
+
+interface Props {
+  posts: Post[];
+}
+
+const { posts } = Astro.props;
+const pinned = posts.filter((p) => p.data.pinned);
+const counts = Object.fromEntries(
+  CATEGORY_SLUGS.map((slug) => [slug, posts.filter((p) => p.data.category === slug).length]),
+);
+---
+
+<section class="menu-pinned" id="menu" aria-label="Menu and pinned items">
+  <div class="wrap grid">
+    <nav class="menu depth" aria-labelledby="menu-heading">
+      <h2 class="heading menu__heading" id="menu-heading">The Menu</h2>
+      <ul class="menu__list">
+        {
+          CATEGORY_SLUGS.map((slug) => (
+            <li>
+              <a class="menu__item" href={categoryUrl(slug)}>
+                <span class="menu__name"><span class="menu__mark">{CATEGORIES[slug].label}</span></span>
+                <span class="menu__info">
+                  {counts[slug]} {counts[slug] === 1 ? 'post' : 'posts'} · {CATEGORIES[slug].blurb}
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="pinned">
+      <h2 class="heading pinned__heading">Pinned Items</h2>
+      {
+        pinned.length === 0 ? (
+          <p class="pinned__empty">Nothing pinned yet. Set <code>pinned: true</code> on a post.</p>
+        ) : (
+          <ul class="pinned__list">
+            {pinned.map((post) => {
+              const { href, external } = itemHref(post);
+              const meta = metaText(post);
+              return (
+                <li>
+                  <a
+                    class="card depth pinned__card"
+                    href={href}
+                    lang={langOf(post.data.title)}
+                    target={external ? '_blank' : undefined}
+                    rel={external ? 'noopener noreferrer' : undefined}
+                  >
+                    <div class="card__meta">
+                      <span class="eyebrow">{categoryLabel(post.data.category)}</span>
+                      {meta && (
+                        <>
+                          <span class="dot" aria-hidden="true">
+                            ·
+                          </span>
+                          <span class="eyebrow">{meta}</span>
+                        </>
+                      )}
+                    </div>
+                    <h3 class="card__title">{post.data.title}</h3>
+                    {post.data.summary && <p class="card__summary">{post.data.summary}</p>}
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        )
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .menu-pinned {
+    background: var(--paper);
+    padding: var(--sec-top) 0 clamp(28px, 3.5vw, 52px);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    gap: clamp(28px, 4vw, 64px);
+    align-items: stretch;
+  }
+
+  /* ----- The Menu ----- */
+  /* a solid block with a darker sand side for depth; top-right and bottom-left corners round */
+  .menu {
+    --depth: 14px;
+    background: var(--sand);
+    border-radius: 0 clamp(48px, 7vw, 110px) 0 clamp(48px, 7vw, 110px);
+    padding: clamp(32px, 4.5vw, 64px) clamp(28px, 4vw, 60px);
+    margin: 0 14px 14px 0; /* room for the side */
+  }
+
+  .pinned__card {
+    --depth: 8px;
+  }
+
+  .menu__heading {
+    font-size: clamp(2.1rem, 4.2vw, 3.4rem);
+    color: var(--ink);
+    margin-bottom: clamp(20px, 2.6vw, 36px);
+  }
+
+  .menu__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: clamp(10px, 1.4vw, 18px);
+  }
+
+  .menu__item {
+    position: relative;
+    display: block;
+    padding-left: 1.6rem;
+    text-decoration: none;
+    color: var(--ink);
+  }
+
+  .menu__name {
+    position: relative;
+    display: block;
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 2.3vw, 1.95rem);
+    line-height: 1.25;
+  }
+
+  /* butter highlighter that sweeps in behind the name on hover / keyboard focus */
+  .menu__mark {
+    background-image: linear-gradient(var(--butter), var(--butter));
+    background-repeat: no-repeat;
+    background-position: 0 85%;
+    background-size: 0% 0.42em;
+    transition: background-size 0.45s var(--ease);
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+
+  /* bullet, sized from the item name so it stays centred on the text */
+  .menu__name::before {
+    content: '';
+    position: absolute;
+    left: calc(-1.6rem + 0.12em);
+    top: 0.5em;
+    width: 0.24em;
+    height: 0.24em;
+    border-radius: 50%;
+    background: var(--ink);
+  }
+
+  .menu__info {
+    display: block;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    color: var(--ink-soft);
+    margin-top: 0.15rem;
+  }
+
+  /* Only the item's name turns butter (deliberate, low contrast by design). */
+  .menu__item:hover .menu__mark,
+  .menu__item:focus-visible .menu__mark {
+    background-size: 100% 0.42em;
+  }
+
+  .menu__item:focus-visible {
+    outline: none;
+  }
+
+  /* ----- Pinned Blogs ----- */
+  .pinned__heading {
+    color: var(--butter);
+    font-size: clamp(2.4rem, 5vw, 4.2rem);
+    margin: clamp(8px, 1.5vw, 24px) 0 clamp(20px, 2.6vw, 36px);
+  }
+
+  .pinned__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: clamp(20px, 2.2vw, 28px);
+    padding-right: 8px; /* room for the cards' sides */
+  }
+
+  .pinned__empty {
+    color: var(--ink-soft);
+  }
+
+  @media (max-width: 860px) {
+    .grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

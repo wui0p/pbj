@@ -1,0 +1,304 @@
+---
+import { Image } from 'astro:assets';
+import { render } from 'astro:content';
+import Page from '../../layouts/Page.astro';
+import PostDrawer from '../../components/PostDrawer.astro';
+import { categoryLabel, categoryUrl, formatDate, getPosts, hasPage, isoDate, langOf, postUrl, type Post } from '../../utils';
+
+export async function getStaticPaths() {
+  // outside links and button blocks have no page of their own
+  const posts = (await getPosts()).filter(hasPage);
+  return posts.map((post) => {
+    // neighbours inside the same category (list is newest first)
+    const siblings = posts.filter((p) => p.data.category === post.data.category);
+    const i = siblings.findIndex((p) => p.id === post.id);
+    return {
+      params: { id: post.id },
+      props: { post, siblings, newer: siblings[i - 1], older: siblings[i + 1] },
+    };
+  });
+}
+
+interface Props {
+  post: Post;
+  /** every post with a page in the same category (for the side bar) */
+  siblings: Post[];
+  newer?: Post;
+  older?: Post;
+}
+
+const { post, siblings, newer, older } = Astro.props;
+const { Content, headings } = await render(post);
+const { title, date, category, summary, label, cover } = post.data;
+const lang = langOf(title);
+---
+
+<Page title={title} description={summary} current={category}>
+  <PostDrawer slot="aside" category={category} posts={siblings} current={post} headings={headings} />
+  <article class="post" lang={lang}>
+    <header class="post__head">
+      <p class="eyebrow">
+        <a href={categoryUrl(category)}>{categoryLabel(category)}</a>
+        {date && (
+          <>
+            {' · '}
+            <time datetime={isoDate(date)}>{formatDate(date)}</time>
+          </>
+        )}
+        {!date && label && <>{` · ${label}`}</>}
+      </p>
+      <h1 class="post__title">{title}</h1>
+      {summary && <p class="post__summary">{summary}</p>}
+    </header>
+
+    {
+      cover && (
+        <figure class="post__cover">
+          <Image src={cover} alt={`Cover image for “${title}”`} widths={[640, 960, 1400]} sizes="(max-width: 1000px) 100vw, 960px" />
+        </figure>
+      )
+    }
+
+    <div class="prose">
+      <Content />
+    </div>
+
+    <nav class="post__nav" aria-label={`More in ${categoryLabel(category)}`}>
+      {
+        older ? (
+          <a class="post__nav-link" href={postUrl(older)} lang={langOf(older.data.title)}>
+            <span class="eyebrow">← Older</span>
+            <span>{older.data.title}</span>
+          </a>
+        ) : (
+          <span />
+        )
+      }
+      {
+        newer && (
+          <a class="post__nav-link post__nav-link--next" href={postUrl(newer)} lang={langOf(newer.data.title)}>
+            <span class="eyebrow">Newer →</span>
+            <span>{newer.data.title}</span>
+          </a>
+        )
+      }
+    </nav>
+    <p class="post__back">
+      <a href={categoryUrl(category)}>All {categoryLabel(category)} posts</a>
+    </p>
+  </article>
+</Page>
+
+<style>
+  .post {
+    width: min(100% - 2 * var(--gutter), 720px);
+    margin-inline: auto;
+  }
+
+  .post__head .eyebrow a {
+    text-decoration: none;
+    border-bottom: 2px solid var(--sky);
+  }
+
+  .post__head .eyebrow a:hover {
+    border-bottom-color: var(--ink);
+  }
+
+  .post__title {
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 800;
+    line-height: 1.12;
+    letter-spacing: -0.015em;
+    margin: 0.6rem 0 1rem;
+    text-wrap: balance;
+  }
+
+  .post__summary {
+    font-size: 1.15rem;
+    color: var(--ink-soft);
+    margin: 0 0 2.2rem;
+    text-align: justify;
+    hyphens: auto;
+  }
+
+  .post__cover {
+    margin: 0 0 2.6rem;
+  }
+
+  .post__cover :global(img) {
+    display: block;
+    width: 100%;
+    max-height: 70vh;
+    object-fit: cover;
+    border-radius: var(--radius-card);
+  }
+
+  /* ----- article body ----- */
+  .prose {
+    font-size: 1.0625rem;
+    line-height: 1.8;
+  }
+
+  .prose :global(> * + *) {
+    margin-top: 1.25em;
+  }
+
+  .prose :global(p),
+  .prose :global(ul),
+  .prose :global(ol) {
+    margin-bottom: 0;
+  }
+
+  /* every line justified, not ragged (v12) */
+  .prose :global(p),
+  .prose :global(li) {
+    text-align: justify;
+    hyphens: auto;
+  }
+
+  .prose :global(h2),
+  .prose :global(h3) {
+    font-weight: 700;
+    line-height: 1.25;
+    margin-top: 2.2em;
+    margin-bottom: 0;
+  }
+
+  /* big sections get a line under them (v12); "On this page" in the side bar jumps here */
+  .prose :global(h2) {
+    font-size: 1.55rem;
+    padding-bottom: 0.4em;
+    border-bottom: 2px solid var(--ink);
+    scroll-margin-top: 24px;
+  }
+
+  .prose :global(h3) {
+    scroll-margin-top: 24px;
+  }
+
+  /* a line in italics right after a picture is its caption: small, grey, centred, close under it */
+  .prose :global(p:has(> img) + p:has(> em:only-child)) {
+    margin-top: 0.6em;
+    text-align: center;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--ink-soft);
+  }
+
+  /* two pictures in one paragraph sit side by side */
+  .prose :global(p:has(> img + img)) {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+
+  .prose :global(p:has(> img + img) > img) {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .prose :global(h3) {
+    font-size: 1.25rem;
+  }
+
+  .prose :global(a) {
+    text-decoration: underline;
+    text-decoration-color: var(--sky);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+  }
+
+  .prose :global(a:hover) {
+    text-decoration-color: var(--ink);
+  }
+
+  .prose :global(blockquote) {
+    margin-inline: 0;
+    padding: 0.2em 0 0.2em 1.2em;
+    border-left: 4px solid var(--sky);
+    color: var(--ink-soft);
+  }
+
+  .prose :global(pre.astro-code) {
+    margin-block: 1.6em;
+  }
+
+  .prose :global(hr) {
+    border: 0;
+    border-top: 1px solid var(--ink-faint);
+    margin-block: 2.5em;
+  }
+
+  .prose :global(img) {
+    border-radius: 14px;
+  }
+
+  .prose :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+    display: block;
+    overflow-x: auto;
+  }
+
+  .prose :global(th),
+  .prose :global(td) {
+    text-align: left;
+    padding: 0.5em 0.8em;
+    border-bottom: 1px solid var(--ink-faint);
+  }
+
+  /* ----- prev / next ----- */
+  .post__nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: clamp(56px, 8vw, 96px);
+    padding-top: 28px;
+    border-top: 1px solid var(--ink-faint);
+  }
+
+  .post__nav-link {
+    display: grid;
+    gap: 4px;
+    text-decoration: none;
+    font-weight: 600;
+    line-height: 1.35;
+    padding: 14px 18px;
+    border: 3px solid var(--sand);
+    background: var(--sand);
+    border-radius: 16px;
+    transition: border-color 0.25s var(--ease);
+  }
+
+  .post__nav-link:hover,
+  .post__nav-link:focus-visible {
+    border-color: var(--butter);
+    outline: none;
+  }
+
+  .post__nav-link--next {
+    text-align: right;
+    grid-column: 2;
+  }
+
+  .post__back {
+    margin-top: 28px;
+    font-size: 0.95rem;
+  }
+
+  .post__back a {
+    text-decoration-color: var(--sky);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+  }
+
+  @media (max-width: 600px) {
+    .post__nav {
+      grid-template-columns: 1fr;
+    }
+    .post__nav-link--next {
+      grid-column: 1;
+    }
+  }
+</style>

@@ -1,0 +1,58 @@
+---
+import '../styles/global.css';
+import ArtNotes from '../components/ArtNotes.astro';
+import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
+import { url } from '../utils';
+
+interface Props {
+  title?: string;
+  description?: string;
+  bodyClass?: string;
+}
+
+const { title, description = SITE_DESCRIPTION, bodyClass } = Astro.props;
+const fullTitle = title ? `${title} · Jeffrey Wu` : SITE_TITLE;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href={url('/favicon.svg')} />
+    <meta name="theme-color" content="#B6D5D8" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&family=Tinos:ital,wght@0,400;0,700;1,400&family=Noto+Sans+TC:wght@400;700&family=Noto+Serif+TC:wght@400;700&display=swap"
+    />
+    <slot name="head" />
+  </head>
+  <body class={bodyClass}>
+    <slot />
+    <ArtNotes />
+    <script is:inline>
+      // Arriving at a #section from another page (e.g. "← MAIN PAGE" → /#menu): make sure we end up there once
+      // the page has settled, then turn on smooth scrolling for jumps within the page.
+      // (unless the visitor has already started moving around themselves)
+      let moved = false;
+      const mark = () => (moved = true);
+      ['wheel', 'touchstart', 'keydown', 'mousedown'].forEach((t) => addEventListener(t, mark, { once: true, passive: true }));
+      addEventListener('load', () => {
+        const id = decodeURIComponent(location.hash.slice(1));
+        const target = id && document.getElementById(id);
+        if (target && !moved) target.scrollIntoView({ behavior: 'instant' });
+        requestAnimationFrame(() => document.documentElement.classList.add('smooth-scroll'));
+      });
+    </script>
+  </body>
+</html>

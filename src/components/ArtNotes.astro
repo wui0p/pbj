@@ -1,0 +1,112 @@
+---
+// Painting descriptions (mockup v11, 2026-10-10): hovering (or focusing / tapping) a painting's caption shows a
+// small outlined box saying why I chose the painting. The text lives on the caption:
+//   <p class="art-caption" data-note="...">* Artist, <em>Title</em>, date</p>
+// The box appears right beside the caption, lined up with the mouse, and follows it along the caption.
+// It may cover the painting or words around it (changed 2026-10-10).
+---
+
+<script>
+  const GAP = 10; // space between the caption and the box
+  const EDGE = 12; // distance from the screen edges
+
+  const captions = document.querySelectorAll<HTMLElement>('.art-caption[data-note]');
+
+  if (captions.length) {
+    const layer = document.createElement('div');
+    layer.className = 'art-notes';
+    document.body.append(layer);
+
+    const notes: HTMLElement[] = [];
+    const hideAll = () => notes.forEach((n) => n.classList.remove('is-shown'));
+
+    captions.forEach((cap, i) => {
+      const note = document.createElement('div');
+      note.className = 'art-note';
+      note.id = `art-note-${i}`;
+      note.setAttribute('role', 'tooltip');
+      note.textContent = cap.dataset.note ?? '';
+      layer.append(note);
+      notes.push(note);
+
+      cap.tabIndex = 0;
+      cap.setAttribute('aria-describedby', note.id);
+
+      /** Just under the caption (above it if there's no room), starting at the mouse (keyboard: the caption's start). */
+      const place = (mouseX?: number) => {
+        const c = cap.getBoundingClientRect();
+        const W = note.offsetWidth;
+        const H = note.offsetHeight;
+        const vw = document.documentElement.clientWidth;
+        const x = Math.min(Math.max(EDGE, (mouseX ?? c.left + 12) - 12), vw - W - EDGE);
+        const below = c.bottom + GAP;
+        const y = below + H <= innerHeight - EDGE ? below : Math.max(EDGE, c.top - GAP - H);
+        note.style.left = `${Math.round(x)}px`;
+        note.style.top = `${Math.round(y)}px`;
+      };
+
+      const show = (mouseX?: number) => {
+        if (!note.classList.contains('is-shown')) {
+          hideAll();
+          note.classList.add('is-shown');
+        }
+        place(mouseX);
+      };
+      const hide = () => note.classList.remove('is-shown');
+
+      cap.addEventListener('pointerenter', (e) => show(e.clientX));
+      cap.addEventListener('pointermove', (e) => show(e.clientX));
+      cap.addEventListener('focus', () => !note.classList.contains('is-shown') && show());
+      cap.addEventListener('pointerleave', () => document.activeElement !== cap && hide());
+      cap.addEventListener('blur', hide);
+      cap.addEventListener('keydown', (e) => e.key === 'Escape' && hide());
+    });
+
+    // the boxes are fixed to the screen, so they go away when the page moves
+    addEventListener('scroll', hideAll, { passive: true });
+    addEventListener('resize', hideAll);
+  }
+</script>
+
+<style is:global>
+  /* as wide as its words, so only the words (not the empty end of the line) show the box */
+  .art-caption[data-note] {
+    width: fit-content;
+    max-width: 100%;
+    transition: color 0.2s var(--ease);
+  }
+
+  .art-caption[data-note]:hover,
+  .art-caption[data-note]:focus-visible {
+    color: var(--ink);
+  }
+
+  /* an outlined box, Times-like and justified like the story paragraphs */
+  .art-note {
+    position: fixed;
+    z-index: 60;
+    left: 0;
+    top: 0;
+    width: max-content;
+    max-width: min(30rem, calc(100vw - 24px));
+    padding: 0.5rem 0.8rem;
+    background: var(--sand);
+    border: 2px solid var(--ink);
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-size: 1.02rem;
+    line-height: 1.4;
+    text-align: justify;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+      opacity 0.2s var(--ease),
+      visibility 0.2s;
+  }
+
+  .art-note.is-shown {
+    opacity: 1;
+    visibility: visible;
+  }
+</style>

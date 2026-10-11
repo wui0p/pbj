@@ -1,0 +1,489 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import Page from '../../layouts/Page.astro';
+import ItemCard from '../../components/ItemCard.astro';
+import BackLink from '../../components/BackLink.astro';
+import SnnDemo from '../../components/SnnDemo.astro';
+import TopRecs from '../../components/TopRecs.astro';
+import { CATEGORIES, CATEGORY_SLUGS, SECTIONS, type CategorySlug } from '../../consts';
+import { bySectionOrder, formatDate, getPosts, isoDate, postUrl, url, type Post } from '../../utils';
+import waterLilies from '../../assets/research/water-lilies.jpg';
+import starryRhone from '../../assets/thoughts/starry-night-rhone.jpg';
+import wanderer from '../../assets/travel/wanderer.jpg';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return CATEGORY_SLUGS.map((slug) => ({
+    params: { category: slug },
+    props: { slug, posts: posts.filter((p) => p.data.category === slug) },
+  }));
+}
+
+interface Props {
+  slug: CategorySlug;
+  posts: Post[];
+}
+
+const { slug, posts } = Astro.props;
+const { label, blurb } = CATEGORIES[slug];
+
+// each category page opens with a painting (mockup v11, pages 13, 18 and 21); `note` is the box shown when
+// hovering the caption
+const PAINTINGS: Record<
+  CategorySlug,
+  {
+    src: ImageMetadata;
+    alt: string;
+    artist: string;
+    title: string;
+    date: string;
+    titleAt: 'center' | 'left';
+    note: string;
+  }
+> = {
+  research: {
+    src: starryRhone,
+    alt: "Vincent van Gogh's Starry Night Over the Rhône: stars over a dark blue river, with the town's gas lamps reflected in the water",
+    artist: 'Vincent van Gogh',
+    title: 'Starry Night Over the Rhône',
+    date: '1888',
+    titleAt: 'left',
+    note: 'This is called Starry Night 2, which is not the one that people think of at first. The stars and lights are the different possibilities and outcomes; all you need to do is calm down and observe.',
+  },
+  thoughts: {
+    src: waterLilies,
+    alt: "Claude Monet's Water Lilies and Japanese Bridge: a green arched footbridge over a pond of water lilies",
+    artist: 'Claude Monet',
+    title: 'Water Lilies and Japanese Bridge',
+    date: '1899',
+    titleAt: 'center',
+    note: 'Monet is one of my favorite artists. His garden is somewhere I want to visit in my lifetime; it’s on my bucket list. Somewhere peaceful for you to ponder and collect your thoughts.',
+  },
+  travel: {
+    src: wanderer,
+    alt: "Caspar David Friedrich's Wanderer above the Sea of Fog: a man seen from behind, standing on a rocky peak above a sea of fog",
+    artist: 'Caspar David Friedrich',
+    title: 'Wanderer above the Sea of Fog',
+    date: 'c. 1818',
+    titleAt: 'left',
+    note: 'The first time I ever saw this man was when I was 7, because this is a painting that shows up in Minecraft. So every time I see this, I can only think of adventure, limitless imagination, and the good old days.',
+  },
+};
+const art = PAINTINGS[slug];
+
+const ordered = (list: Post[]) => [...list].sort(bySectionOrder);
+
+const sections = SECTIONS[slug]
+  .map((s) => ({ ...s, posts: ordered(posts.filter((p) => p.data.section === s.id)) }))
+  .filter((s) => s.posts.length > 0 || s.id === 'recommendations');
+// anything without a (known) section still shows, at the end
+const known = new Set(SECTIONS[slug].map((s) => s.id));
+const loose = ordered(posts.filter((p) => !p.data.section || !known.has(p.data.section)));
+
+// Research: the SNN demo band goes between Academic Studies and the rest, so the sections are split into two
+// columns around it (the band itself runs wall to wall)
+const demoAfter = slug === 'research' ? sections.findIndex((s) => s.id === 'academic') : -1;
+const columns = demoAfter >= 0 ? [sections.slice(0, demoAfter + 1), sections.slice(demoAfter + 1)] : [sections];
+
+// "← MAIN PAGE" goes back to The Menu, where people pick a category
+const mainPage = url('/#menu');
+
+// "With friends. Tokyo." -> one line per sentence on the travel blocks
+const lines = (text = '') => text.split(/(?<=\.)\s+/).filter(Boolean);
+---
+
+<Page title={label} description={blurb} current={slug} flush>
+  {
+    slug === 'travel' ? (
+      <div class="travel">
+        <figure class="travel__art">
+          <Image
+            src={art.src}
+            alt={art.alt}
+            widths={[400, 700, 1000, 1300]}
+            sizes="(max-width: 760px) 100vw, 35vw"
+            class="travel__img"
+            loading="eager"
+          />
+          <figcaption class="art-caption travel__caption" data-note={art.note}>
+            * {art.artist}, <em>{art.title}</em>, {art.date}
+          </figcaption>
+        </figure>
+
+        <div class="travel__main">
+          <BackLink href={mainPage} label="Main page" class="cat__back" />
+          <h1 class="heading travel__title">{label}</h1>
+          {posts.length === 0 ? (
+            <p class="cat__empty">No trips here yet.</p>
+          ) : (
+            <ul class="trips">
+              {posts.map((post) => (
+                <li>
+                  <a class="trip" href={postUrl(post)} id={post.id}>
+                    <div class="trip__head">
+                      <h2 class="trip__place">{post.data.title}</h2>
+                      {post.data.flag === 'japan' && <span class="trip__flag trip__flag--japan" aria-hidden="true" />}
+                    </div>
+                    <p class="trip__note">
+                      {lines(post.data.summary).map((l) => (
+                        <span>{l}</span>
+                      ))}
+                    </p>
+                    {post.data.date && (
+                      <time class="trip__when" datetime={isoDate(post.data.date)}>
+                        <span class="trip__month">{formatDate(post.data.date).split(' ')[0]}</span>
+                        <span class="trip__year">{post.data.date.getUTCFullYear()}</span>
+                      </time>
+                    )}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+    ) : (
+      <>
+        <figure class="banner">
+          <div class="banner__paint">
+            <Image
+              src={art.src}
+              alt={art.alt}
+              widths={[700, 1100, 1600, 2400]}
+              sizes="100vw"
+              class="banner__img"
+              loading="eager"
+            />
+            <h1 class:list={['heading', 'banner__title', `banner__title--${art.titleAt}`]}>{label}</h1>
+          </div>
+          <figcaption
+            class:list={['art-caption', 'banner__caption', `banner__caption--${art.titleAt}`]}
+            data-note={art.note}
+          >
+            * {art.artist}, <em>{art.title}</em>, {art.date}
+          </figcaption>
+        </figure>
+
+        {columns.map((list, ci) => (
+          <Fragment>
+          {/* the SNN demo opens here, between Academic Studies and Side Curiosity ("Try demo"), wall to wall */}
+          {ci === 1 && <SnnDemo />}
+          <div class:list={['wrap', 'cat', { 'cat--more': ci > 0 }]}>
+          {ci === 0 && <BackLink href={mainPage} label="Main page" class="cat__back" />}
+          {list.map((s) => (
+            <section class="cat__sec" id={s.id} aria-labelledby={`${s.id}-heading`}>
+              <h2 class="heading cat__head" id={`${s.id}-heading`}>
+                {s.label}
+              </h2>
+              {s.id === 'recommendations' ? (
+                <ul class="cat__list cat__list--grid">
+                  {s.posts.map((post) => (
+                    <li>
+                      <ItemCard post={post} />
+                    </li>
+                  ))}
+                  <li class="cat__recs">
+                    <TopRecs compact />
+                  </li>
+                </ul>
+              ) : (
+                <ol class="cat__list">
+                  {s.posts.map((post) => (
+                    <li>
+                      <ItemCard post={post} />
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </section>
+          ))}
+
+          {ci === columns.length - 1 && loose.length > 0 && (
+            <section class="cat__sec" aria-label={`More ${label}`}>
+              <ol class="cat__list">
+                {loose.map((post) => (
+                  <li>
+                    <ItemCard post={post} />
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )}
+
+          {ci === columns.length - 1 && posts.length === 0 && <p class="cat__empty">No posts here yet.</p>}
+          </div>
+          </Fragment>
+        ))}
+      </>
+    )
+  }
+</Page>
+
+<style>
+  /* ----- Research / Thoughts: a wall-to-wall painting with the name in white on it ----- */
+  .banner {
+    margin: 0;
+  }
+
+  .banner__paint {
+    position: relative;
+    overflow: hidden;
+    height: clamp(200px, 24.7vw, 440px);
+  }
+
+  .banner__paint :global(.banner__img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 50%;
+  }
+
+  .banner__title {
+    position: absolute;
+    color: var(--paper);
+    font-size: clamp(3rem, 8.4vw, 9.5rem);
+    line-height: 0.8;
+    white-space: nowrap;
+  }
+
+  .banner__title--center {
+    left: 50%;
+    bottom: 22%;
+    transform: translateX(-50%);
+  }
+
+  /* sits on the painting's bottom edge, against the left wall */
+  .banner__title--left {
+    left: clamp(12px, 2.6vw, 40px);
+    bottom: 0.06em;
+  }
+
+  /* as wide as its words, so only the words show the description on hover */
+  .banner__caption {
+    width: fit-content;
+    max-width: calc(100% - 2 * clamp(12px, 1.5vw, 24px));
+    margin-inline: clamp(12px, 1.5vw, 24px);
+  }
+
+  .banner__caption--left {
+    margin-left: auto;
+    text-align: right;
+  }
+
+  /* ----- the list ----- */
+  .cat {
+    max-width: 960px;
+    /* plenty of room between the painting's caption and the first heading */
+    padding-top: clamp(64px, 8vw, 120px);
+  }
+
+  /* "← MAIN PAGE": small, just above the first heading, lined up with its letters */
+  .cat :global(.cat__back) {
+    margin: 0 0 clamp(12px, 1.4vw, 18px) clamp(4px, 1vw, 12px);
+  }
+
+  .travel__main :global(.cat__back) {
+    margin-bottom: clamp(10px, 1.2vw, 16px);
+  }
+
+  /* the column after the SNN demo band: the usual gap between sections */
+  .cat--more {
+    padding-top: clamp(72px, 9vw, 130px);
+  }
+
+  /* the demo band, when open */
+  :global(#snn-demo) {
+    margin-top: clamp(48px, 6vw, 88px);
+  }
+
+  /* jumping to a block (e.g. "Dive deeper" → #snn-capstone) leaves a little room above it */
+  .cat :global(.item) {
+    scroll-margin-top: 28px;
+  }
+
+  .cat__sec + .cat__sec {
+    margin-top: clamp(72px, 9vw, 130px);
+  }
+
+  .cat__head {
+    font-size: clamp(1.9rem, 3.6vw, 2.9rem);
+    padding: 0 0 0.3em clamp(4px, 1vw, 12px);
+    border-bottom: 4px solid var(--ink);
+    margin-bottom: clamp(24px, 3vw, 40px);
+  }
+
+  .cat__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: clamp(18px, 2.2vw, 30px);
+  }
+
+  .cat__list--grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: clamp(20px, 3vw, 44px);
+  }
+
+  .cat__recs {
+    padding: clamp(10px, 1.2vw, 16px) clamp(8px, 1.4vw, 20px) 0;
+  }
+
+  .cat__empty {
+    color: var(--ink-soft);
+  }
+
+  /* ----- Travel: the painting against the left wall, the trips beside it ----- */
+  .travel {
+    display: grid;
+    grid-template-columns: minmax(0, 35%) minmax(0, 1fr);
+    gap: clamp(24px, 3vw, 48px);
+    padding-top: clamp(28px, 5vw, 72px);
+  }
+
+  .travel__art {
+    margin: 0;
+  }
+
+  .travel__art :global(.travel__img) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* the caption stays inside the painting's width */
+  .travel__caption {
+    width: fit-content;
+    max-width: calc(100% - 2 * clamp(10px, 1.2vw, 16px));
+    margin-inline: clamp(10px, 1.2vw, 16px);
+    text-wrap: balance;
+  }
+
+  .travel__main {
+    padding-right: var(--gutter);
+  }
+
+  .travel__title {
+    font-size: clamp(3.4rem, 8vw, 8.6rem);
+    line-height: 0.82;
+    margin: 0 0 clamp(26px, 3vw, 48px);
+  }
+
+  .trips {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 300px));
+    gap: clamp(18px, 2.2vw, 32px);
+  }
+
+  .trip {
+    display: flex;
+    flex-direction: column;
+    aspect-ratio: 3 / 4;
+    padding: clamp(24px, 2.6vw, 38px) clamp(22px, 2.4vw, 34px) clamp(18px, 2vw, 28px);
+    background: var(--sand);
+    border: 3px solid var(--sand);
+    border-radius: clamp(30px, 3vw, 46px);
+    color: var(--ink);
+    text-decoration: none;
+    overflow: hidden;
+    transition: border-color 0.25s var(--ease);
+  }
+
+  .trip:hover,
+  .trip:focus-visible {
+    border-color: var(--butter);
+    outline: none;
+  }
+
+  .trip__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  /* the country's symbol beside its name (Japan: the red sun disc) */
+  .trip__flag {
+    flex: none;
+    width: clamp(40px, 4.4vw, 64px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    margin-top: -0.2rem;
+  }
+
+  .trip__flag--japan {
+    background: var(--japan-red);
+  }
+
+  .trip__place {
+    margin: 0 0 0.5rem;
+    font-size: clamp(1.4rem, 2vw, 1.85rem);
+    font-weight: 800;
+    line-height: 1.1;
+    text-transform: uppercase;
+  }
+
+  .trip__note {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: clamp(0.95rem, 1.2vw, 1.08rem);
+    line-height: 1.45;
+  }
+
+  .trip__note span {
+    display: block;
+  }
+
+  /* month and year, large, in the paper colour */
+  .trip__when {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    color: var(--paper);
+    font-weight: 800;
+    line-height: 0.86;
+    text-transform: uppercase;
+  }
+
+  .trip__month {
+    font-size: clamp(2.2rem, 3.4vw, 3.4rem);
+  }
+
+  .trip__year {
+    font-size: clamp(3.6rem, 6vw, 6.2rem);
+    letter-spacing: -0.02em;
+  }
+
+  @media (max-width: 760px) {
+    .cat__list--grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .banner__title--center {
+      bottom: 16%;
+    }
+    .travel {
+      grid-template-columns: minmax(0, 1fr);
+      padding-top: 0;
+    }
+    .travel__art {
+      max-width: 420px;
+    }
+    .travel__main {
+      padding-left: var(--gutter);
+    }
+    .trips {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 420px) {
+    .trips {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

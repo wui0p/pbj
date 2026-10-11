@@ -1,0 +1,39 @@
+---
+import Base from './Base.astro';
+import Information from '../components/Information.astro';
+import SiteBar from '../components/SiteBar.astro';
+import type { CategorySlug } from '../consts';
+
+interface Props {
+  title?: string;
+  description?: string;
+  current?: CategorySlug;
+  /** no space above the content (category pages start with a painting right under the bar) */
+  flush?: boolean;
+}
+
+const { title, description, current, flush = false } = Astro.props;
+---
+
+<Base title={title} description={description}>
+  <SiteBar current={current} />
+  <!-- page-level extras that sit outside <main> (the post pages' side bar) -->
+  <slot name="aside" />
+
+  <main class:list={['page-main', { 'page-main--flush': flush }]}>
+    <slot />
+  </main>
+
+  <Information />
+</Base>
+
+<style>
+  .page-main {
+    background: var(--paper);
+    padding: clamp(48px, 8vw, 112px) 0 clamp(72px, 10vw, 140px);
+  }
+
+  .page-main--flush {
+    padding-top: 0;
+  }
+</style>

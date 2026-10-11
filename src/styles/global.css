@@ -1,0 +1,352 @@
+/* ---------- Palette (the only colors on the site) ---------- */
+:root {
+  --sky: #b6d5d8;
+  --butter: #fddb88;
+  --paper: #faf9f6;
+  --sand: #efebd8;
+  --ink: #404040;
+
+  /* darker shades of the palette, only for the solid "3D" sides of blocks and buttons */
+  --sand-deep: #ddd5b4;
+  --butter-deep: #e8bd5f;
+  --sky-deep: #8fb6ba;
+  --paper-deep: #e4e0d4;
+
+  /* the one colour outside the palette: Japan's red sun on the Travel page (asked for in mockup v11) */
+  --japan-red: #bc002d;
+
+  /* "grey" text = ink at reduced strength, so it works on paper, sand and sky */
+  --ink-soft: rgb(64 64 64 / 0.74);
+  --ink-faint: rgb(64 64 64 / 0.28);
+
+  --font-display: 'Tinos', 'Noto Serif TC', 'Times New Roman', serif;
+  --font-sans: 'Inter', 'Noto Sans TC', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+
+  --gutter: clamp(16px, 4vw, 56px);
+
+  /* breathing room above / below each big section of the home page */
+  --sec-top: clamp(84px, 9.5vw, 150px);
+  --sec-bot: clamp(44px, 5vw, 80px);
+  --radius-card: 22px;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  color-scheme: light;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* smooth jumps inside a page ("Try It Out"); switched on after load (Base.astro), so arriving from another page
+   at e.g. /#menu jumps straight there instead of a long smooth scroll that loading can interrupt */
+html.smooth-scroll {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.smooth-scroll {
+    scroll-behavior: auto;
+  }
+}
+
+/* jump targets land below the floating top bar */
+#portfolio {
+  scroll-margin-top: 84px;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  overflow-x: clip;
+  -webkit-font-smoothing: antialiased;
+}
+
+:lang(zh-Hant) {
+  font-family: 'Noto Sans TC', var(--font-sans);
+  line-height: 1.85;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 3px;
+}
+
+/* anything with the hidden attribute stays hidden, whatever display a component gives it */
+[hidden] {
+  display: none !important;
+}
+
+.sr-only {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.wrap {
+  width: min(100% - 2 * var(--gutter), 1240px);
+  margin-inline: auto;
+}
+
+/* ---------- Home page layering ----------
+   sky page background  <  fixed boards (z 1)  <  hero text (z 2)  <  .sheet (z 3)
+   The hero is transparent; everything after it lives in one solid .sheet,
+   which slides over the boards as you scroll. */
+body.home {
+  background: var(--sky);
+}
+
+.sheet {
+  position: relative;
+  z-index: 3;
+  background: var(--paper);
+}
+
+/* Bold sans headings ("ELECTRICAL BLOG", section titles) */
+.heading {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+/* ---------- "3D" depth: a solid extruded side in a darker shade, no blur ----------
+   Set --depth (size) and --depth-c (shade) on the element. */
+.depth {
+  --depth: 10px;
+  --depth-c: var(--sand-deep);
+  box-shadow:
+    calc(var(--depth) * 0.125) calc(var(--depth) * 0.125) 0 var(--depth-c),
+    calc(var(--depth) * 0.25) calc(var(--depth) * 0.25) 0 var(--depth-c),
+    calc(var(--depth) * 0.375) calc(var(--depth) * 0.375) 0 var(--depth-c),
+    calc(var(--depth) * 0.5) calc(var(--depth) * 0.5) 0 var(--depth-c),
+    calc(var(--depth) * 0.625) calc(var(--depth) * 0.625) 0 var(--depth-c),
+    calc(var(--depth) * 0.75) calc(var(--depth) * 0.75) 0 var(--depth-c),
+    calc(var(--depth) * 0.875) calc(var(--depth) * 0.875) 0 var(--depth-c),
+    var(--depth) var(--depth) 0 var(--depth-c);
+}
+
+/* a button that "presses in" when clicked.
+   Every 3D button on the site is the same size (2026-10-11): one font, one weight, one height — don't resize
+   them per section. */
+.btn-3d {
+  --depth: 5px;
+  appearance: none;
+  font: inherit;
+  font-weight: 600;
+  font-size: 1.05rem;
+  line-height: 1.2;
+  color: var(--ink);
+  border: 0;
+  border-radius: 10px;
+  height: 48px;
+  padding: 0 1.5rem;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  transition:
+    transform 0.12s var(--ease),
+    box-shadow 0.12s var(--ease);
+}
+
+.btn-3d:active:not(:disabled) {
+  transform: translate(3px, 3px);
+  --depth: 2px;
+}
+
+.btn-3d:disabled {
+  cursor: default;
+}
+
+.btn-3d--butter {
+  background: var(--butter);
+  --depth-c: var(--butter-deep);
+}
+
+.btn-3d--sand {
+  background: var(--sand);
+  --depth-c: var(--sand-deep);
+}
+
+.btn-3d--paper {
+  background: var(--paper);
+  --depth-c: var(--paper-deep);
+}
+
+/* ---------- Painting captions: "* Artist, Title, date" (title in italics) ---------- */
+.art-caption {
+  margin: 0.55rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+  color: var(--ink-soft);
+}
+
+.art-caption em {
+  font-style: italic;
+}
+
+/* ---------- Story-style paragraphs: Times-like serif, justified ---------- */
+.serif-text p,
+.serif-text li {
+  font-family: var(--font-display);
+  font-size: clamp(1.05rem, 1.35vw, 1.22rem);
+  line-height: 1.6;
+}
+
+.serif-text p {
+  text-align: justify;
+}
+
+/* ---------- Highlights: a butter marker sweeps in when the section scrolls into view
+   (same look as the menu hover). Wrap the words in <span class="hl">; the section gets
+   data-reveal, and the Reveal script adds .is-in. ---------- */
+.hl {
+  background-image: linear-gradient(var(--butter), var(--butter));
+  background-repeat: no-repeat;
+  background-position: 0 88%;
+  background-size: 0% 0.42em;
+  /* each sweep takes 2.5s; the gaps between highlights stretch the same way (x2.5) */
+  transition: background-size 2.5s var(--ease) calc(var(--hl-delay, 0.15s) * 2.5);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+.is-in .hl {
+  background-size: 100% 0.42em;
+}
+
+/* ---------- Cards (pinned blogs + category lists) ---------- */
+.card {
+  display: block;
+  background: var(--sand);
+  border: 3px solid var(--sand);
+  border-radius: var(--radius-card);
+  padding: clamp(18px, 2.2vw, 28px) clamp(20px, 2.6vw, 32px);
+  text-decoration: none;
+  color: var(--ink);
+  transition: border-color 0.25s var(--ease);
+}
+
+/* only blocks that are links glow (a block with its own buttons stays still) */
+a.card:hover,
+a.card:focus-visible {
+  border-color: var(--butter);
+}
+
+.card:focus-visible {
+  outline: none;
+}
+
+.card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem 0.6rem;
+  align-items: baseline;
+  margin-bottom: 0.5rem;
+}
+
+.card__meta .dot {
+  color: var(--ink-faint);
+  font-size: 0.75rem; /* same line height as the eyebrow text beside it */
+}
+
+.card__title {
+  font-family: var(--font-sans);
+  font-size: clamp(1.15rem, 1.6vw, 1.4rem);
+  font-weight: 700;
+  line-height: 1.25;
+  margin: 0 0 0.45rem;
+  text-wrap: balance;
+}
+
+.card__summary {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.98rem;
+  line-height: 1.6;
+}
+
+/* ---------- Code (Verilog / SystemVerilog snippets) ---------- */
+pre.astro-code {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  line-height: 1.7;
+  padding: 1.1rem 1.25rem;
+  border-radius: 14px;
+  overflow-x: auto;
+  tab-size: 2;
+  -webkit-overflow-scrolling: touch;
+}
+
+pre.astro-code code {
+  font-family: inherit;
+}
+
+/* No ligatures in code: in Verilog "<=" must never render as "≤" */
+pre,
+code,
+kbd,
+samp {
+  font-variant-ligatures: none;
+  font-feature-settings:
+    'liga' 0,
+    'calt' 0;
+}
+
+:not(pre) > code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  background: var(--sand);
+  padding: 0.12em 0.38em;
+  border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
