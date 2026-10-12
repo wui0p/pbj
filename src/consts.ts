@@ -18,6 +18,17 @@ export const CATEGORIES: Record<CategorySlug, { label: string; blurb: string }> 
   travel: { label: 'Travel', blurb: 'Fly away from my problems' },
 };
 
+/**
+ * My teaching in numbers (2026-10-12), in this order. Shown on the home page (EDUCATION, the 3D bars) and beside
+ * the Teaching page's painting — edit them here and both follow.
+ */
+export const TEACHING_STATS: { num: string; label: string }[] = [
+  { num: '370+', label: 'hours of teaching' },
+  { num: '90+', label: 'students taught' },
+  { num: '1020+', label: 'solutions written' },
+  { num: '21', label: 'original problems written' },
+];
+
 /** The headed groups on each category page, in page order (a post picks one with `section:`). */
 export const SECTIONS: Record<CategorySlug, { id: string; label: string }[]> = {
   research: [

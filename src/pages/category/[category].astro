@@ -7,7 +7,7 @@ import BackLink from '../../components/BackLink.astro';
 import SnnDemo from '../../components/SnnDemo.astro';
 import TopRecs from '../../components/TopRecs.astro';
 import TeachingJobs from '../../components/TeachingJobs.astro';
-import { CATEGORIES, CATEGORY_SLUGS, SECTIONS, type CategorySlug } from '../../consts';
+import { CATEGORIES, CATEGORY_SLUGS, SECTIONS, TEACHING_STATS, type CategorySlug } from '../../consts';
 import { bySectionOrder, formatDate, getPosts, isoDate, postUrl, url, type Post } from '../../utils';
 import waterLilies from '../../assets/research/water-lilies.jpg';
 import starryRhone from '../../assets/thoughts/starry-night-rhone.jpg';
@@ -158,30 +158,35 @@ const lines = (text = '') => text.split(/(?<=\.)\s+/).filter(Boolean);
     ) : (
       <>
         {art.titleAt === 'teaching' ? (
-          // Teaching (mockup v15, page 18): the painting on the left with TEACHING in white on it, and
-          // E D U / C A T / I O N as a 3 x 3 block on the right, its last row level with TEACHING
+          // Teaching: the painting on the left with TEACHING in white on it, and my teaching in numbers
+          // beside it (2026-10-12; replaced the E D U / C A T / I O N block)
           <figure class="tbanner">
             <div class="tbanner__row">
-              <div class="tbanner__paint">
-                <Image
-                  src={art.src}
-                  alt={art.alt}
-                  widths={[700, 1100, 1600, 1946]}
-                  sizes="70vw"
-                  class="banner__img"
-                  loading="eager"
-                />
-                <h1 class="heading tbanner__title">{label}</h1>
+              <div class="tbanner__left">
+                <div class="tbanner__paint">
+                  <Image
+                    src={art.src}
+                    alt={art.alt}
+                    widths={[700, 1100, 1600, 1946]}
+                    sizes="(max-width: 760px) 100vw, 70vw"
+                    class="banner__img"
+                    loading="eager"
+                  />
+                  <h1 class="heading tbanner__title">{label}</h1>
+                </div>
+                <figcaption class="art-caption banner__caption" data-note={art.note}>
+                  * {art.artist}, <em>{art.title}</em>, {art.date}
+                </figcaption>
               </div>
-              <p class="heading tbanner__edu" aria-hidden="true">
-                {'EDUCATION'.split('').map((c) => (
-                  <span>{c}</span>
+              <dl class="tbanner__stats">
+                {TEACHING_STATS.map((s) => (
+                  <div class="tbanner__stat">
+                    <dt class="tbanner__num">{s.num}</dt>
+                    <dd class="tbanner__label">{s.label}</dd>
+                  </div>
                 ))}
-              </p>
+              </dl>
             </div>
-            <figcaption class="art-caption banner__caption" data-note={art.note}>
-              * {art.artist}, <em>{art.title}</em>, {art.date}
-            </figcaption>
           </figure>
         ) : (
           <figure class="banner">
@@ -302,7 +307,7 @@ const lines = (text = '') => text.split(/(?<=\.)\s+/).filter(Boolean);
     bottom: 0.06em;
   }
 
-  /* ----- Teaching: painting (70%) + E D U / C A T / I O N, with TEACHING level with the last row ----- */
+  /* ----- Teaching: painting (70%, caption under it) + my teaching in numbers beside it ----- */
   .tbanner {
     margin: 0;
   }
@@ -312,20 +317,16 @@ const lines = (text = '') => text.split(/(?<=\.)\s+/).filter(Boolean);
     container-type: inline-size;
     display: grid;
     grid-template-columns: 70% minmax(0, 1fr);
-    height: var(--h);
+    align-items: start;
   }
 
-  /* one letter size for TEACHING and the 3 x 3 block, so their bottom lines match; it fits both
-     the band's height and (on narrow screens) the painting's width */
-  .tbanner__paint,
-  .tbanner__edu {
+  /* TEACHING fits both the band's height and (on narrow screens) the painting's width */
+  .tbanner__paint {
     --fs: min(calc(var(--h) * 0.27), 12.4cqi);
     --pad: calc(var(--fs) * 0.12);
-  }
-
-  .tbanner__paint {
     position: relative;
     overflow: hidden;
+    height: var(--h);
   }
 
   .tbanner__paint :global(.banner__img) {
@@ -347,16 +348,50 @@ const lines = (text = '') => text.split(/(?<=\.)\s+/).filter(Boolean);
     white-space: nowrap;
   }
 
-  .tbanner__edu {
+  /* the stats: big number, label under it, a thin ink rule on the left. Every number is one size and
+     every label is one size (sized so the longest label, "original problems written", fits the column) */
+  .tbanner__stats {
     margin: 0;
+    padding: clamp(10px, 1.4cqi, 22px) 1.5cqi 0 2.4cqi;
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    align-content: space-between;
-    justify-items: center;
-    padding: var(--pad) 1.5cqi var(--pad) 2.5cqi;
+    gap: clamp(14px, 1.6cqi, 26px);
+  }
+
+  .tbanner__stat {
+    border-left: 3px solid var(--ink);
+    padding-left: clamp(10px, 1.1cqi, 18px);
+  }
+
+  .tbanner__num {
+    font-weight: 800;
+    font-size: clamp(1.7rem, 4.6cqi, 4.4rem);
+    line-height: 0.95;
+    letter-spacing: -0.01em;
+  }
+
+  .tbanner__label {
+    margin: 0.2em 0 0;
+    font-size: clamp(0.95rem, 2cqi, 1.8rem);
+    line-height: 1.2;
     color: var(--ink);
-    font-size: var(--fs);
-    line-height: 0.76;
+  }
+
+  @media (max-width: 760px) {
+    .tbanner__row {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    /* phones: the numbers sit under the painting, two by two */
+    .tbanner__stats {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      padding: 22px var(--gutter) 0;
+      gap: 18px 16px;
+    }
+    .tbanner__num {
+      font-size: 2rem;
+    }
+    .tbanner__label {
+      font-size: 0.95rem;
+    }
   }
 
   /* as wide as its words, so only the words show the description on hover */

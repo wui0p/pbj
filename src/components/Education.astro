@@ -2,6 +2,7 @@
 import { Image } from 'astro:assets';
 import athens from '../assets/education/school-of-athens.jpg';
 import { categoryUrl } from '../utils';
+import { TEACHING_STATS } from '../consts';
 // The teaching jobs themselves (photos, descriptions, stats) live on the Teaching page since v15:
 // src/content/blog/teaching-*.md
 ---
@@ -25,10 +26,9 @@ import { categoryUrl } from '../utils';
         <li>Physics TA &amp; tutor, private institute</li>
       </ul>
 
+      <!-- the same numbers as beside the Teaching page's painting (TEACHING_STATS in consts.ts) -->
       <ul class="edu__stats">
-        <li class="depth">90+ students taught</li>
-        <li class="depth">1020+ solutions written</li>
-        <li class="depth">21 original problems written</li>
+        {TEACHING_STATS.map((s) => <li class="depth">{s.num} {s.label}</li>)}
       </ul>
 
       <!-- goes to the Teaching page, where each job opens with its photo and details -->
