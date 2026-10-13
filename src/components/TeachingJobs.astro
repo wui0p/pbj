@@ -95,7 +95,9 @@ const jobs = await Promise.all(
 </ol>
 
 <script>
-  const cards = [...document.querySelectorAll<HTMLButtonElement>('[data-job]')];
+  import { scrollUnderBar } from '../scroll';
+
+  const cards =[...document.querySelectorAll<HTMLButtonElement>('[data-job]')];
   const pop = (card: HTMLButtonElement) => document.getElementById(card.getAttribute('aria-controls') ?? '');
 
   const setOpen = (card: HTMLButtonElement, open: boolean) => {
@@ -114,7 +116,9 @@ const jobs = await Promise.all(
   const open = (card: HTMLButtonElement) => {
     cards.forEach((c) => c !== card && setOpen(c, false));
     setOpen(card, true);
-    pop(card)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    // the details' top goes right under the top bar, so it's clear the click worked
+    const panel = pop(card);
+    if (panel) requestAnimationFrame(() => scrollUnderBar(panel));
   };
 
   cards.forEach((card) => {

@@ -80,8 +80,30 @@ const { floating = false, current } = Astro.props;
       hidden = h;
       sticky.classList.toggle('is-hidden', h);
     };
+    // something just opened and the page is scrolling to it: stay visible until that scroll has finished
+    let holding = false;
+    let holdTimer = 0;
+    const release = () => {
+      holding = false;
+      lastY = scrollY;
+    };
+    addEventListener('sitebar:hold', () => {
+      holding = true;
+      setHidden(false);
+      clearTimeout(holdTimer);
+      holdTimer = window.setTimeout(release, 3000); // in case the browser has no scrollend event
+    });
+    addEventListener('scrollend', () => {
+      if (!holding) return;
+      clearTimeout(holdTimer);
+      holdTimer = window.setTimeout(release, 100);
+    });
     const update = () => {
       const y = scrollY;
+      if (holding) {
+        lastY = y;
+        return;
+      }
       const dy = y - lastY;
       if (y <= sticky.offsetHeight) setHidden(false); // near the top: always there
       else if (dy > 6) setHidden(true); // scrolling down

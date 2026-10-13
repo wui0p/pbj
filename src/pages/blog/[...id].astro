@@ -3,31 +3,45 @@ import { Image } from 'astro:assets';
 import { render } from 'astro:content';
 import Page from '../../layouts/Page.astro';
 import PostDrawer from '../../components/PostDrawer.astro';
-import { categoryLabel, categoryUrl, dateText, getPosts, hasPage, isoDate, langOf, postUrl, type Post } from '../../utils';
+import {
+  UNDER_CONSTRUCTION,
+  categoryLabel,
+  categoryUrl,
+  dateText,
+  getPosts,
+  hasPage,
+  isoDate,
+  langOf,
+  postUrl,
+  readingOrder,
+  type Post,
+} from '../../utils';
 
 export async function getStaticPaths() {
-  // outside links and button blocks have no page of their own
-  const posts = (await getPosts()).filter(hasPage);
-  return posts.map((post) => {
-    // neighbours inside the same category (list is newest first)
-    const siblings = posts.filter((p) => p.data.category === post.data.category);
-    const i = siblings.findIndex((p) => p.id === post.id);
+  const all = await getPosts();
+  // only real posts get a page (not outside links, button blocks, pop-up jobs or placeholders)
+  return all.filter(hasPage).map((post) => {
+    // Previous / Next follow the category page's own order (sections, pinned first, newest), worked out
+    // from the posts themselves at every build, so a new post slots in by itself. Placeholders stay in the
+    // order but show as "under construction".
+    const order = readingOrder(post.data.category, all);
+    const i = order.findIndex((p) => p.id === post.id);
     return {
       params: { id: post.id },
-      props: { post, siblings, newer: siblings[i - 1], older: siblings[i + 1] },
+      props: { post, siblings: order, prev: order[i - 1], next: order[i + 1] },
     };
   });
 }
 
 interface Props {
   post: Post;
-  /** every post with a page in the same category (for the side bar) */
+  /** the category's posts in reading order (for the side bar) */
   siblings: Post[];
-  newer?: Post;
-  older?: Post;
+  prev?: Post;
+  next?: Post;
 }
 
-const { post, siblings, newer, older } = Astro.props;
+const { post, siblings, prev, next } = Astro.props;
 const { Content, headings } = await render(post);
 const { title, date, category, summary, label, cover } = post.data;
 const lang = langOf(title);
@@ -65,21 +79,36 @@ const lang = langOf(title);
 
     <nav class="post__nav" aria-label={`More in ${categoryLabel(category)}`}>
       {
-        older ? (
-          <a class="post__nav-link" href={postUrl(older)} lang={langOf(older.data.title)}>
-            <span class="eyebrow">← Older</span>
-            <span>{older.data.title}</span>
-          </a>
-        ) : (
-          <span />
-        )
-      }
-      {
-        newer && (
-          <a class="post__nav-link post__nav-link--next" href={postUrl(newer)} lang={langOf(newer.data.title)}>
-            <span class="eyebrow">Newer →</span>
-            <span>{newer.data.title}</span>
-          </a>
+        [
+          { p: prev, dir: 'prev', label: '← Previous' },
+          { p: next, dir: 'next', label: 'Next →' },
+        ].map(({ p, dir, label: arrow }) =>
+          !p ? (
+            <span />
+          ) : p.data.placeholder ? (
+            // not written yet: can't be opened, says so on hover
+            <div
+              class:list={['post__nav-link', 'soon', { 'post__nav-link--next': dir === 'next' }]}
+              tabindex="0"
+              aria-describedby={`nav-${dir}-soon`}
+              lang={langOf(p.data.title)}
+            >
+              <span class="eyebrow">{arrow}</span>
+              <span>{p.data.title}</span>
+              <span class="soon__note" id={`nav-${dir}-soon`} role="tooltip">
+                {UNDER_CONSTRUCTION}
+              </span>
+            </div>
+          ) : (
+            <a
+              class:list={['post__nav-link', { 'post__nav-link--next': dir === 'next' }]}
+              href={postUrl(p)}
+              lang={langOf(p.data.title)}
+            >
+              <span class="eyebrow">{arrow}</span>
+              <span>{p.data.title}</span>
+            </a>
+          ),
         )
       }
     </nav>
@@ -271,8 +300,9 @@ const lang = langOf(title);
     transition: border-color 0.25s var(--ease);
   }
 
-  .post__nav-link:hover,
-  .post__nav-link:focus-visible {
+  /* only links glow; a placeholder neighbour shows its note instead */
+  a.post__nav-link:hover,
+  a.post__nav-link:focus-visible {
     border-color: var(--butter);
     outline: none;
   }

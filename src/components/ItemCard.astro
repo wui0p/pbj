@@ -1,8 +1,11 @@
 ---
 // One block on a category page.
-// - small block: the whole block is a link (its post page, or an outside link) and its border glows butter on hover
+// - small block: the whole block is a link (its post page, or an outside link) and its border glows butter on hover;
+//   a Google Drive file/folder says so before its description ([PDF] / [Folder])
+// - placeholder: can't be opened; hovering shows "This blog is under construction…"
 // - big block (`buttons:` in the frontmatter): flat and still; only its 3D buttons are interactive
-import { itemHref, langOf, metaText, type Post } from '../utils';
+import BlockButtons from './BlockButtons.astro';
+import { UNDER_CONSTRUCTION, itemHref, langOf, linkKind, metaText, type Post } from '../utils';
 
 interface Props {
   post: Post;
@@ -11,9 +14,11 @@ interface Props {
 }
 
 const { post, as: Title = 'h3' } = Astro.props;
-const { title, summary, pinned, buttons } = post.data;
+const { title, summary, pinned, buttons, placeholder } = post.data;
 const meta = metaText(post);
+const kind = linkKind(post);
 const { href, external } = itemHref(post);
+const noteId = `${post.id}-soon`;
 ---
 
 {
@@ -30,43 +35,21 @@ const { href, external } = itemHref(post);
       </div>
       <Title class="card__title item__title">{title}</Title>
       {summary && <p class="card__summary">{summary}</p>}
-      <div class="item__buttons">
-        {buttons.map((b, i) =>
-          b.action === 'demo' ? (
-            // opens / closes the SNN demo under this section; turns butter while it's open
-            <button
-              type="button"
-              class="btn-3d btn-3d--paper depth item__toggle"
-              data-demo-toggle
-              aria-controls="snn-demo"
-              aria-expanded="false"
-            >
-              {b.label}
-            </button>
-          ) : b.href ? (
-            <a class="btn-3d btn-3d--paper depth" href={b.href} target="_blank" rel="noopener noreferrer">
-              {b.label}
-            </a>
-          ) : (
-            // not ready yet: does nothing, and says why on hover / focus
-            <span class="item__later">
-              <button
-                type="button"
-                class="btn-3d btn-3d--paper depth item__off"
-                aria-disabled="true"
-                aria-describedby={b.note ? `${post.id}-note-${i}` : undefined}
-              >
-                {b.label}
-              </button>
-              {b.note && (
-                <span class="item__note" id={`${post.id}-note-${i}`} role="tooltip">
-                  {b.note}
-                </span>
-              )}
-            </span>
-          ),
-        )}
-      </div>
+      <BlockButtons buttons={buttons} idPrefix={post.id} class="item__buttons" />
+    </div>
+  ) : placeholder ? (
+    <div class="card item soon" id={post.id} lang={langOf(title)} tabindex="0" aria-describedby={noteId}>
+      {(meta || pinned) && (
+        <div class="card__meta item__meta">
+          {meta && <span class="eyebrow">{meta}</span>}
+          {pinned && <span class="eyebrow">Pinned</span>}
+        </div>
+      )}
+      <Title class="card__title item__title">{title}</Title>
+      {summary && <p class="card__summary">{summary}</p>}
+      <span class="soon__note" id={noteId} role="tooltip">
+        {UNDER_CONSTRUCTION}
+      </span>
     </div>
   ) : (
     <a
@@ -89,7 +72,11 @@ const { href, external } = itemHref(post);
         </div>
       )}
       <Title class="card__title item__title">{title}</Title>
-      {summary && <p class="card__summary">{summary}</p>}
+      {summary && (
+        <p class="card__summary">
+          {kind && <span class="link-kind">[{kind}]</span>} {summary}
+        </p>
+      )}
       {external && <span class="sr-only">(opens in a new tab)</span>}
     </a>
   )
@@ -107,77 +94,7 @@ const { href, external } = itemHref(post);
     margin-bottom: 0.4rem;
   }
 
-  .item__buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 14px 22px;
+  .item :global(.item__buttons) {
     margin-top: clamp(18px, 2vw, 26px);
-  }
-
-  /* "Try demo" is butter while the demo is open */
-  .item__toggle[aria-expanded='true'] {
-    background: var(--butter);
-    --depth-c: var(--butter-deep);
-  }
-
-  /* a button that isn't ready: stays still, and its note appears beside it */
-  .item__later {
-    position: relative;
-    display: inline-block;
-  }
-
-  .item__off {
-    cursor: default;
-  }
-
-  .item__off:active {
-    transform: none !important;
-    --depth: 5px !important;
-  }
-
-  .item__note {
-    position: absolute;
-    z-index: 5;
-    left: calc(100% + 16px);
-    top: 50%;
-    width: max-content;
-    max-width: min(17rem, 60vw);
-    padding: 0.45rem 0.75rem;
-    background: var(--paper);
-    border: 2px solid var(--ink);
-    color: var(--ink);
-    font-family: var(--font-display);
-    font-size: 0.98rem;
-    line-height: 1.35;
-    text-align: justify;
-    opacity: 0;
-    visibility: hidden;
-    transform: translate(-4px, -50%);
-    transition:
-      opacity 0.2s var(--ease),
-      transform 0.2s var(--ease),
-      visibility 0.2s;
-    pointer-events: none;
-  }
-
-  .item__later:hover .item__note,
-  .item__off:focus-visible + .item__note {
-    opacity: 1;
-    visibility: visible;
-    transform: translate(0, -50%);
-  }
-
-  /* narrow screens: no room beside it, so the note opens above the button */
-  @media (max-width: 1100px) {
-    .item__note {
-      left: 0;
-      top: auto;
-      bottom: calc(100% + 12px);
-      transform: translateY(4px);
-    }
-    .item__later:hover .item__note,
-    .item__off:focus-visible + .item__note {
-      transform: none;
-    }
   }
 </style>

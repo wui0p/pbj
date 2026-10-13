@@ -307,6 +307,59 @@ a.card:focus-visible {
   line-height: 1.6;
 }
 
+/* ---------- Under construction (v16): a placeholder block can't be opened; hovering (or focusing) it shows
+   "This blog is under construction. Please come back later." over its right side ---------- */
+.soon {
+  position: relative;
+  cursor: default;
+}
+
+.soon:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.soon__note {
+  position: absolute;
+  z-index: 6;
+  right: clamp(10px, 1.6vw, 22px);
+  top: 50%;
+  width: max-content;
+  max-width: min(17rem, calc(100% - 20px));
+  padding: 0.45rem 0.75rem;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 0.98rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  line-height: 1.35;
+  text-align: justify;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(calc(-50% + 4px));
+  transition:
+    opacity 0.2s var(--ease),
+    transform 0.2s var(--ease),
+    visibility 0.2s;
+  pointer-events: none;
+}
+
+.soon:hover .soon__note,
+.soon:focus-visible .soon__note {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%);
+}
+
+/* what a block opens, before its description: [PDF] / [Folder] */
+.link-kind {
+  font-weight: 600;
+  color: var(--ink);
+}
+
 /* ---------- Code (Verilog / SystemVerilog snippets) ---------- */
 pre.astro-code {
   font-family: var(--font-mono);

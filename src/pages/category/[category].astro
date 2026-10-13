@@ -8,7 +8,7 @@ import SnnDemo from '../../components/SnnDemo.astro';
 import TopRecs from '../../components/TopRecs.astro';
 import TeachingJobs from '../../components/TeachingJobs.astro';
 import { CATEGORIES, CATEGORY_SLUGS, SECTIONS, TEACHING_STATS, type CategorySlug } from '../../consts';
-import { bySectionOrder, formatDate, getPosts, isoDate, postUrl, url, type Post } from '../../utils';
+import { UNDER_CONSTRUCTION, bySectionOrder, formatDate, getPosts, isoDate, postUrl, url, type Post } from '../../utils';
 import waterLilies from '../../assets/research/water-lilies.jpg';
 import starryRhone from '../../assets/thoughts/starry-night-rhone.jpg';
 import wanderer from '../../assets/travel/wanderer.jpg';
@@ -97,6 +97,10 @@ const loose = ordered(posts.filter((p) => !p.data.section || !known.has(p.data.s
 // columns around it (the band itself runs wall to wall)
 const demoAfter = slug === 'research' ? sections.findIndex((s) => s.id === 'academic') : -1;
 const columns = demoAfter >= 0 ? [sections.slice(0, demoAfter + 1), sections.slice(demoAfter + 1)] : [sections];
+// the demo shows the capstone block's buttons too (all but "Try demo" itself)
+const demoButtons = (posts.find((p) => p.data.buttons?.some((b) => b.action === 'demo'))?.data.buttons ?? []).filter(
+  (b) => b.action !== 'demo',
+);
 
 // "← MAIN PAGE" goes back to The Menu, where people pick a category
 const mainPage = url('/#menu');
@@ -130,9 +134,24 @@ const lines = (text = '') => text.split(/(?<=\.)\s+/).filter(Boolean);
             <p class="cat__empty">No trips here yet.</p>
           ) : (
             <ul class="trips">
-              {posts.map((post) => (
+              {posts.map((post) => {
+                // a trip that's still a placeholder can't be opened; it says so on hover
+                const soon = post.data.placeholder;
+                const Tag = soon ? 'div' : 'a';
+                return (
                 <li>
-                  <a class="trip" href={postUrl(post)} id={post.id}>
+                  <Tag
+                    class:list={['trip', { soon }]}
+                    href={soon ? undefined : postUrl(post)}
+                    id={post.id}
+                    tabindex={soon ? 0 : undefined}
+                    aria-describedby={soon ? `${post.id}-soon` : undefined}
+                  >
+                    {soon && (
+                      <span class="soon__note" id={`${post.id}-soon`} role="tooltip">
+                        {UNDER_CONSTRUCTION}
+                      </span>
+                    )}
                     <div class="trip__head">
                       <h2 class="trip__place">{post.data.title}</h2>
                       {post.data.flag === 'japan' && <span class="trip__flag trip__flag--japan" aria-hidden="true" />}
@@ -148,9 +167,10 @@ const lines = (text = '') => text.split(/(?<=\.)\s+/).filter(Boolean);
                         <span class="trip__year">{post.data.date.getUTCFullYear()}</span>
                       </time>
                     )}
-                  </a>
+                  </Tag>
                 </li>
-              ))}
+                );
+              })}
             </ul>
           )}
         </div>
@@ -213,7 +233,7 @@ const lines = (text = '') => text.split(/(?<=\.)\s+/).filter(Boolean);
         {columns.map((list, ci) => (
           <Fragment>
           {/* the SNN demo opens here, between Academic Studies and Side Curiosity ("Try demo"), wall to wall */}
-          {ci === 1 && <SnnDemo />}
+          {ci === 1 && <SnnDemo buttons={demoButtons} />}
           <div class:list={['wrap', 'cat', { 'cat--more': ci > 0 }]}>
           {ci === 0 && <BackLink href={mainPage} label="Main page" class="cat__back" />}
           {list.map((s) => (
@@ -528,8 +548,9 @@ const lines = (text = '') => text.split(/(?<=\.)\s+/).filter(Boolean);
     transition: border-color 0.25s var(--ease);
   }
 
-  .trip:hover,
-  .trip:focus-visible {
+  /* only trips that open glow (a placeholder trip shows its note instead) */
+  a.trip:hover,
+  a.trip:focus-visible {
     border-color: var(--butter);
     outline: none;
   }

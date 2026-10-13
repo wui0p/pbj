@@ -5,11 +5,11 @@
 // the category page.
 import type { MarkdownHeading } from 'astro';
 import { CATEGORIES, SECTIONS, type CategorySlug } from '../consts';
-import { bySectionOrder, categoryUrl, langOf, metaText, postUrl, type Post } from '../utils';
+import { UNDER_CONSTRUCTION, bySectionOrder, categoryUrl, langOf, metaText, postUrl, type Post } from '../utils';
 
 interface Props {
   category: CategorySlug;
-  /** the category's posts that have their own page */
+  /** the category's posts that have (or will have) their own page, placeholders included */
   posts: Post[];
   current: Post;
   headings: MarkdownHeading[];
@@ -63,19 +63,29 @@ const toc = h2.length >= 2 ? h2 : headings.filter((h) => h.depth === 3);
             {g.posts.map((p) => {
               const isCurrent = p.id === current.id;
               const meta = metaText(p);
+              const soon = p.data.placeholder;
+              // a placeholder is listed but can't be opened yet; it says so on hover
+              const Tag = soon ? 'div' : 'a';
               return (
                 <li>
-                  <a
-                    class:list={['drawer__item', { 'is-current': isCurrent }]}
-                    href={postUrl(p)}
+                  <Tag
+                    class:list={['drawer__item', { 'is-current': isCurrent, soon, 'drawer__item--soon': soon }]}
+                    href={soon ? undefined : postUrl(p)}
                     aria-current={isCurrent ? 'page' : undefined}
+                    tabindex={soon ? 0 : undefined}
+                    aria-describedby={soon ? `${p.id}-drawer-soon` : undefined}
                     lang={langOf(p.data.title)}
                   >
                     <span class="drawer__title">
                       <span class="drawer__mark">{p.data.title}</span>
                     </span>
                     {meta && <span class="drawer__meta">{meta}</span>}
-                  </a>
+                    {soon && (
+                      <span class="soon__note" id={`${p.id}-drawer-soon`} role="tooltip">
+                        {UNDER_CONSTRUCTION}
+                      </span>
+                    )}
+                  </Tag>
                   {isCurrent && toc.length > 0 && (
                     <div class="drawer__toc">
                       <ul aria-label="On this page">
@@ -371,6 +381,16 @@ const toc = h2.length >= 2 ? h2 : headings.filter((h) => h.depth === 3);
   .drawer__item:hover .drawer__mark,
   .drawer__item:focus-visible .drawer__mark {
     background-size: 100% 0.42em;
+  }
+
+  /* not written yet: dimmer, no marker on hover (its note shows instead) */
+  .drawer__item--soon .drawer__title,
+  .drawer__item--soon .drawer__meta {
+    opacity: 0.62;
+  }
+
+  .drawer__item--soon:hover .drawer__mark {
+    background-size: 0% 0.42em;
   }
 
   /* the post you're on: a solid butter block, bold */

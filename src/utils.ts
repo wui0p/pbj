@@ -1,5 +1,5 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
-import { CATEGORIES, type CategorySlug } from './consts';
+import { CATEGORIES, SECTIONS, type CategorySlug } from './consts';
 
 export type Post = CollectionEntry<'blog'>;
 
@@ -14,8 +14,25 @@ export const postUrl = (post: Post) => url(`/blog/${post.id}/`);
 export const categoryUrl = (slug: CategorySlug) => url(`/category/${slug}/`);
 export const categoryLabel = (slug: CategorySlug) => CATEGORIES[slug].label;
 
-/** Items that get their own page on this site (not external links, button blocks or pop-up jobs). */
-export const hasPage = (post: Post) => !post.data.link && !post.data.buttons && !post.data.popup;
+/** A post that would have its own page (not an outside link, a button block or a pop-up job). */
+const isPageKind = (post: Post) => !post.data.link && !post.data.buttons && !post.data.popup;
+
+/** Items that get their own page on this site; placeholders don't (they can't be opened yet). */
+export const hasPage = (post: Post) => isPageKind(post) && !post.data.placeholder;
+
+/** Shown beside anything that's still a placeholder; the block itself can't be clicked. */
+export const UNDER_CONSTRUCTION = 'This blog is under construction. Please come back later.';
+
+/**
+ * What a block's link opens, shown before its description (v16): "PDF" for a Google Drive file,
+ * "Folder" for a Google Drive folder. (Buttons don't get this, only whole blocks.)
+ */
+export function linkKind(post: Post): 'PDF' | 'Folder' | undefined {
+  const link = post.data.link ?? '';
+  if (/drive\.google\.com\/file\//.test(link) || /docs\.google\.com\/.*\/d\//.test(link)) return 'PDF';
+  if (/drive\.google\.com\/drive\/folders\//.test(link)) return 'Folder';
+  return undefined;
+}
 
 /**
  * Where an item's block goes: its post page, an outside link, or its spot on the category page
@@ -43,6 +60,25 @@ export function byNewest(a: Post, b: Post): number {
 /** The order inside a category page's section: pinned first, then newest first. */
 export const bySectionOrder = (a: Post, b: Post) =>
   Number(b.data.pinned) - Number(a.data.pinned) || byNewest(a, b);
+
+/**
+ * A category's posts in the order its page shows them: section by section (as in SECTIONS), pinned first,
+ * then newest; anything without a known section last. The category page, the post side bar and the
+ * Previous / Next links at the bottom of a post all use this, so a new post slots in everywhere by itself.
+ */
+export function categoryOrder(category: CategorySlug, posts: Post[]): Post[] {
+  const mine = posts.filter((p) => p.data.category === category);
+  const ids = SECTIONS[category].map((s) => s.id);
+  const rank = (p: Post) => {
+    const i = ids.indexOf(p.data.section ?? '');
+    return i === -1 ? ids.length : i;
+  };
+  return [...mine].sort((a, b) => rank(a) - rank(b) || bySectionOrder(a, b));
+}
+
+/** The posts a reader steps through with Previous / Next: everything that has (or will have) its own page. */
+export const readingOrder = (category: CategorySlug, posts: Post[]) =>
+  categoryOrder(category, posts).filter(isPageKind);
 
 export async function getPosts(): Promise<Post[]> {
   const posts = await getCollection('blog');

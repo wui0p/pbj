@@ -1,6 +1,6 @@
 ---
 import { CATEGORIES, CATEGORY_SLUGS } from '../consts';
-import { categoryLabel, categoryUrl, itemHref, langOf, metaText, type Post } from '../utils';
+import { UNDER_CONSTRUCTION, categoryLabel, categoryUrl, itemHref, langOf, linkKind, metaText, type Post } from '../utils';
 
 interface Props {
   posts: Post[];
@@ -43,15 +43,26 @@ const counts = Object.fromEntries(
             {pinned.map((post) => {
               const { href, external } = itemHref(post);
               const meta = metaText(post);
+              const kind = linkKind(post);
+              // a placeholder can't be opened yet: no link, and a note on hover
+              const soon = post.data.placeholder;
+              const Tag = soon ? 'div' : 'a';
               return (
                 <li>
-                  <a
-                    class="card depth pinned__card"
-                    href={href}
+                  <Tag
+                    class:list={['card depth pinned__card', { soon }]}
+                    href={soon ? undefined : href}
                     lang={langOf(post.data.title)}
-                    target={external ? '_blank' : undefined}
-                    rel={external ? 'noopener noreferrer' : undefined}
+                    target={!soon && external ? '_blank' : undefined}
+                    rel={!soon && external ? 'noopener noreferrer' : undefined}
+                    tabindex={soon ? 0 : undefined}
+                    aria-describedby={soon ? `${post.id}-pin-soon` : undefined}
                   >
+                    {soon && (
+                      <span class="soon__note" id={`${post.id}-pin-soon`} role="tooltip">
+                        {UNDER_CONSTRUCTION}
+                      </span>
+                    )}
                     <div class="card__meta">
                       <span class="eyebrow">{categoryLabel(post.data.category)}</span>
                       {meta && (
@@ -64,8 +75,12 @@ const counts = Object.fromEntries(
                       )}
                     </div>
                     <h3 class="card__title">{post.data.title}</h3>
-                    {post.data.summary && <p class="card__summary">{post.data.summary}</p>}
-                  </a>
+                    {post.data.summary && (
+                      <p class="card__summary">
+                        {kind && <span class="link-kind">[{kind}]</span>} {post.data.summary}
+                      </p>
+                    )}
+                  </Tag>
                 </li>
               );
             })}

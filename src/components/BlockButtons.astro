@@ -1,0 +1,129 @@
+---
+// The 3D buttons of a big block (frontmatter `buttons:`), also shown inside the SNN demo (v16).
+// - href: opens that page in a new tab
+// - action "demo": opens / closes the SNN demo; butter while it's open
+// - neither: does nothing yet; its `note` appears beside it on hover / focus
+type Button = { label: string; href?: string; action?: 'demo'; note?: string };
+
+interface Props {
+  buttons: Button[];
+  /** makes the notes' ids unique on the page */
+  idPrefix: string;
+  class?: string;
+}
+
+const { buttons, idPrefix, class: cls } = Astro.props;
+---
+
+<div class:list={['block-buttons', cls]}>
+  {
+    buttons.map((b, i) =>
+      b.action === 'demo' ? (
+        <button
+          type="button"
+          class="btn-3d btn-3d--paper depth block-buttons__toggle"
+          data-demo-toggle
+          aria-controls="snn-demo"
+          aria-expanded="false"
+        >
+          {b.label}
+        </button>
+      ) : b.href ? (
+        <a class="btn-3d btn-3d--paper depth" href={b.href} target="_blank" rel="noopener noreferrer">
+          {b.label}
+        </a>
+      ) : (
+        <span class="block-buttons__later">
+          <button
+            type="button"
+            class="btn-3d btn-3d--paper depth block-buttons__off"
+            aria-disabled="true"
+            aria-describedby={b.note ? `${idPrefix}-note-${i}` : undefined}
+          >
+            {b.label}
+          </button>
+          {b.note && (
+            <span class="block-buttons__note" id={`${idPrefix}-note-${i}`} role="tooltip">
+              {b.note}
+            </span>
+          )}
+        </span>
+      ),
+    )
+  }
+</div>
+
+<style>
+  .block-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 22px;
+  }
+
+  /* "Try demo" is butter while the demo is open */
+  .block-buttons__toggle[aria-expanded='true'] {
+    background: var(--butter);
+    --depth-c: var(--butter-deep);
+  }
+
+  /* a button that isn't ready: stays still, and its note appears beside it */
+  .block-buttons__later {
+    position: relative;
+    display: inline-block;
+  }
+
+  .block-buttons__off {
+    cursor: default;
+  }
+
+  .block-buttons__off:active {
+    transform: none !important;
+    --depth: 5px !important;
+  }
+
+  .block-buttons__note {
+    position: absolute;
+    z-index: 5;
+    left: calc(100% + 16px);
+    top: 50%;
+    width: max-content;
+    max-width: min(17rem, 60vw);
+    padding: 0.45rem 0.75rem;
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-size: 0.98rem;
+    line-height: 1.35;
+    text-align: justify;
+    opacity: 0;
+    visibility: hidden;
+    transform: translate(-4px, -50%);
+    transition:
+      opacity 0.2s var(--ease),
+      transform 0.2s var(--ease),
+      visibility 0.2s;
+    pointer-events: none;
+  }
+
+  .block-buttons__later:hover .block-buttons__note,
+  .block-buttons__off:focus-visible + .block-buttons__note {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(0, -50%);
+  }
+
+  /* narrow screens: no room beside it, so the note opens above the button */
+  @media (max-width: 1100px) {
+    .block-buttons__note {
+      left: 0;
+      top: auto;
+      bottom: calc(100% + 12px);
+      transform: translateY(4px);
+    }
+    .block-buttons__later:hover .block-buttons__note,
+    .block-buttons__off:focus-visible + .block-buttons__note {
+      transform: none;
+    }
+  }
+</style>

@@ -1,5 +1,13 @@
 ---
+import BlockButtons from './BlockButtons.astro';
 import { url } from '../utils';
+
+interface Props {
+  /** the capstone block's buttons (View full report, View code on GitHub), shown in the demo too (v16) */
+  buttons?: { label: string; href?: string; action?: 'demo'; note?: string }[];
+}
+
+const { buttons = [] } = Astro.props;
 
 // Order and names as in the board's demo app (encoder-structure).
 const modes = [
@@ -34,6 +42,7 @@ const nodes = [
           Draw a digit and watch a simple brain simulation read it. The eyes see your drawing, create nerve impulses
           (spikes), pass them through two layers of neurons to process them, and at the end, it gives us its guess.
         </p>
+        {buttons.length > 0 && <BlockButtons buttons={buttons} idPrefix="snn-demo" class="snn__buttons" />}
       </div>
       <button type="button" class="snn__close" data-demo-close aria-label="Close the demo">
         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6 6 18"></path></svg>
@@ -41,16 +50,6 @@ const nodes = [
     </div>
 
     <div class="lab" data-snn data-model={url('/snn/model.bin')}>
-      <div class="lab__modes" role="radiogroup" aria-label="Encoder and network mode">
-        {
-          modes.map((m, i) => (
-            <button type="button" class="mode" role="radio" aria-checked={i === 0 ? 'true' : 'false'} data-mode={m.id}>
-              {m.label}
-            </button>
-          ))
-        }
-      </div>
-
       <div class="flow">
         <!-- 1. draw -->
         <div class="flow__in">
@@ -142,12 +141,26 @@ const nodes = [
       </div>
 
       <!-- the part you clicked opens here -->
-      <div class="detail depth" id="snn-detail" data-detail hidden></div>
+      <!-- the four modes, in a column beside the panel of the brain part you picked (v16) -->
+      <div class="lab__bottom">
+        <div class="lab__modes" role="radiogroup" aria-label="Encoder and network mode">
+          {
+            modes.map((m, i) => (
+              <button type="button" class="mode" role="radio" aria-checked={i === 0 ? 'true' : 'false'} data-mode={m.id}>
+                {m.label}
+              </button>
+            ))
+          }
+        </div>
+        <!-- always open (Input to start); clicking another part switches it -->
+        <div class="detail depth" id="snn-detail" data-detail aria-live="polite"></div>
+      </div>
     </div>
   </div>
 </section>
 
 <script>
+  import { scrollUnderBar } from '../scroll';
   import { layer1Channels, parseModel, run, toMnist, type Mode, type Model, type RunResult } from '../snn/engine';
   import meta from '../snn/meta.json';
 
@@ -197,7 +210,8 @@ const nodes = [
     let fromTest = false;
     let testIndex = -1;
     let result: RunResult | null = null;
-    let open: Part | null = null;
+    // one part of the brain is always shown (v16: the panel can't be closed); Input to start
+    let open: Part = 'input';
     let selT = 0;
     let ch1 = 0;
     let ch2 = 0;
@@ -335,9 +349,12 @@ const nodes = [
     );
     $('.lab__modes').addEventListener('keydown', (e) => {
       const ev = e as KeyboardEvent;
-      if (!['ArrowLeft', 'ArrowRight'].includes(ev.key)) return;
+      // the modes are a column now: up / down (left / right still work too)
+      if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(ev.key)) return;
+      ev.preventDefault();
+      const fwd = ev.key === 'ArrowRight' || ev.key === 'ArrowDown';
       const i = modeBtns.findIndex((b) => b.getAttribute('aria-checked') === 'true');
-      const next = modeBtns[(i + (ev.key === 'ArrowRight' ? 1 : modeBtns.length - 1)) % modeBtns.length];
+      const next = modeBtns[(i + (fwd ? 1 : modeBtns.length - 1)) % modeBtns.length];
       next.focus();
       next.click();
     });
@@ -346,18 +363,18 @@ const nodes = [
     nodeBtns.forEach((b) =>
       b.addEventListener('click', () => {
         const part = b.dataset.node as Part;
-        open = open === part ? null : part; // click again to close
+        if (part === open) return; // already showing
+        open = part;
         renderDetail(true);
       }),
     );
 
-    // clicks inside the panel (timesteps, channel pager, close)
+    // clicks inside the panel (timesteps, channel pager)
     detail.addEventListener('click', (e) => {
       const t = (e.target as HTMLElement).closest<HTMLElement>('[data-act]');
       if (!t || !result) return;
       const act = t.dataset.act;
-      if (act === 'close') open = null;
-      else if (act === 't') selT = Number(t.dataset.t);
+      if (act === 't') selT = Number(t.dataset.t);
       else if (act === 'ch') {
         const d = Number(t.dataset.dir);
         if (open === 'l1') ch1 = (ch1 + d + layer1Channels(mode)) % layer1Channels(mode);
@@ -458,22 +475,21 @@ const nodes = [
     function renderDetail(pop: boolean) {
       nodeBtns.forEach((b) => b.setAttribute('aria-expanded', String(b.dataset.node === open)));
       const r = result;
-      if (!open || !r) {
-        detail.hidden = true;
-        detail.replaceChildren();
+      const part = PARTS[open];
+      const head = el('div', 'detail__head');
+      head.append(el('h3', 'detail__title', part.title));
+      if (!r) {
+        // nothing to show yet: the panel stays, with a hint
+        detail.replaceChildren(
+          head,
+          el('p', 'detail__about', part.about),
+          el('p', 'detail__empty', model ? 'Draw a digit, or press Test digit, to see it here.' : 'Loading…'),
+        );
         return;
       }
       // the panels show every timestep (the network keeps running after its answer)
       const T = r.T;
       selT = Math.min(selT, T - 1);
-      const part = PARTS[open];
-      const head = el('div', 'detail__head');
-      head.append(el('h3', 'detail__title', part.title));
-      const close = el('button', 'detail__close', '×');
-      close.type = 'button';
-      close.dataset.act = 'close';
-      close.setAttribute('aria-label', 'Close');
-      head.append(close);
       const body = el('div', 'detail__body');
 
       if (open === 'input') {
@@ -566,9 +582,8 @@ const nodes = [
       open = 'input';
       load();
       renderDetail(true);
-      // bring it into view if it opened mostly below the screen (the button stays in sight)
-      const top = section.getBoundingClientRect().top;
-      if (top > innerHeight * 0.6) scrollBy({ top: top - innerHeight * 0.3, behavior: 'smooth' });
+      // the demo's top goes right under the top bar, so it's clear "Try demo" worked
+      requestAnimationFrame(() => scrollUnderBar(section));
     };
 
     toggles.forEach((t) => t.addEventListener('click', () => setShown(!!section?.hidden)));
@@ -665,10 +680,27 @@ const nodes = [
     padding: clamp(18px, 2.6vw, 32px);
   }
 
+  /* the modes (a column) beside the panel of the brain part you picked */
+  .lab__bottom {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: clamp(14px, 1.8vw, 24px);
+    align-items: start;
+    margin-top: clamp(20px, 2.6vw, 32px);
+  }
+
   .lab__modes {
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .lab__modes .mode {
+    width: 100%;
+  }
+
+  .snn :global(.snn__buttons) {
+    margin-top: clamp(16px, 2vw, 24px);
   }
 
   .mode {
@@ -719,7 +751,6 @@ const nodes = [
     grid-template-columns: minmax(200px, 250px) minmax(0, 1fr) minmax(170px, 210px);
     gap: 4px;
     align-items: center;
-    margin-top: 1.6rem;
   }
 
   /* drawing pad */
@@ -920,8 +951,9 @@ const nodes = [
   /* ----- the panel that jumps out ----- */
   .detail {
     --depth: 8px;
-    margin-top: clamp(20px, 2.6vw, 32px);
+    min-width: 0;
     margin-right: 8px;
+    margin-bottom: 8px;
     background: var(--sand);
     border-radius: 18px;
     padding: clamp(18px, 2.2vw, 26px);
@@ -960,15 +992,9 @@ const nodes = [
     font-weight: 800;
   }
 
-  .detail :global(.detail__close) {
-    appearance: none;
-    border: 0;
-    background: none;
-    font-size: 1.6rem;
-    line-height: 1;
-    color: var(--ink);
-    cursor: pointer;
-    padding: 0 4px;
+  .detail :global(.detail__empty) {
+    margin: 0;
+    font-size: 0.95rem;
   }
 
   .detail :global(.detail__about) {
@@ -987,16 +1013,17 @@ const nodes = [
   .detail :global(.steps) {
     display: flex;
     flex-wrap: wrap;
-    gap: 16px;
+    gap: 12px;
   }
 
   .detail :global(.step) {
     margin: 0;
   }
 
+  /* smaller than before (v16), so all the timesteps fit beside the modes column */
   .detail :global(.map--in) {
-    width: 120px;
-    height: 120px;
+    width: 96px;
+    height: 96px;
   }
 
   .detail :global(figcaption) {
@@ -1015,8 +1042,8 @@ const nodes = [
 
   .detail :global(.map--l1),
   .detail :global(.map--l2) {
-    width: 168px;
-    height: 168px;
+    width: 148px;
+    height: 148px;
   }
 
   .detail :global(.layer__ctrl) {
@@ -1154,6 +1181,18 @@ const nodes = [
     }
     .flow__in {
       max-width: 320px;
+    }
+    /* narrow: the modes go back to a row above the panel */
+    .lab__bottom {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .lab__modes {
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .lab__modes .mode {
+      width: auto;
     }
     .b-ext {
       display: none;
