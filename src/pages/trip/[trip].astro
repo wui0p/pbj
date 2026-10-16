@@ -7,7 +7,7 @@ import PostDrawer from '../../components/PostDrawer.astro';
 import TripStory from '../../components/TripStory.astro';
 import Reveal from '../../components/Reveal.astro';
 import { TRIP as JAPAN_2026 } from '../../trips/japan-2026';
-import { getPosts, readingOrder, url, type Post } from '../../utils';
+import { categoryLabel, categoryUrl, getPosts, readingOrder, url, type Post } from '../../utils';
 
 const TRIPS = { 'japan-2026': JAPAN_2026 };
 
@@ -37,7 +37,12 @@ const dayHeadings = trip.days.map(({ day }) => ({ depth: 2, slug: `day-${day}`, 
   <PostDrawer category={post.data.category} posts={siblings} current={post} headings={dayHeadings} />
   <main>
     <h1 class="sr-only">{trip.title}</h1>
-    <TripStory title={trip.title} days={trip.days} backHref={url('/#menu')} />
+    <TripStory
+      title={trip.title}
+      days={trip.days}
+      backHref={categoryUrl(post.data.category)}
+      backLabel={categoryLabel(post.data.category)}
+    />
   </main>
   <Reveal />
 </Base>

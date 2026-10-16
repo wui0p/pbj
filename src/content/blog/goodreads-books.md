@@ -1,5 +1,5 @@
----
-title: "Goodreads Book"
+﻿---
+title: "Goodreads Books"
 category: thoughts
 section: recommendations
 label: "5 books"

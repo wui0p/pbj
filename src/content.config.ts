@@ -55,6 +55,34 @@ const blog = defineCollection({
       // placeholder content: never shown in Newest News
       placeholder: z.boolean().default(false),
       cover: image().optional(),
+      // music posts (Bravo Songs): one section per album, its cover beside the title and text, then a
+      // Greek-pattern strip that opens `link` (`call` is the line the strip shows when it parts)
+      albums: z
+        .array(
+          z.object({
+            title: z.string(),
+            // shown under the title: "by …"
+            by: z.string().optional(),
+            cover: image(),
+            alt: z.string(),
+            // a second picture, on the right under the text
+            photo: image().optional(),
+            photoAlt: z.string().optional(),
+            // credit shown under the second picture (licensed photos, e.g. CC BY): who took it, where it's from,
+            // and its licence
+            photoCredit: z
+              .object({ author: z.string(), source: z.url(), license: z.string(), licenseUrl: z.url() })
+              .optional(),
+            // without a link the strip still parts, but isn't a link yet
+            link: z.url().optional(),
+            call: z.string(),
+            // the strip's patterns: greek (key, waves, bars), meadow (wheat, hills, grass) or
+            // hardsoft (sharp zigzag, bubbles, round scallops)
+            strip: z.enum(['greek', 'meadow', 'hardsoft']).default('greek'),
+            text: z.array(z.string()),
+          }),
+        )
+        .optional(),
     }),
 });
 

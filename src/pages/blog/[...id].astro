@@ -3,6 +3,8 @@ import { Image } from 'astro:assets';
 import { render } from 'astro:content';
 import Page from '../../layouts/Page.astro';
 import PostDrawer from '../../components/PostDrawer.astro';
+import Albums from '../../components/Albums.astro';
+import BackLink from '../../components/BackLink.astro';
 import {
   UNDER_CONSTRUCTION,
   categoryLabel,
@@ -44,14 +46,16 @@ interface Props {
 
 const { post, siblings, prev, next } = Astro.props;
 const { Content, headings } = await render(post);
-const { title, date, category, summary, label, cover } = post.data;
+const { title, date, category, summary, label, cover, albums } = post.data;
 const lang = langOf(title);
 ---
 
 <Page title={title} description={summary} current={category}>
   <PostDrawer slot="aside" category={category} posts={siblings} current={post} headings={headings} />
-  <article class="post" lang={lang}>
+  <article class:list={['post', { 'post--wide': albums }]} lang={lang}>
     <header class="post__head">
+      <!-- "← THOUGHTS" etc.: back to the section (category page) this post belongs to -->
+      <BackLink href={categoryUrl(category)} label={categoryLabel(category)} class="post__back-link" />
       <p class="eyebrow">
         <a href={categoryUrl(category)}>{categoryLabel(category)}</a>
         {date && (
@@ -73,6 +77,8 @@ const lang = langOf(title);
         </figure>
       )
     }
+
+    {albums && <Albums albums={albums} />}
 
     <div class="prose">
       <Content />
@@ -123,6 +129,15 @@ const lang = langOf(title);
   .post {
     width: min(100% - 2 * var(--gutter), 720px);
     margin-inline: auto;
+  }
+
+  /* album posts (Bravo Songs): the cover sits beside the text, so the column is wider (mockup v18 page 25) */
+  .post--wide {
+    width: min(100% - 2 * var(--gutter), 1060px);
+  }
+
+  .post__head :global(.post__back-link) {
+    margin-bottom: clamp(14px, 1.8vw, 22px);
   }
 
   .post__head .eyebrow a {

@@ -13,11 +13,12 @@ import type { TripEntry } from '../trips/types';
 interface Props {
   title: string;
   days: { day: number; entries: TripEntry[] }[];
-  /** "← MAIN PAGE" just above the first day's heading, like on the category pages */
+  /** "← TRAVEL" just above the first day's heading: back to the section the trip belongs to */
   backHref: string;
+  backLabel: string;
 }
 
-const { title, days, backHref } = Astro.props;
+const { title, days, backHref, backLabel } = Astro.props;
 const [word, year] = title.split(' ');
 
 // the larger copy each photo opens (made at build time, like the others)
@@ -44,7 +45,7 @@ const isWide = (w: number, h: number) => w / h > 1.15;
       <section class="story__day" aria-labelledby={`day-${day}`}>
         {day === days[0].day && (
           <div class="story__back">
-            <BackLink href={backHref} label="Main page" />
+            <BackLink href={backHref} label={backLabel} />
           </div>
         )}
         <h2 class="heading story__head" id={`day-${day}`} tabindex="-1" data-day-head>
@@ -264,7 +265,7 @@ const isWide = (w: number, h: number) => w / h > 1.15;
     margin-inline: auto;
   }
 
-  /* "← MAIN PAGE" above DAY 1, placed like on the category pages */
+  /* "← TRAVEL" above DAY 1, placed like the back link on the category pages */
   .story__back {
     padding: 0 0 clamp(12px, 1.4vw, 18px) clamp(4px, 1vw, 12px);
   }
