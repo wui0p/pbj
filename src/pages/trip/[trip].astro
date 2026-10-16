@@ -1,0 +1,43 @@
+---
+// A trip's page: a photo story you scroll down (TripStory), with the red day bar at the bottom. The post side
+// bar (← TRAVEL) works like on other posts and lists the days.
+import Base from '../../layouts/Base.astro';
+import SiteBar from '../../components/SiteBar.astro';
+import PostDrawer from '../../components/PostDrawer.astro';
+import TripStory from '../../components/TripStory.astro';
+import Reveal from '../../components/Reveal.astro';
+import { TRIP as JAPAN_2026 } from '../../trips/japan-2026';
+import { getPosts, readingOrder, url, type Post } from '../../utils';
+
+const TRIPS = { 'japan-2026': JAPAN_2026 };
+
+export async function getStaticPaths() {
+  const all = await getPosts();
+  return all
+    .filter((p) => p.data.trip && !p.data.placeholder)
+    .map((post) => ({
+      params: { trip: post.data.trip! },
+      props: { post, siblings: readingOrder(post.data.category, all) },
+    }));
+}
+
+interface Props {
+  post: Post;
+  siblings: Post[];
+}
+
+const { post, siblings } = Astro.props;
+const trip = TRIPS[post.data.trip!];
+const dayHeadings = trip.days.map(({ day }) => ({ depth: 2, slug: `day-${day}`, text: `Day ${day}` }));
+---
+
+<Base title={trip.title} description={post.data.summary}>
+  <!-- this page has no Information section, so the "i" goes to the home page's -->
+  <SiteBar current={post.data.category} infoHref={url('/#information')} />
+  <PostDrawer category={post.data.category} posts={siblings} current={post} headings={dayHeadings} />
+  <main>
+    <h1 class="sr-only">{trip.title}</h1>
+    <TripStory title={trip.title} days={trip.days} backHref={url('/#menu')} />
+  </main>
+  <Reveal />
+</Base>

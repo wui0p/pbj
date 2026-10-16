@@ -19,8 +19,9 @@ import {
 
 export async function getStaticPaths() {
   const all = await getPosts();
-  // only real posts get a page (not outside links, button blocks, pop-up jobs or placeholders)
-  return all.filter(hasPage).map((post) => {
+  // only real posts get a page (not outside links, button blocks, pop-up jobs or placeholders);
+  // a trip's page is its board instead (src/pages/trip/[trip].astro)
+  return all.filter((p) => hasPage(p) && !p.data.trip).map((post) => {
     // Previous / Next follow the category page's own order (sections, pinned first, newest), worked out
     // from the posts themselves at every build, so a new post slots in by itself. Placeholders stay in the
     // order but show as "under construction".
@@ -147,7 +148,6 @@ const lang = langOf(title);
     color: var(--ink-soft);
     margin: 0 0 2.2rem;
     text-align: justify;
-    hyphens: auto;
   }
 
   .post__cover {
@@ -182,7 +182,6 @@ const lang = langOf(title);
   .prose :global(p),
   .prose :global(li) {
     text-align: justify;
-    hyphens: auto;
   }
 
   .prose :global(h2),

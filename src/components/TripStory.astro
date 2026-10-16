@@ -1,0 +1,598 @@
+---
+// A trip as a photo album you scroll down (2026-10-15; replaced the drag-around board): the red JAPAN 2026
+// circle opens the page, then every day in turn, its photos in the order they were taken, packed edge to edge
+// like a phone's photo album. A note takes the tile of a photo, right after the photo it's about.
+// - the red bar at the bottom says which day you're reading; ◀ ▶ scroll to the previous / next day's heading,
+//   and the label to the start of the day you're in
+// - click a photo: a larger copy opens over the page, which goes grey; click outside, × or Esc closes it
+import { Image, getImage } from 'astro:assets';
+import BackLink from './BackLink.astro';
+import { UNDER_CONSTRUCTION } from '../utils';
+import type { TripEntry } from '../trips/types';
+
+interface Props {
+  title: string;
+  days: { day: number; entries: TripEntry[] }[];
+  /** "← MAIN PAGE" just above the first day's heading, like on the category pages */
+  backHref: string;
+}
+
+const { title, days, backHref } = Astro.props;
+const [word, year] = title.split(' ');
+
+// the larger copy each photo opens (made at build time, like the others)
+const fullSrc = new Map<string, string>();
+for (const { entries } of days)
+  for (const it of entries)
+    if (it.kind === 'photo' && !fullSrc.has(it.src.src))
+      fullSrc.set(it.src.src, (await getImage({ src: it.src, width: Math.min(it.src.width, 1050), format: 'webp' })).src);
+
+/** a landscape photo takes two tiles side by side */
+const isWide = (w: number, h: number) => w / h > 1.15;
+---
+
+<div class="story" data-story>
+  <div class="story__open">
+    <div class="story__sun" aria-hidden="true">
+      <span>{word}</span>
+      <span>{year}</span>
+    </div>
+  </div>
+
+  {
+    days.map(({ day, entries }) => (
+      <section class="story__day" aria-labelledby={`day-${day}`}>
+        {day === days[0].day && (
+          <div class="story__back">
+            <BackLink href={backHref} label="Main page" />
+          </div>
+        )}
+        <h2 class="heading story__head" id={`day-${day}`} tabindex="-1" data-day-head>
+          Day {day}
+        </h2>
+        {entries.length === 0 ? (
+          <p class="story__soon">{UNDER_CONSTRUCTION.replace('This blog', 'This day')}</p>
+        ) : (
+          <div class="story__grid">
+            {entries.map((it, n) =>
+              it.kind === 'photo' ? (
+                <button
+                  type="button"
+                  class:list={['story__tile', 'story__photo', { 'story__photo--wide': isWide(it.src.width, it.src.height) }]}
+                  style={`--k:${n % 5}`}
+                  data-reveal
+                  data-photo
+                  data-full={fullSrc.get(it.src.src)}
+                  data-alt={it.alt}
+                  data-time={it.time}
+                  aria-label={`Open the photo (${it.time}): ${it.alt}`}
+                >
+                  <Image
+                    src={it.src}
+                    alt={it.alt}
+                    widths={[360, 720]}
+                    sizes="(max-width: 640px) 34vw, (max-width: 1100px) 25vw, 20vw"
+                    class="story__img"
+                    loading={day === 1 && n < 10 ? 'eager' : 'lazy'}
+                  />
+                </button>
+              ) : (
+                <p class="story__tile story__note" style={`--k:${n % 5}`} data-reveal>
+                  {it.text}
+                </p>
+              ),
+            )}
+          </div>
+        )}
+      </section>
+    ))
+  }
+
+  <nav class="story__bar" aria-label="Days of the trip">
+    <button type="button" class="story__arrow" data-prev aria-label="Previous day">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M17 3 5 12l12 9Z"></path></svg>
+    </button>
+    <button type="button" class="story__label" data-current aria-label="Go to the start of this day">
+      {title} · Day <span data-daynum>1</span>
+    </button>
+    <button type="button" class="story__arrow" data-next aria-label="Next day">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 3l12 9-12 9Z"></path></svg>
+    </button>
+  </nav>
+
+  <!-- the larger photo; the page behind goes grey -->
+  <dialog class="story__lightbox" data-lightbox aria-label="Photo">
+    <img class="story__full" data-full-img alt="" />
+    <p class="story__cap" data-cap></p>
+    <button type="button" class="story__close" data-close aria-label="Close the photo">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6 6 18"></path></svg>
+    </button>
+  </dialog>
+</div>
+
+<script>
+  import { scrollUnderBar } from '../scroll';
+
+  const root = document.querySelector<HTMLElement>('[data-story]');
+  if (root) {
+    const heads = [...root.querySelectorAll<HTMLElement>('[data-day-head]')];
+    const dayNum = root.querySelector<HTMLElement>('[data-daynum]')!;
+    const prev = root.querySelector<HTMLButtonElement>('[data-prev]')!;
+    const next = root.querySelector<HTMLButtonElement>('[data-next]')!;
+
+    // which day you're in: the last day whose heading has reached the top of the screen, just under the top bar
+    // (0 = still at the red circle, above day 1). Not further down: a short day (still under construction)
+    // would otherwise count the next day as current while its own heading is at the top.
+    const siteBar = document.querySelector<HTMLElement>('.sitebar');
+    let cur = -1;
+    const update = () => {
+      const line = (siteBar?.offsetHeight ?? 0) + 60;
+      let c = 0;
+      heads.forEach((h, i) => {
+        if (h.getBoundingClientRect().top <= line) c = i + 1;
+      });
+      if (c === cur) return;
+      cur = c;
+      dayNum.textContent = String(Math.max(c, 1));
+      prev.disabled = c === 0;
+      next.disabled = c === heads.length;
+    };
+
+    const goTo = (d: number) => {
+      if (d <= 0) {
+        dispatchEvent(new CustomEvent('sitebar:hold'));
+        const smooth = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+        scrollTo({ top: 0, behavior: smooth ? 'smooth' : 'instant' });
+        return;
+      }
+      const h = heads[Math.min(d, heads.length) - 1];
+      scrollUnderBar(h, 16);
+      h.focus({ preventScroll: true }); // screen readers and the keyboard carry on from the day's heading
+    };
+    prev.addEventListener('click', () => goTo(cur - 1));
+    next.addEventListener('click', () => goTo(cur + 1));
+    root.querySelector('[data-current]')!.addEventListener('click', () => goTo(Math.max(cur, 1)));
+
+    addEventListener('scroll', update, { passive: true });
+    addEventListener('resize', update);
+    update();
+
+    // ---- notes: never two in a row in the same column ----
+    // Each note follows its photo, so how many photos come between two notes decides their columns: they can
+    // line up by chance, or a note can wrap to the next row away from its photo. For each note this tries the
+    // smallest change that keeps it touching its photo and out of the previous note's column: as it is, on the
+    // other side of its photo, or with one to four of the photos just before them moved to after them.
+    // Worked out again whenever the number of columns changes; phones (where a note is a strip across the
+    // row) keep the plain order.
+    const grids = [...root.querySelectorAll<HTMLElement>('.story__grid')];
+    const timeOrder = grids.map((g) => [...g.children]);
+    const columnOf = (el: HTMLElement, g: HTMLElement) =>
+      Math.round((el.getBoundingClientRect().left - g.getBoundingClientRect().left) / el.offsetWidth);
+    let laidFor = '';
+    const shuffleNotes = () => {
+      const key = grids.map((g) => getComputedStyle(g).gridTemplateColumns.split(' ').length).join();
+      if (key === laidFor) return;
+      laidFor = key;
+      grids.forEach((g, i) => {
+        timeOrder[i].forEach((el) => g.append(el)); // back to the order the photos were taken
+        const notes = [...g.querySelectorAll<HTMLElement>('.story__note')];
+        if (notes.some((n) => n.offsetWidth > g.offsetWidth * 0.6)) return; // phone strips
+        const isPhoto = (el: Element | null): el is HTMLElement => !!el && el.matches('.story__photo');
+        const beside = (a: HTMLElement, b: HTMLElement) => {
+          const p = a.getBoundingClientRect();
+          const q = b.getBoundingClientRect();
+          return Math.abs(p.top - q.top) < 2 && (Math.abs(p.right - q.left) < 2 || Math.abs(p.left - q.right) < 2);
+        };
+        let prev = -1;
+        for (const note of notes) {
+          const photo = note.previousElementSibling;
+          if (!isPhoto(photo)) continue;
+          // up to four photos just before the pair, which may go after it so the pair fits on one row (wide photos
+          // can need more than one)
+          const earlier: HTMLElement[] = [];
+          for (let el = photo.previousElementSibling; isPhoto(el) && earlier.length < 4; el = el.previousElementSibling)
+            earlier.push(el);
+          const order = [...g.children];
+          const restore = () => order.forEach((el) => g.append(el));
+          const tries: { moved: number; flip: boolean }[] = [];
+          for (let moved = 0; moved <= earlier.length; moved++)
+            for (const flip of [false, true]) tries.push({ moved, flip });
+          // try the smallest change first: the note must touch its photo; better if it's not in the column of
+          // the note before it either
+          let pick: { moved: number; flip: boolean } | null = null;
+          for (const t of tries) {
+            restore();
+            if (t.flip) g.insertBefore(note, photo);
+            const end = t.flip ? photo : note;
+            earlier.slice(0, t.moved).forEach((el) => end.after(el)); // nearest first: they keep their order
+            if (!beside(note, photo)) continue;
+            if (columnOf(note, g) !== prev) {
+              pick = t;
+              break;
+            }
+            pick ??= t;
+          }
+          restore();
+          if (pick) {
+            if (pick.flip) g.insertBefore(note, photo);
+            const end = pick.flip ? photo : note;
+            earlier.slice(0, pick.moved).forEach((el) => end.after(el));
+          }
+          prev = columnOf(note, g);
+        }
+      });
+    };
+    shuffleNotes();
+    addEventListener('resize', shuffleNotes);
+
+    // ---- click a photo: the larger copy, with the page greyed out behind ----
+    const lightbox = root.querySelector<HTMLDialogElement>('[data-lightbox]')!;
+    const fullImg = root.querySelector<HTMLImageElement>('[data-full-img]')!;
+    const cap = root.querySelector<HTMLElement>('[data-cap]')!;
+    root.querySelectorAll<HTMLButtonElement>('[data-photo]').forEach((btn) =>
+      btn.addEventListener('click', () => {
+        // never show the previous photo while the next one loads
+        fullImg.classList.add('is-loading');
+        fullImg.removeAttribute('src');
+        fullImg.alt = btn.dataset.alt ?? '';
+        cap.textContent = btn.dataset.time ?? ''; // when it was taken
+        fullImg.onload = () => fullImg.classList.remove('is-loading');
+        fullImg.src = btn.dataset.full ?? '';
+        lightbox.showModal();
+      }),
+    );
+    root.querySelector('[data-close]')!.addEventListener('click', () => lightbox.close());
+    // a click on the grey area (the dialog itself, outside the photo) closes it
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox) lightbox.close();
+    });
+  }
+</script>
+
+<style>
+  /* the album runs the full width of the page; the circle and the day headings sit in the usual column */
+  .story {
+    /* room at the end for the red bar */
+    padding-bottom: clamp(90px, 10vw, 130px);
+  }
+
+  .story__open,
+  .story__back,
+  .story__head,
+  .story__soon {
+    width: min(100% - 2 * var(--gutter), 1240px);
+    margin-inline: auto;
+  }
+
+  /* "← MAIN PAGE" above DAY 1, placed like on the category pages */
+  .story__back {
+    padding: 0 0 clamp(12px, 1.4vw, 18px) clamp(4px, 1vw, 12px);
+  }
+
+  /* ----- the opener: the red sun ----- */
+  .story__open {
+    display: grid;
+    place-items: center;
+    padding-top: clamp(48px, 6vw, 90px);
+  }
+
+  .story__sun {
+    width: clamp(200px, 24vw, 300px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--japan-red);
+    color: var(--paper);
+    display: grid;
+    place-content: center;
+    text-align: center;
+    font-weight: 800;
+    font-size: clamp(2.4rem, 3.6vw, 3.7rem);
+    line-height: 1.05;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+  }
+
+  /* ----- days ----- */
+  .story__day {
+    padding-top: clamp(56px, 7vw, 100px);
+  }
+
+  /* the last day is at least a screen tall, so ▶ can bring its heading up under the top bar */
+  .story__day:last-of-type {
+    min-height: 100dvh;
+  }
+
+  .story__head {
+    font-size: clamp(1.9rem, 3.6vw, 2.9rem);
+    padding: 0 0 0.3em clamp(4px, 1vw, 12px);
+    border-bottom: 4px solid var(--ink);
+    margin-bottom: clamp(20px, 2.5vw, 32px);
+    scroll-margin-top: 96px; /* a link from the side bar lands under the top bar */
+  }
+
+  .story__head:focus {
+    outline: none;
+  }
+
+  .story__soon {
+    margin-block: 0;
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    color: var(--ink-soft);
+  }
+
+  /* ----- the album: tiles packed edge to edge, like a phone's gallery ----- */
+  .story__grid {
+    --cols: 5;
+    display: grid;
+    grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+    /* a landscape photo that doesn't fit at the end of a row moves down, and the next photo fills its place */
+    grid-auto-flow: row dense;
+  }
+
+  .story__tile {
+    aspect-ratio: 3 / 4;
+    margin: 0;
+    min-width: 0;
+  }
+
+  /* photos: just the picture, square corners, nothing around it */
+  .story__photo {
+    appearance: none;
+    display: block;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: var(--sand);
+    cursor: zoom-in;
+    overflow: hidden;
+  }
+
+  /* a landscape photo takes two tiles side by side (exactly two tiles' shape, so its row stays even) */
+  .story__photo--wide {
+    grid-column: span 2;
+    aspect-ratio: 3 / 2;
+  }
+
+  .story__photo :global(.story__img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity 0.2s var(--ease);
+  }
+
+  .story__photo:hover :global(.story__img) {
+    opacity: 0.85;
+  }
+
+  .story__photo:focus-visible {
+    outline: 3px solid var(--butter);
+    outline-offset: -3px;
+  }
+
+  /* a note takes the tile where the next photo would be: the site's plain sans, a little heavier than body
+     text, justified, on the page itself */
+  .story__note {
+    display: grid;
+    align-content: center;
+    padding: clamp(12px, 1.6vw, 28px);
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: clamp(0.85rem, 0.98vw, 1.02rem);
+    line-height: 1.55;
+    text-align: justify;
+    color: var(--ink);
+  }
+
+  /* ----- tiles fade in as they scroll into view, one after another along the row ----- */
+  .story [data-reveal] {
+    opacity: 0;
+    transition: opacity 0.7s var(--ease) calc(var(--k, 0) * 70ms);
+  }
+
+  .story [data-reveal].is-in {
+    opacity: 1;
+  }
+
+  @media (min-width: 1800px) {
+    .story__grid {
+      --cols: 6;
+    }
+  }
+
+  @media (max-width: 1100px) {
+    .story__grid {
+      --cols: 4;
+    }
+  }
+
+  /* phones: three across, like a phone's gallery; a note becomes a strip under its photo's row
+     (the next photos close the gap beside it) */
+  @media (max-width: 640px) {
+    .story__grid {
+      --cols: 3;
+      grid-auto-flow: row dense;
+    }
+    .story__note {
+      grid-column: 1 / -1;
+      aspect-ratio: auto;
+      padding: 18px var(--gutter);
+      font-size: 1rem;
+    }
+  }
+
+  /* ----- the larger photo ----- */
+  .story__lightbox {
+    padding: 0;
+    border: 0;
+    background: none;
+    max-width: none;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .story__lightbox::backdrop {
+    background: rgb(64 64 64 / 0.62);
+    -webkit-backdrop-filter: grayscale(1);
+    backdrop-filter: grayscale(1);
+  }
+
+  .story__lightbox[open] {
+    animation: story-photo-in 0.25s var(--ease);
+  }
+
+  @keyframes story-photo-in {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+  }
+
+  .story__full {
+    display: block;
+    max-width: min(92vw, 900px);
+    max-height: 80dvh;
+    width: auto;
+    height: auto;
+    transition: opacity 0.2s var(--ease);
+  }
+
+  /* when it was taken, small under the photo */
+  .story__cap {
+    margin: 10px 0 0;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: var(--paper);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* until the photo has loaded: a quiet placeholder of the right shape instead of the last photo */
+  .story__full.is-loading {
+    opacity: 0;
+    width: min(63dvh, 92vw);
+    aspect-ratio: 3 / 4;
+  }
+
+  .story__close {
+    position: absolute;
+    top: -14px;
+    right: -14px;
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    background: var(--paper);
+    color: var(--ink);
+    cursor: pointer;
+    transition:
+      background-color 0.2s var(--ease),
+      transform 0.25s var(--ease);
+  }
+
+  .story__close:hover,
+  .story__close:focus-visible {
+    background: var(--butter);
+    transform: rotate(90deg);
+  }
+
+  .story__close svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+  }
+
+  /* ----- the red day bar, fixed to the bottom of the screen ----- */
+  .story__bar {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 15;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(18px, 5vw, 72px);
+    padding: 8px var(--gutter);
+    background: var(--japan-red);
+    color: var(--paper);
+  }
+
+  .story__label,
+  .story__arrow {
+    appearance: none;
+    border: 0;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+  }
+
+  .story__label {
+    font-weight: 800;
+    font-size: clamp(1.1rem, 2.4vw, 2rem);
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    padding: 4px 8px;
+    border-radius: 8px;
+  }
+
+  .story__arrow {
+    width: clamp(34px, 3.6vw, 46px);
+    height: clamp(34px, 3.6vw, 46px);
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    transition:
+      transform 0.2s var(--ease),
+      color 0.2s var(--ease),
+      opacity 0.2s var(--ease);
+  }
+
+  .story__arrow svg {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+  }
+
+  .story__arrow:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  .story__arrow:not(:disabled):hover,
+  .story__arrow:focus-visible,
+  .story__label:hover,
+  .story__label:focus-visible {
+    color: var(--butter);
+  }
+
+  .story__arrow[data-prev]:not(:disabled):hover {
+    transform: translateX(-3px);
+  }
+
+  .story__arrow[data-next]:not(:disabled):hover {
+    transform: translateX(3px);
+  }
+
+  .story__bar :focus-visible {
+    outline: 3px solid var(--butter);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .story [data-reveal] {
+      opacity: 1;
+      transition: none;
+    }
+    .story__lightbox[open] {
+      animation: none;
+    }
+  }
+</style>

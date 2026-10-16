@@ -7,9 +7,11 @@ interface Props {
   /** home page: fixed bar that only shows from the portfolio section downwards */
   floating?: boolean;
   current?: CategorySlug;
+  /** where the "i" goes (pages without an Information section send it to the home page's) */
+  infoHref?: string;
 }
 
-const { floating = false, current } = Astro.props;
+const { floating = false, current, infoHref = '#information' } = Astro.props;
 ---
 
 <header
@@ -34,7 +36,7 @@ const { floating = false, current } = Astro.props;
         }
         <li>
           <!-- jumps to the Information section at the very end of the page -->
-          <a class="sitebar__info" href="#information" aria-label="Information">
+          <a class="sitebar__info" href={infoHref} aria-label="Information">
             <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
               <path
                 fill-rule="evenodd"

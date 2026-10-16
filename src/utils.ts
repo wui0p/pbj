@@ -10,7 +10,8 @@ export function url(path = '/'): string {
   return `${base}${clean}`;
 }
 
-export const postUrl = (post: Post) => url(`/blog/${post.id}/`);
+/** A post's page: its trip board (/trip/<trip>/) when it has one, otherwise /blog/<id>/. */
+export const postUrl = (post: Post) => (post.data.trip ? url(`/trip/${post.data.trip}/`) : url(`/blog/${post.id}/`));
 export const categoryUrl = (slug: CategorySlug) => url(`/category/${slug}/`);
 export const categoryLabel = (slug: CategorySlug) => CATEGORIES[slug].label;
 
