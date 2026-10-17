@@ -27,6 +27,11 @@ interface Props {
 }
 
 const { albums } = Astro.props;
+const slug = (s: string) =>
+  s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
 ---
 
 {
@@ -34,7 +39,8 @@ const { albums } = Astro.props;
     const Strip = a.link ? 'a' : 'div';
     const meadow = a.strip === 'meadow';
     return (
-      <section class="album" aria-labelledby={`album-${i}`}>
+      // id from the title ("EPIC: The Musical" → #epic-the-musical), so Top Suggestions can link straight here
+      <section class="album" id={slug(a.title)} aria-labelledby={`album-${i}`}>
         <div class:list={['album__top', { 'album__top--wide': a.cover.width > a.cover.height }]}>
           <Image class="album__cover" src={a.cover} alt={a.alt} widths={[300, 460, 920]} sizes="(max-width: 640px) 92vw, 460px" />
           <div>
@@ -220,6 +226,7 @@ const { albums } = Astro.props;
 <style>
   .album {
     margin-top: clamp(28px, 3.5vw, 48px);
+    scroll-margin-top: 96px; /* a jump here (from Top Suggestions) lands under the top bar */
   }
 
   .album + .album {
@@ -395,7 +402,7 @@ const { albums } = Astro.props;
     width: 50%;
     overflow: hidden;
     background: var(--butter);
-    transition: transform 1.1s var(--ease);
+    transition: transform 2.5s var(--ease); /* slowed twice by 50% on 2026-10-17: 1.1s → 1.65s → 2.5s */
   }
 
   .strip__half--left {

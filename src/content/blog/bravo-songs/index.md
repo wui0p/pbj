@@ -10,7 +10,7 @@ albums:
     by: "Jorge Rivera-Herrans"
     cover: ./epic-cover.jpg
     alt: "The EPIC: The Musical cover: a ring of painted scenes around the word EPIC"
-    # the same playlist as the record in Top Recommendations
+    # the EPIC playlist on YouTube (the record in Top Suggestions links to this section instead)
     link: "https://www.youtube.com/playlist?list=PLbtGX7d5QSn8"
     call: "Click to Travel with Odysseus"
     text:
