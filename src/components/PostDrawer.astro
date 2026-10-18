@@ -5,11 +5,14 @@
 // the category page.
 import type { MarkdownHeading } from 'astro';
 import { CATEGORIES, SECTIONS, type CategorySlug } from '../consts';
-import { UNDER_CONSTRUCTION, bySectionOrder, categoryUrl, langOf, metaText, postUrl, type Post } from '../utils';
+import { UNDER_CONSTRUCTION, bySectionOrder, categoryUrl, itemHref, langOf, linkKind, metaText, type Post } from '../utils';
 
 interface Props {
   category: CategorySlug;
-  /** the category's posts that have (or will have) their own page, placeholders included */
+  /**
+   * the category's posts that have (or will have) their own page, placeholders included, plus outside-link
+   * blocks marked `sidebar` (they open their link in a new tab)
+   */
   posts: Post[];
   current: Post;
   headings: MarkdownHeading[];
@@ -62,7 +65,10 @@ const toc = h2.length >= 2 ? h2 : headings.filter((h) => h.depth === 3);
           <ul class="drawer__list">
             {g.posts.map((p) => {
               const isCurrent = p.id === current.id;
-              const meta = metaText(p);
+              const { href, external } = itemHref(p);
+              // an outside link (e.g. GitHub) says where it goes after its date
+              const kind = external ? linkKind(p) : undefined;
+              const meta = [metaText(p), kind].filter(Boolean).join(' · ');
               const soon = p.data.placeholder;
               // a placeholder is listed but can't be opened yet; it says so on hover
               const Tag = soon ? 'div' : 'a';
@@ -70,7 +76,9 @@ const toc = h2.length >= 2 ? h2 : headings.filter((h) => h.depth === 3);
                 <li>
                   <Tag
                     class:list={['drawer__item', { 'is-current': isCurrent, soon, 'drawer__item--soon': soon }]}
-                    href={soon ? undefined : postUrl(p)}
+                    href={soon ? undefined : href}
+                    target={!soon && external ? '_blank' : undefined}
+                    rel={!soon && external ? 'noopener noreferrer' : undefined}
                     aria-current={isCurrent ? 'page' : undefined}
                     tabindex={soon ? 0 : undefined}
                     aria-describedby={soon ? `${p.id}-drawer-soon` : undefined}

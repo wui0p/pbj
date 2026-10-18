@@ -26,12 +26,14 @@ export const UNDER_CONSTRUCTION = 'This blog is under construction. Please come 
 
 /**
  * What a block's link opens, shown before its description (v16): "PDF" for a Google Drive file,
- * "Folder" for a Google Drive folder. (Buttons don't get this, only whole blocks.)
+ * "Folder" for a Google Drive folder, "GitHub" for a GitHub page (2026-10-18). (Buttons don't get this,
+ * only whole blocks.)
  */
-export function linkKind(post: Post): 'PDF' | 'Folder' | undefined {
+export function linkKind(post: Post): 'PDF' | 'Folder' | 'GitHub' | undefined {
   const link = post.data.link ?? '';
   if (/drive\.google\.com\/file\//.test(link) || /docs\.google\.com\/.*\/d\//.test(link)) return 'PDF';
   if (/drive\.google\.com\/drive\/folders\//.test(link)) return 'Folder';
+  if (/^https:\/\/github\.com\//.test(link)) return 'GitHub';
   return undefined;
 }
 
@@ -80,6 +82,13 @@ export function categoryOrder(category: CategorySlug, posts: Post[]): Post[] {
 /** The posts a reader steps through with Previous / Next: everything that has (or will have) its own page. */
 export const readingOrder = (category: CategorySlug, posts: Post[]) =>
   categoryOrder(category, posts).filter(isPageKind);
+
+/**
+ * What the post side bar lists: the same posts as Previous / Next, plus outside-link blocks marked
+ * `sidebar: true` (e.g. the IC contest on GitHub), which open their link. Previous / Next never show those.
+ */
+export const sidebarOrder = (category: CategorySlug, posts: Post[]) =>
+  categoryOrder(category, posts).filter((p) => isPageKind(p) || (p.data.sidebar && p.data.link));
 
 export async function getPosts(): Promise<Post[]> {
   const posts = await getCollection('blog');

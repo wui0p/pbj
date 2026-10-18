@@ -16,6 +16,7 @@ import {
   langOf,
   postUrl,
   readingOrder,
+  sidebarOrder,
   type Post,
 } from '../../utils';
 
@@ -31,7 +32,8 @@ export async function getStaticPaths() {
     const i = order.findIndex((p) => p.id === post.id);
     return {
       params: { id: post.id },
-      props: { post, siblings: order, prev: order[i - 1], next: order[i + 1] },
+      // the side bar also lists outside-link blocks marked `sidebar` (they aren't in Previous / Next)
+      props: { post, siblings: sidebarOrder(post.data.category, all), prev: order[i - 1], next: order[i + 1] },
     };
   });
 }

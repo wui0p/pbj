@@ -23,6 +23,9 @@ const blog = defineCollection({
       label: z.string().optional(),
       // the block opens this page instead of a post on this site (no post page is made)
       link: z.url().optional(),
+      // an outside-link block that is also listed in the post side bar (opening its link); never in
+      // Previous / Next
+      sidebar: z.boolean().default(false),
       // a big block with its own buttons: the block itself isn't a link, only the buttons are.
       // href: opens that page · action "demo": opens the SNN demo under the section ·
       // neither: shown but does nothing yet (`note` is shown beside it on hover)
