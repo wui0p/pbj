@@ -42,7 +42,7 @@ export const SECTIONS: Record<CategorySlug, { id: string; label: string }[]> = {
   ],
   thoughts: [
     { id: 'recommendations', label: 'Recommendations' },
-    { id: 'memo', label: 'Random Memo' },
+    { id: 'memo', label: 'My Take' }, // was "Random Memo" until 2026-10-21
   ],
   travel: [],
 };

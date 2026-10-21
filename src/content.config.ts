@@ -58,6 +58,9 @@ const blog = defineCollection({
       // placeholder content: never shown in Newest News
       placeholder: z.boolean().default(false),
       cover: image().optional(),
+      // news: the post page reads like a news report (serif headline and text, byline, no summary under the
+      // title, the ## headings hidden in the text but still listed in the side bar)
+      layout: z.enum(['news']).optional(),
       // music posts (Bravo Songs): one section per album, its cover beside the title and text, then a
       // Greek-pattern strip that opens `link` (`call` is the line the strip shows when it parts)
       albums: z
