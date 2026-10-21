@@ -23,6 +23,17 @@ const { floating = false, current, infoHref = '#information' } = Astro.props;
     <a class="sitebar__home" href={url('/')} aria-label="Jeffrey Wu — home">
       <Logo class="sitebar__logo" />
     </a>
+    {
+      floating && (
+        // home page only: a quiet shortcut that glides down to The Menu (gone once you're past it)
+        <a class="sitebar__skip" href="#menu" data-skip>
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M12 5v13.5M6 12.5l6 6 6-6" />
+          </svg>
+          <span class="sitebar__skip-text">Skip to the Menu</span>
+        </a>
+      )
+    }
     <nav aria-label="Categories">
       <ul class="sitebar__nav">
         {
@@ -51,6 +62,47 @@ const { floating = false, current, infoHref = '#information' } = Astro.props;
 </header>
 
 <script>
+  import { scrollUnderBar } from '../scroll';
+
+  // "↓ Skip to the Menu" (home page only, 2026-10-22): glides down to The Menu, landing just under the bar.
+  // Once The Menu has reached the top of the screen there's nothing left to skip to, so it fades away.
+  const skip = document.querySelector<HTMLElement>('[data-skip]');
+  const menu = document.querySelector<HTMLElement>('#menu .menu') ?? document.getElementById('menu');
+  if (skip && menu) {
+    skip.addEventListener('click', (e) => {
+      e.preventDefault();
+      scrollUnderBar(menu, 28);
+    });
+    const barEl = skip.closest<HTMLElement>('.sitebar');
+    // too crowded (it would push the categories onto a second row, or nearly touch them): leave it out
+    const nav = barEl?.querySelector<HTMLElement>('nav');
+    const fit = () => {
+      if (!nav) return;
+      skip.classList.remove('is-crowded');
+      if (getComputedStyle(skip).display === 'none') return; // phones: hidden by the stylesheet
+      const withTop = nav.offsetTop;
+      const withH = nav.offsetHeight;
+      const room = nav.getBoundingClientRect().left - skip.getBoundingClientRect().right;
+      skip.classList.add('is-crowded');
+      const crowded = withTop !== nav.offsetTop || withH > nav.offsetHeight || room < 48;
+      skip.classList.toggle('is-crowded', crowded);
+    };
+    // re-check whenever the bar changes width, and once the fonts have loaded (they change the words' widths)
+    if (nav) new ResizeObserver(fit).observe(nav.parentElement ?? nav);
+    addEventListener('resize', fit);
+    document.fonts?.ready.then(fit);
+    fit();
+    const past = () => {
+      const gone = menu.getBoundingClientRect().top <= (barEl?.offsetHeight ?? 0) + 60;
+      skip.classList.toggle('is-gone', gone);
+      skip.tabIndex = gone ? -1 : 0;
+      skip.setAttribute('aria-hidden', String(gone));
+    };
+    addEventListener('scroll', past, { passive: true });
+    addEventListener('resize', past);
+    past();
+  }
+
   // Floating bar (home page only): show it once About Me reaches the top of the screen,
   // and keep it for the rest of the page; hide it again when scrolling back above.
   const bar = document.querySelector<HTMLElement>('[data-sitebar]');
@@ -184,6 +236,59 @@ const { floating = false, current, infoHref = '#information' } = Astro.props;
     transform: translateY(-1px) scale(1.03);
   }
 
+  /* "↓ Skip to the Menu": small, grey and quiet, like "← MAIN PAGE"; on hover it darkens and the arrow dips */
+  .sitebar__skip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-right: auto; /* sits next to the logo; the categories stay on the right */
+    padding: 4px 0;
+    color: var(--ink-soft);
+    text-decoration: none;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    transition:
+      color 0.2s var(--ease),
+      opacity 0.35s var(--ease),
+      visibility 0.35s;
+  }
+
+  .sitebar__skip svg {
+    flex: none;
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform 0.3s var(--ease);
+  }
+
+  .sitebar__skip:hover,
+  .sitebar__skip:focus-visible {
+    color: var(--ink);
+  }
+
+  .sitebar__skip:hover svg,
+  .sitebar__skip:focus-visible svg {
+    transform: translateY(2px);
+  }
+
+  /* past The Menu: nothing to skip to */
+  .sitebar__skip.is-gone {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .sitebar__skip.is-crowded {
+    display: none;
+  }
+
   .sitebar__nav {
     list-style: none;
     margin: 0;
@@ -267,6 +372,10 @@ const { floating = false, current, infoHref = '#information' } = Astro.props;
     .sitebar__nav .sitebar__info {
       width: 24px;
       height: 24px;
+    }
+    /* phones: no skip link at all (too crowded beside the logo and the four links) */
+    .sitebar__skip {
+      display: none;
     }
   }
 
