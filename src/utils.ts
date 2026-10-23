@@ -79,13 +79,17 @@ export function categoryOrder(category: CategorySlug, posts: Post[]): Post[] {
   return [...mine].sort((a, b) => rank(a) - rank(b) || bySectionOrder(a, b));
 }
 
-/** The posts a reader steps through with Previous / Next: everything that has (or will have) its own page. */
+/**
+ * The posts a reader steps through with Previous / Next: only ones with a page to open. Outside links
+ * (PDF / Folder / GitHub) and placeholders are jumped over (2026-10-23).
+ */
 export const readingOrder = (category: CategorySlug, posts: Post[]) =>
-  categoryOrder(category, posts).filter(isPageKind);
+  categoryOrder(category, posts).filter(hasPage);
 
 /**
- * What the post side bar lists: the same posts as Previous / Next, plus outside-link blocks marked
- * `sidebar: true` (e.g. the IC contest on GitHub), which open their link. Previous / Next never show those.
+ * What the post side bar lists: every post that has (or will have) its own page, placeholders included
+ * (shown as under construction), plus outside-link blocks marked `sidebar: true` (e.g. the IC contest on
+ * GitHub), which open their link. Previous / Next never show those.
  */
 export const sidebarOrder = (category: CategorySlug, posts: Post[]) =>
   categoryOrder(category, posts).filter((p) => isPageKind(p) || (p.data.sidebar && p.data.link));

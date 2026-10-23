@@ -27,8 +27,8 @@ export async function getStaticPaths() {
   // a trip's page is its board instead (src/pages/trip/[trip].astro)
   return all.filter((p) => hasPage(p) && !p.data.trip).map((post) => {
     // Previous / Next follow the category page's own order (sections, pinned first, newest), worked out
-    // from the posts themselves at every build, so a new post slots in by itself. Placeholders stay in the
-    // order but show as "under construction".
+    // from the posts themselves at every build, so a new post slots in by itself. Placeholders and outside
+    // links (PDF / Folder / GitHub) are jumped over.
     const order = readingOrder(post.data.category, all);
     const i = order.findIndex((p) => p.id === post.id);
     return {
