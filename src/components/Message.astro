@@ -1,11 +1,15 @@
 ---
-import { Image } from 'astro:assets';
+import { Image, getImage } from 'astro:assets';
 import ocean from '../assets/message/lonely-ocean.jpg';
+import oceanFirst from '../assets/message/lonely-ocean-2023.jpg';
 import monet from '../assets/message/impression-sunrise.jpg';
 import sunflowers from '../assets/message/sunflowers.jpg';
 
 // "Important message" scrolling moments (replaced the old About Me).
 // Every word is either fully on the page (ink) or fully on a painting (white): never split.
+
+// "first version" (v19) opens the 2023 painting, like a photo in the Japan album; only fetched when opened
+const first = await getImage({ src: oceanFirst, width: 1000 });
 ---
 
 <section class="msg" id="about" aria-label="About me">
@@ -31,7 +35,12 @@ import sunflowers from '../assets/message/sunflowers.jpg';
         <p class="art-caption ocean__caption">* Jeffrey Wu, <em>Lonely Ocean</em>, 2023–2024</p>
         <!-- about my painting: drawing is something I enjoy doing -->
         <p class="ocean__desc">
-          <span class="hl">This is my favorite painting I’ve made.</span> The first version was drawn in 2023 to capture
+          <span class="hl">This is my favorite painting I’ve made.</span> The <button
+            type="button"
+            class="ocean__first"
+            data-first-open
+            aria-haspopup="dialog">first version</button
+          > was drawn in 2023 to capture
           the beauty of ocean blue and the feeling of heading somewhere unknown. After a year, I came back to this drawing
           and made it richer in depth, using oil paint. The detail I enjoy the most is the sunlight hitting the head of
           the sea turtle, as if it is heading somewhere brighter.
@@ -39,6 +48,20 @@ import sunflowers from '../assets/message/sunflowers.jpg';
       </div>
       <p class="heading msg__words ocean__ic">IC Design</p>
     </div>
+    <!-- the first version, larger, over the greyed page -->
+    <dialog class="first" data-first aria-label="Lonely Ocean, first version (2023)">
+      <img
+        class="first__img"
+        data-src={first.src}
+        width={first.attributes.width}
+        height={first.attributes.height}
+        alt="The first version of Lonely Ocean (2023): a small sea turtle in teal water that darkens towards the bottom, with white specks like bubbles"
+      />
+      <p class="first__cap">First version · 2023</p>
+      <button type="button" class="first__close" data-first-close aria-label="Close the picture">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6 6 18"></path></svg>
+      </button>
+    </dialog>
   </div>
 
   <!-- 2. Monet on the left wall; Van Gogh on the right wall, the words under it -->
@@ -78,6 +101,22 @@ import sunflowers from '../assets/message/sunflowers.jpg';
     </div>
   </div>
 </section>
+
+<script>
+  const dlg = document.querySelector<HTMLDialogElement>('[data-first]');
+  const img = dlg?.querySelector<HTMLImageElement>('img');
+  if (dlg && img) {
+    document.querySelector('[data-first-open]')?.addEventListener('click', () => {
+      if (!img.src) img.src = img.dataset.src ?? '';
+      dlg.showModal();
+    });
+    dlg.querySelector('[data-first-close]')?.addEventListener('click', () => dlg.close());
+    // a click on the grey area (outside the picture) closes it
+    dlg.addEventListener('click', (e) => {
+      if (e.target === dlg) dlg.close();
+    });
+  }
+</script>
 
 <style>
   .msg {
@@ -175,6 +214,108 @@ import sunflowers from '../assets/message/sunflowers.jpg';
     color: var(--ink);
   }
 
+  /* "first version": underlined like a link in a document */
+  .ocean__first {
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.18em;
+    transition: text-decoration-thickness 0.2s var(--ease);
+  }
+
+  .ocean__first:hover,
+  .ocean__first:focus-visible {
+    text-decoration-thickness: 2px;
+  }
+
+  .ocean__first:focus-visible {
+    outline: 3px solid var(--butter);
+    outline-offset: 2px;
+  }
+
+  /* ----- the first version, larger (the same look as a photo opened in the Japan album) ----- */
+  .first {
+    padding: 0;
+    border: 0;
+    background: none;
+    max-width: none;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .first::backdrop {
+    background: rgb(64 64 64 / 0.62);
+    -webkit-backdrop-filter: grayscale(1);
+    backdrop-filter: grayscale(1);
+  }
+
+  .first[open] {
+    animation: first-in 0.25s var(--ease);
+  }
+
+  @keyframes first-in {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+  }
+
+  .first__img {
+    display: block;
+    max-width: min(92vw, 900px);
+    max-height: 80dvh;
+    width: auto;
+    height: auto;
+  }
+
+  .first__cap {
+    margin: 10px 0 0;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--paper);
+  }
+
+  .first__close {
+    position: absolute;
+    top: -14px;
+    right: -14px;
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    background: var(--paper);
+    color: var(--ink);
+    cursor: pointer;
+    transition:
+      background-color 0.2s var(--ease),
+      transform 0.25s var(--ease);
+  }
+
+  .first__close:hover,
+  .first__close:focus-visible {
+    background: var(--butter);
+    transform: rotate(90deg);
+  }
+
+  .first__close svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+  }
+
   /* IC DESIGN right under the painting, grey */
   .ocean__ic {
     margin-left: auto;
@@ -243,6 +384,9 @@ import sunflowers from '../assets/message/sunflowers.jpg';
       opacity: 1;
       translate: none;
       transition: none;
+    }
+    .first[open] {
+      animation: none;
     }
   }
 </style>

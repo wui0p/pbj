@@ -7,6 +7,7 @@ import BackLink from '../../components/BackLink.astro';
 import SnnDemo from '../../components/SnnDemo.astro';
 import TopRecs from '../../components/TopRecs.astro';
 import TeachingJobs from '../../components/TeachingJobs.astro';
+import MiscPage from '../../components/MiscPage.astro';
 import { CATEGORIES, CATEGORY_SLUGS, SECTIONS, TEACHING_STATS, type CategorySlug } from '../../consts';
 import { UNDER_CONSTRUCTION, bySectionOrder, formatDate, getPosts, isoDate, postUrl, url, type Post } from '../../utils';
 import waterLilies from '../../assets/research/water-lilies.jpg';
@@ -31,9 +32,10 @@ const { slug, posts } = Astro.props;
 const { label, blurb } = CATEGORIES[slug];
 
 // each category page opens with a painting (mockup v11, pages 13, 18 and 21); `note` is the box shown when
-// hovering the caption
+// hovering the caption. (Misc has its own layout, with its painting inside src/components/MiscPage.astro.)
+type Painted = Exclude<CategorySlug, 'misc'>;
 const PAINTINGS: Record<
-  CategorySlug,
+  Painted,
   {
     src: ImageMetadata;
     alt: string;
@@ -82,7 +84,8 @@ const PAINTINGS: Record<
     note: 'The first time I ever saw this man was when I was 7, because this is a painting that shows up in Minecraft. So every time I see this, I can only think of adventure, limitless imagination, and the good old days.',
   },
 };
-const art = PAINTINGS[slug];
+// (never read on Misc, which is drawn by MiscPage before anything below)
+const art = PAINTINGS[slug as Painted];
 
 const ordered = (list: Post[]) => [...list].sort(bySectionOrder);
 
@@ -111,7 +114,9 @@ const lines = (text = '') => text.split(/(?<=\.)\s+/).filter(Boolean);
 
 <Page title={label} description={blurb} current={slug} flush>
   {
-    slug === 'travel' ? (
+    slug === 'misc' ? (
+      <MiscPage backHref={mainPage} />
+    ) : slug === 'travel' ? (
       <div class="travel">
         <figure class="travel__art">
           <Image

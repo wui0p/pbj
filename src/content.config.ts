@@ -92,4 +92,20 @@ const blog = defineCollection({
     }),
 });
 
-export const collections = { blog };
+// Misc page (v19, 2026-10-26): small questions about me, each answer hidden until its question is clicked.
+// One file per question; the file's text is the answer.
+const misc = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/misc' }),
+  schema: ({ image }) =>
+    z.object({
+      question: z.string(),
+      // listed in this order
+      order: z.number().default(0),
+      // a picture on the left of the answer, with a small caption under it
+      photo: image().optional(),
+      photoAlt: z.string().optional(),
+      photoCaption: z.string().optional(),
+    }),
+});
+
+export const collections = { blog, misc };

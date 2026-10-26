@@ -7,14 +7,16 @@ export const LINKS = {
   linkedin: 'https://www.linkedin.com/in/jeffrey-wu-42278b301',
 };
 
-// Verilog and Old Work were folded into Research on 2026-10-10 (mockup v10); Teaching added 2026-10-11 (v15).
-export const CATEGORY_SLUGS = ['research', 'teaching', 'thoughts', 'travel'] as const;
+// Verilog and Old Work were folded into Research on 2026-10-10 (mockup v10); Teaching added 2026-10-11 (v15);
+// Misc added between Thoughts and Travel on 2026-10-26 (v19).
+export const CATEGORY_SLUGS = ['research', 'teaching', 'thoughts', 'misc', 'travel'] as const;
 export type CategorySlug = (typeof CATEGORY_SLUGS)[number];
 
 export const CATEGORIES: Record<CategorySlug, { label: string; blurb: string }> = {
   research: { label: 'Research', blurb: 'Work, projects, and results' },
   teaching: { label: 'Teaching', blurb: 'My work and jobs for teaching' },
   thoughts: { label: 'Thoughts', blurb: 'Things I want to share' },
+  misc: { label: 'Misc', blurb: 'Small, random things about me' },
   travel: { label: 'Travel', blurb: 'Fly away from my problems' },
 };
 
@@ -44,5 +46,6 @@ export const SECTIONS: Record<CategorySlug, { id: string; label: string }[]> = {
     { id: 'recommendations', label: 'Recommendations' },
     { id: 'memo', label: 'My Take' }, // was "Random Memo" until 2026-10-21
   ],
+  misc: [], // questions, not posts (src/content/misc)
   travel: [],
 };

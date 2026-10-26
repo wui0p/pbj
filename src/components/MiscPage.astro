@@ -1,0 +1,309 @@
+---
+import { Image } from 'astro:assets';
+import { getCollection, render } from 'astro:content';
+import BackLink from './BackLink.astro';
+import mondrian from '../assets/misc/mondrian.jpg';
+
+// Misc (mockup v19, pages 29–31): Mondrian against the left wall with MISC. in white on its red square, the
+// two lines beside it, then the questions. Each answer stays hidden until its question is clicked.
+interface Props {
+  backHref: string;
+}
+
+const { backHref } = Astro.props;
+const questions = await Promise.all(
+  (await getCollection('misc'))
+    .sort((a, b) => a.data.order - b.data.order)
+    .map(async (q) => ({ ...q, Content: (await render(q)).Content })),
+);
+---
+
+<div class="misc">
+  <div class="misc__top">
+    <div class="misc__paint">
+      <Image
+        src={mondrian}
+        alt="Piet Mondrian's Composition with Red, Blue and Yellow: a large red square, a small blue and a small yellow block, divided by thick black lines on white"
+        widths={[500, 800, 1100, 1400]}
+        sizes="(max-width: 760px) 100vw, 53vw"
+        class="misc__img"
+        loading="eager"
+      />
+      <h1 class="heading misc__title">Misc.</h1>
+    </div>
+    <div class="misc__side">
+      <p
+        class="art-caption misc__caption"
+        data-note="This is one of my high school friends’ favorite paintings. I enjoy this abstract painting because of how clean and quiet it feels. It is simple, but it still consists of different colors that find a balance. Just like a human—a life."
+      >
+        * Piet Mondrian, <em>Composition with Red, Blue and Yellow</em>, 1930
+      </p>
+      <div class="misc__lines">
+        <p class="heading misc__line">Not achievements, not projects</p>
+        <p class="heading misc__line">Just small, random things about me</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap misc__list">
+    <BackLink href={backHref} label="Main page" class="misc__back" />
+    {
+      questions.map(({ id, data, Content }) => (
+        <details class="qa" id={id}>
+          <summary class="qa__q">
+            <h2 class="heading qa__text">{data.question}</h2>
+            <svg class="qa__arrow" viewBox="0 0 32 20" aria-hidden="true" focusable="false">
+              <path d="M0 0h9.5L16 7.5 22.5 0H32L16 20Z" />
+            </svg>
+          </summary>
+          <div class:list={['qa__a', { 'qa__a--photo': data.photo }]}>
+            {data.photo && (
+              <figure class="qa__fig">
+                <Image src={data.photo} alt={data.photoAlt ?? ''} widths={[320, 626]} sizes="300px" class="qa__img" />
+                {data.photoCaption && <figcaption class="art-caption">* {data.photoCaption}</figcaption>}
+              </figure>
+            )}
+            <div class="qa__text-body">
+              <Content />
+            </div>
+          </div>
+        </details>
+      ))
+    }
+  </div>
+</div>
+
+<script>
+  // a link straight to a question (…/misc/#formula-1) opens its answer
+  const open = () => {
+    const el = location.hash ? document.getElementById(decodeURIComponent(location.hash.slice(1))) : null;
+    if (el instanceof HTMLDetailsElement) el.open = true;
+  };
+  open();
+  addEventListener('hashchange', open);
+</script>
+
+<style>
+  /* ----- Mondrian against the left wall, the two lines beside it ----- */
+  .misc__top {
+    display: grid;
+    grid-template-columns: 53% minmax(0, 1fr);
+    column-gap: clamp(20px, 2.4vw, 40px);
+  }
+
+  .misc__paint {
+    position: relative;
+    container-type: inline-size;
+  }
+
+  .misc__paint :global(.misc__img) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* MISC. in white, inside the big red square */
+  .misc__title {
+    position: absolute;
+    left: 29cqi;
+    top: 23cqi;
+    margin: 0;
+    color: var(--paper);
+    font-size: 17cqi;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .misc__side {
+    display: flex;
+    flex-direction: column;
+    padding-right: var(--gutter);
+  }
+
+  .misc__caption {
+    width: fit-content;
+    margin-top: clamp(8px, 1vw, 14px);
+  }
+
+  /* no full stops on these two (v19) */
+  .misc__lines {
+    margin-top: auto;
+    padding: clamp(32px, 4vw, 64px) 0 clamp(40px, 9.5vw, 150px); /* sits a little above the painting's bottom */
+    display: grid;
+    gap: clamp(28px, 3.6vw, 60px);
+  }
+
+  .misc__line {
+    margin: 0;
+    font-size: clamp(1.6rem, 3.3vw, 3.4rem);
+    line-height: 1.12;
+    color: var(--ink);
+    text-wrap: balance;
+  }
+
+  /* ----- the questions ----- */
+  .misc__list {
+    max-width: 1000px;
+    padding-top: clamp(72px, 9vw, 130px);
+    padding-bottom: clamp(56px, 7vw, 110px);
+  }
+
+  .misc__list :global(.misc__back) {
+    margin: 0 0 clamp(12px, 1.4vw, 18px) clamp(4px, 1vw, 12px);
+  }
+
+  .qa + .qa {
+    margin-top: clamp(30px, 3.4vw, 48px);
+  }
+
+  .qa {
+    scroll-margin-top: 90px;
+  }
+
+  /* the question: big uppercase with a thick ink rule under it, the arrow on the right */
+  .qa__q {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 0 clamp(4px, 1vw, 12px) 0.45em;
+    border-bottom: 4px solid var(--ink);
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .qa__q::-webkit-details-marker {
+    display: none;
+  }
+
+  .qa__q:focus-visible {
+    outline: 3px solid var(--butter);
+    outline-offset: 6px;
+  }
+
+  .qa__text {
+    font-size: clamp(1.25rem, 2.3vw, 2.1rem);
+    line-height: 1.12;
+  }
+
+  /* points down while the answer is hidden, flips up when it opens */
+  .qa__arrow {
+    flex: none;
+    width: clamp(26px, 2.6vw, 38px);
+    fill: var(--ink);
+    transition: transform 0.35s var(--ease);
+  }
+
+  .qa__q:hover .qa__arrow {
+    transform: translateY(3px);
+  }
+
+  .qa[open] .qa__arrow {
+    transform: rotate(180deg);
+  }
+
+  .qa[open] .qa__q:hover .qa__arrow {
+    transform: rotate(180deg) translateY(3px);
+  }
+
+  /* the answer slides open where the browser can animate it (and simply appears elsewhere) */
+  .qa {
+    interpolate-size: allow-keywords;
+  }
+
+  .qa::details-content {
+    block-size: 0;
+    overflow: clip;
+    transition:
+      block-size 0.4s var(--ease),
+      content-visibility 0.4s allow-discrete;
+  }
+
+  .qa[open]::details-content {
+    block-size: auto;
+  }
+
+  .qa__a {
+    padding: clamp(18px, 2.2vw, 30px) clamp(4px, 1vw, 12px) clamp(8px, 1vw, 14px);
+  }
+
+  .qa__a--photo {
+    display: grid;
+    grid-template-columns: minmax(0, 30%) minmax(0, 1fr);
+    gap: clamp(20px, 3vw, 36px);
+    align-items: start;
+  }
+
+  .qa__fig {
+    margin: 0;
+  }
+
+  .qa__fig :global(.qa__img) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .qa__text-body :global(p) {
+    margin: 0;
+    font-size: clamp(1rem, 1.3vw, 1.15rem);
+    line-height: 1.6;
+    text-align: justify;
+    color: var(--ink);
+  }
+
+  .qa__text-body :global(p + p) {
+    margin-top: 1.1em;
+  }
+
+  .qa__text-body :global(sup) {
+    font-size: 0.65em;
+    line-height: 0;
+  }
+
+  /* links read like a document's: underlined text */
+  .qa__text-body :global(a) {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+    transition: text-decoration-thickness 0.2s var(--ease);
+  }
+
+  .qa__text-body :global(a:hover),
+  .qa__text-body :global(a:focus-visible) {
+    text-decoration-thickness: 2px;
+  }
+
+  @media (max-width: 760px) {
+    /* phones: the painting, then the two lines under it; a picture above its answer */
+    .misc__top {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .misc__side {
+      padding-left: var(--gutter);
+    }
+    .misc__caption {
+      margin-left: 0;
+    }
+    .misc__lines {
+      padding-top: 36px;
+    }
+    .misc__line {
+      font-size: 1.9rem;
+    }
+    .qa__a--photo {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .qa__fig {
+      max-width: 260px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .qa::details-content,
+    .qa__arrow {
+      transition: none;
+    }
+  }
+</style>
