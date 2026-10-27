@@ -56,8 +56,8 @@ const questions = await Promise.all(
               <path d="M0 0h9.5L16 7.5 22.5 0H32L16 20Z" />
             </svg>
           </summary>
-          <div class:list={['qa__a', { 'qa__a--photo': data.photo }]}>
-            {data.photo && (
+          <div class:list={['qa__a', { 'qa__a--photo': data.photo && data.photoAt === 'side' }]}>
+            {data.photo && data.photoAt === 'side' && (
               <figure class="qa__fig">
                 <Image src={data.photo} alt={data.photoAlt ?? ''} widths={[320, 626]} sizes="300px" class="qa__img" />
                 {data.photoCaption && <figcaption class="art-caption">* {data.photoCaption}</figcaption>}
@@ -66,6 +66,18 @@ const questions = await Promise.all(
             <div class="qa__text-body">
               <Content />
             </div>
+            {data.photo && data.photoAt === 'below' && (
+              <figure class="qa__fig qa__fig--below">
+                <Image
+                  src={data.photo}
+                  alt={data.photoAlt ?? ''}
+                  widths={[640, 1000, 1600]}
+                  sizes="(max-width: 1040px) 100vw, 980px"
+                  class="qa__img"
+                />
+                {data.photoCaption && <figcaption class="art-caption">* {data.photoCaption}</figcaption>}
+              </figure>
+            )}
           </div>
         </details>
       ))
@@ -238,6 +250,11 @@ const questions = await Promise.all(
     margin: 0;
   }
 
+  /* a wide picture across the answer, under its text */
+  .qa__fig--below {
+    margin-top: clamp(22px, 2.6vw, 34px);
+  }
+
   .qa__fig :global(.qa__img) {
     display: block;
     width: 100%;
@@ -295,7 +312,7 @@ const questions = await Promise.all(
     .qa__a--photo {
       grid-template-columns: minmax(0, 1fr);
     }
-    .qa__fig {
+    .qa__a--photo .qa__fig {
       max-width: 260px;
     }
   }

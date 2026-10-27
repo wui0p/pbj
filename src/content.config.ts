@@ -101,10 +101,12 @@ const misc = defineCollection({
       question: z.string(),
       // listed in this order
       order: z.number().default(0),
-      // a picture on the left of the answer, with a small caption under it
+      // a picture with a small caption under it: on the left of the answer ("side"), or across its full width
+      // under the text ("below")
       photo: image().optional(),
       photoAlt: z.string().optional(),
       photoCaption: z.string().optional(),
+      photoAt: z.enum(['side', 'below']).default('side'),
     }),
 });
 
