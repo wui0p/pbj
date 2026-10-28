@@ -49,7 +49,7 @@ const blog = defineCollection({
           stats: z.array(z.tuple([z.string(), z.string()])).default([]),
         })
         .optional(),
-      // travel: this post's page is a trip board you drag around (photos + notes per day, src/trips/<trip>.ts)
+      // travel: this post's page is a trip's photo album (photos + notes per day, src/trips/<trip>.ts)
       trip: z.enum(['japan-2026']).optional(),
       // travel: the country's symbol drawn beside its name on the trip block
       flag: z.enum(['japan']).optional(),

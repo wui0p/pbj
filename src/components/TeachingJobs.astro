@@ -95,7 +95,7 @@ const jobs = await Promise.all(
 </ol>
 
 <script>
-  import { scrollUnderBar } from '../scroll';
+  import { jumpTo, scrollUnderBar } from '../scroll';
 
   const cards =[...document.querySelectorAll<HTMLButtonElement>('[data-job]')];
   const pop = (card: HTMLButtonElement) => document.getElementById(card.getAttribute('aria-controls') ?? '');
@@ -113,12 +113,18 @@ const jobs = await Promise.all(
   };
 
   // one job open at a time
-  const open = (card: HTMLButtonElement) => {
+  const open = (card: HTMLButtonElement, fromElsewhere = false) => {
     cards.forEach((c) => c !== card && setOpen(c, false));
     setOpen(card, true);
-    // the details' top goes right under the top bar, so it's clear the click worked
     const panel = pop(card);
-    if (panel) requestAnimationFrame(() => scrollUnderBar(panel));
+    if (!panel) return;
+    requestAnimationFrame(() =>
+      fromElsewhere
+        ? // arriving from the main page: the job lands a third of the way down, its details under it
+          jumpTo(card, 'instant')
+        : // a click here: the details' top goes right under the top bar, so it's clear the click worked
+          scrollUnderBar(panel),
+    );
   };
 
   cards.forEach((card) => {
@@ -143,7 +149,7 @@ const jobs = await Promise.all(
   // reached at #<job id> (Newest News, a shared link): open that job
   const fromHash = () => {
     const card = cards.find((c) => c.id === decodeURIComponent(location.hash.slice(1)));
-    if (card) open(card);
+    if (card) open(card, true);
   };
   fromHash();
   addEventListener('hashchange', fromHash);
@@ -171,7 +177,7 @@ const jobs = await Promise.all(
     border: 3px solid var(--sand);
     border-radius: clamp(22px, 2.4vw, 34px);
     padding: clamp(20px, 2.4vw, 34px) clamp(22px, 2.6vw, 38px);
-    scroll-margin-top: 80px; /* clear of the top bar, which comes back when you jump up */
+    scroll-margin-top: var(--jump-at); /* a jump here (Newest News) lands a third of the way down */
     transition: border-color 0.25s var(--ease);
   }
 

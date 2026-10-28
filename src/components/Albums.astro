@@ -226,7 +226,7 @@ const slug = (s: string) =>
 <style>
   .album {
     margin-top: clamp(28px, 3.5vw, 48px);
-    scroll-margin-top: 96px; /* a jump here (from Top Suggestions) lands under the top bar */
+    scroll-margin-top: var(--jump-at); /* a jump here (Top Suggestions' record) lands a third of the way down */
   }
 
   .album + .album {

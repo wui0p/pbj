@@ -51,7 +51,7 @@ export function itemHref(post: Post): { href: string; external: boolean } {
 const sortDate = (p: Post) => (p.data.until ?? p.data.date)?.valueOf();
 
 /** Newest first; undated items (lists) after the dated ones, by `order`. */
-export function byNewest(a: Post, b: Post): number {
+function byNewest(a: Post, b: Post): number {
   const da = sortDate(a);
   const db = sortDate(b);
   if (da !== undefined && db !== undefined) return db - da;
@@ -69,7 +69,7 @@ export const bySectionOrder = (a: Post, b: Post) =>
  * then newest; anything without a known section last. The category page, the post side bar and the
  * Previous / Next links at the bottom of a post all use this, so a new post slots in everywhere by itself.
  */
-export function categoryOrder(category: CategorySlug, posts: Post[]): Post[] {
+function categoryOrder(category: CategorySlug, posts: Post[]): Post[] {
   const mine = posts.filter((p) => p.data.category === category);
   const ids = SECTIONS[category].map((s) => s.id);
   const rank = (p: Post) => {

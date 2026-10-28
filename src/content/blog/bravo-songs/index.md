@@ -1,8 +1,8 @@
 ---
-title: "Bravo Songs"
+title: "Song"
 category: thoughts
 section: recommendations
-label: "3 albums"
+label: "3 items"
 order: 3
 # each album: its cover with the title and text beside it, then the Greek-pattern strip that opens its link
 albums:

@@ -44,6 +44,11 @@ const year = new Date().getFullYear();
       </dl>
     </div>
 
+    <!-- a small note at the very end (2026-10-28): not the point of this section, so it stays quiet -->
+    <p class="info__ai">
+      <span class="info__ai-tag">AI Disclosure</span>
+      Written and designed by Jeffrey Wu (a human). Built with help from AI coding tools.
+    </p>
     <p class="info__fine">© {year} Jeffrey Wu</p>
   </div>
 </footer>
@@ -155,8 +160,31 @@ const year = new Date().getFullYear();
     color: var(--ink);
   }
 
-  .info__fine {
+  /* the AI note: as small as the © line, with a little ink tag in front */
+  .info__ai {
     margin: clamp(64px, 9vw, 120px) 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: var(--ink-soft);
+  }
+
+  .info__ai-tag {
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--ink);
+    color: var(--paper);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+
+  .info__fine {
+    margin: 10px 0 0;
     font-size: 0.8rem;
     color: var(--ink-soft);
   }

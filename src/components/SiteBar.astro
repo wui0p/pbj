@@ -64,7 +64,8 @@ const { floating = false, current, infoHref = '#information' } = Astro.props;
 <script>
   import { scrollUnderBar } from '../scroll';
 
-  // "↓ Skip to the Menu" (home page only, 2026-10-22): glides down to The Menu, landing just under the bar.
+  // "↓ Skip to the Menu" (home page only, 2026-10-22): glides down to The Menu, landing just under the bar so the
+  // whole Menu fits on screen (the one jump that doesn't use the third-of-the-way-down rule; 2026-10-28).
   // Once The Menu has reached the top of the screen there's nothing left to skip to, so it fades away.
   const skip = document.querySelector<HTMLElement>('[data-skip]');
   const menu = document.querySelector<HTMLElement>('#menu .menu') ?? document.getElementById('menu');
@@ -72,6 +73,12 @@ const { floating = false, current, infoHref = '#information' } = Astro.props;
     skip.addEventListener('click', (e) => {
       e.preventDefault();
       scrollUnderBar(menu, 28);
+    });
+    // "← MAIN PAGE" (/#menu) stops at the same place (2026-10-28): the Menu box 28px under the bar, not the
+    // whole section at the top of the screen (which left too much empty space above The Menu). This runs after
+    // the browser's own jump and the one in Base.astro.
+    addEventListener('load', () => {
+      if (location.hash === '#menu') scrollUnderBar(menu, 28, 'instant');
     });
     const barEl = skip.closest<HTMLElement>('.sitebar');
     // too crowded (it would push the categories onto a second row, or nearly touch them): leave it out
@@ -87,9 +94,9 @@ const { floating = false, current, infoHref = '#information' } = Astro.props;
       const crowded = withTop !== nav.offsetTop || withH > nav.offsetHeight || room < 48;
       skip.classList.toggle('is-crowded', crowded);
     };
-    // re-check whenever the bar changes width, and once the fonts have loaded (they change the words' widths)
+    // re-check whenever the bar changes size (window resizes included), and once the fonts have loaded (they
+    // change the words' widths)
     if (nav) new ResizeObserver(fit).observe(nav.parentElement ?? nav);
-    addEventListener('resize', fit);
     document.fonts?.ready.then(fit);
     fit();
     const past = () => {

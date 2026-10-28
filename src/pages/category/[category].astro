@@ -42,7 +42,7 @@ const PAINTINGS: Record<
     artist: string;
     title: string;
     date: string;
-    // where the white page name sits on the painting ("teaching": its own layout, with EDU/CAT/ION beside it)
+    // where the white page name sits on the painting ("teaching": its own layout, with the teaching stats beside it)
     titleAt: 'center' | 'left' | 'teaching';
     note: string;
   }
@@ -457,9 +457,11 @@ const lines = (text = '') => text.split(/(?<=\.)\s+/).filter(Boolean);
     margin-top: clamp(48px, 6vw, 88px);
   }
 
-  /* jumping to a block (e.g. "Dive deeper" → #snn-capstone) leaves a little room above it */
-  .cat :global(.item) {
-    scroll-margin-top: 80px; /* clear of the top bar, which comes back when you jump up */
+  /* jumping to a block (e.g. "Dive deeper" → #snn-capstone) or a section ("More recommendations →") lands it a
+     third of the way down the screen, so a bit of what's above still shows (2026-10-28) */
+  .cat :global(.item),
+  .cat__sec {
+    scroll-margin-top: var(--jump-at);
   }
 
   .cat__sec + .cat__sec {

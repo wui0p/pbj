@@ -42,9 +42,10 @@ export const SECTIONS: Record<CategorySlug, { id: string; label: string }[]> = {
     { id: 'jobs', label: 'Teaching Job' },
     { id: 'others', label: 'Others' },
   ],
+  // My Take on top, Recommendations under it (2026-10-28)
   thoughts: [
-    { id: 'recommendations', label: 'Recommendations' },
     { id: 'memo', label: 'My Take' }, // was "Random Memo" until 2026-10-21
+    { id: 'recommendations', label: 'Recommendations' },
   ],
   misc: [], // questions, not posts (src/content/misc)
   travel: [],

@@ -52,7 +52,7 @@ import almond from '../assets/hero/almond-blossom.jpg';
 
 <script>
   // Fit the title's viewBox to the actual ink bounds of "JEFFREY WU" (same font as
-  // ELECTRICAL BLOG), so the stretched letters touch the edges of their box exactly.
+  // PORTFOLIO & BLOGS), so the stretched letters touch the edges of their box exactly.
   async function fitTitle() {
     const svg = document.querySelector<SVGSVGElement>('.title__svg');
     const text = svg?.querySelector('text');
@@ -149,14 +149,14 @@ import almond from '../assets/hero/almond-blossom.jpg';
   .title__svg {
     display: block;
     width: 100%;
-    /* stretch vertically until it nearly meets ELECTRICAL BLOG,
+    /* stretch vertically until it nearly meets PORTFOLIO & BLOGS,
        capped relative to the width so it never gets absurd */
     height: min(36vh, calc(var(--fw) * 0.36));
     min-height: calc(var(--fw) * 0.12);
     overflow: visible;
   }
 
-  /* same face as ELECTRICAL BLOG (the .heading style) */
+  /* same face as PORTFOLIO & BLOGS (the .heading style) */
   .title__svg text {
     font-family: var(--font-sans);
     font-size: 100px;

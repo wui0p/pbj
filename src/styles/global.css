@@ -57,6 +57,13 @@ html.smooth-scroll {
   }
 }
 
+/* Where a jump from the main page lands (2026-10-28): a third of the way down the screen, not at the very top,
+   so a bit of what's above still shows and the eye can follow. Used as scroll-margin-top by every jump target
+   (and by jumpTo() in src/scroll.ts). */
+:root {
+  --jump-at: 33vh;
+}
+
 /* jump targets land below the floating top bar */
 #portfolio {
   scroll-margin-top: 84px;
@@ -128,7 +135,7 @@ body.home {
   background: var(--paper);
 }
 
-/* Bold sans headings ("ELECTRICAL BLOG", section titles) */
+/* Bold sans headings ("PORTFOLIO & BLOGS", section titles) */
 .heading {
   font-family: var(--font-sans);
   font-weight: 800;
@@ -201,11 +208,6 @@ body.home {
 .btn-3d--butter {
   background: var(--butter);
   --depth-c: var(--butter-deep);
-}
-
-.btn-3d--sand {
-  background: var(--sand);
-  --depth-c: var(--sand-deep);
 }
 
 .btn-3d--paper {

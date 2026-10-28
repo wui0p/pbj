@@ -15,7 +15,6 @@ export type Mode = (typeof MODES)[number];
 
 /** Rate-structure network (beta 0.5) vs temporal/TTFS structure (beta 1, fire once). */
 export const isRateStructure = (m: Mode) => m === 'RATE' || m === 'DELTA_RATE';
-export const numTimesteps = (m: Mode) => (m === 'DELTA_RATE' || m === 'DELTA_TEMP' ? 3 : 5);
 export const layer1Channels = (m: Mode) => (isRateStructure(m) ? 16 : 32);
 
 const PIX = 784;

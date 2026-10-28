@@ -1,8 +1,8 @@
 ---
-title: "Movie List"
+title: "Movie"
 category: thoughts
 section: recommendations
-label: "8 films"
+label: "8 items"
 order: 2
 placeholder: true   # under construction: the block can't be clicked yet
 ---
