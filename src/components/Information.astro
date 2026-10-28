@@ -1,5 +1,6 @@
 ---
 import { LINKS } from '../consts';
+import { categoryUrl } from '../utils';
 
 // The email is never written as plain text, in the HTML or in this source (which is public on GitHub).
 // It's kept here already reversed, in two parts, and the script below turns it back round in the browser.
@@ -47,7 +48,9 @@ const year = new Date().getFullYear();
     <!-- a small note at the very end (2026-10-28): not the point of this section, so it stays quiet -->
     <p class="info__ai">
       <span class="info__ai-tag">AI Disclosure</span>
-      Written and designed by Jeffrey Wu (a human). Built with help from AI coding tools.
+      <span>Written and designed by Jeffrey Wu (a human). Built with help from AI tools for coding and grammar only.</span>
+      <!-- opens the Misc answer "Did you design this website yourself?" (2026-10-29) -->
+      <a class="info__ai-link" href={`${categoryUrl('misc')}#design`}>How I designed it <span aria-hidden="true">→</span></a>
     </p>
     <p class="info__fine">© {year} Jeffrey Wu</p>
   </div>
@@ -81,9 +84,21 @@ const year = new Date().getFullYear();
 </script>
 
 <style>
+  /* at least a whole screen tall (2026-10-28): the "i" jumps here and the screen turns all sky, with nothing of the
+     section above showing; the AI note and the © line sit at the bottom */
   .info {
     background: var(--sky);
     padding: clamp(72px, 10vw, 140px) 0 clamp(40px, 5vw, 64px);
+    box-sizing: border-box;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .info > .wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
   }
 
   .info__heading {
@@ -162,7 +177,8 @@ const year = new Date().getFullYear();
 
   /* the AI note: as small as the © line, with a little ink tag in front */
   .info__ai {
-    margin: clamp(64px, 9vw, 120px) 0 0;
+    margin: auto 0 0;
+    padding-top: clamp(64px, 9vw, 120px);
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -181,6 +197,25 @@ const year = new Date().getFullYear();
     font-weight: 600;
     letter-spacing: 0.02em;
     white-space: nowrap;
+  }
+
+  /* quiet like the note itself: ink, thinly underlined, the arrow nudges on hover */
+  .info__ai-link {
+    color: var(--ink);
+    white-space: nowrap;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+
+  .info__ai-link span {
+    display: inline-block;
+    transition: transform 0.25s var(--ease);
+  }
+
+  .info__ai-link:hover span,
+  .info__ai-link:focus-visible span {
+    transform: translateX(3px);
   }
 
   .info__fine {

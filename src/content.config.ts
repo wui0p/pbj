@@ -102,11 +102,15 @@ const misc = defineCollection({
       // listed in this order
       order: z.number().default(0),
       // a picture with a small caption under it: on the left of the answer ("side"), or across its full width
-      // under the text ("below")
+      // under the text ("below"); or two pictures side by side under the text (with `photo2`): two tall ones kept
+      // short, the caption beside them ("pair"), or two wide ones across the full width, the caption under them
+      // ("row")
       photo: image().optional(),
       photoAlt: z.string().optional(),
+      photo2: image().optional(),
+      photo2Alt: z.string().optional(),
       photoCaption: z.string().optional(),
-      photoAt: z.enum(['side', 'below']).default('side'),
+      photoAt: z.enum(['side', 'below', 'pair', 'row']).default('side'),
     }),
 });
 

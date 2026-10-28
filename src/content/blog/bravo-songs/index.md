@@ -1,5 +1,5 @@
 ---
-title: "Song"
+title: "Songs"
 category: thoughts
 section: recommendations
 label: "3 items"

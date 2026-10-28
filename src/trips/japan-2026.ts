@@ -60,7 +60,7 @@ const DAYS: Record<number, TripEntry[]> = {
     day2('070725', 'A quiet street corner in the morning, with green street lamps and bags of rubbish waiting by a pole'),
     day2('070730', 'An empty crossroads between tall buildings, early in the morning'),
     note(
-      'My first night in a new place is not really the best. I woke up way earlier than everyone else, so I just got up and roamed the streets around our Airbnb.',
+      'I rarely get a good night’s sleep when I change to a new place. I woke up way earlier than everyone else, so I just got up and roamed the streets around our Airbnb.',
     ),
     day2('090302', 'A long shopping street seen from a footbridge, lined with shops and signs'),
     day2('103409', 'Through the monorail window: green-roofed houses among the trees'),
@@ -450,7 +450,7 @@ const DAYS: Record<number, TripEntry[]> = {
     day7('204315', 'A rooftop bar under a glowing sign'),
     day7('204635', 'Sitting by the glass edge of the rooftop, the city lights behind'),
     note(
-      'I’m back at Shibuya Sky. Last year I came here, but it was raining, so they didn’t let me up even though I had a ticket to view the nightlife in Shibuya. I got one ticket this time, so all of them said I should go, because last time I didn’t. I’m very grateful to have such good friends.',
+      'I’m back at Shibuya Sky. Last year I came here, but it was raining, so they didn’t let me up even though I had a ticket to view the nightlife in Shibuya. I only got one night ticket (it was too hard to buy more than one), and all three of my friends said I should be the one to go, because I didn’t see it last time. I’m very grateful to have such good friends.',
     ),
     day7('204639', 'Another photo by the glass edge at night'),
     day7('204655', 'Sitting at the glass edge, seen from further back'),
@@ -474,7 +474,7 @@ const DAYS: Record<number, TripEntry[]> = {
     day7('224255', 'Suitcases and snack wrappers on the floor'),
     day7('004356', 'After midnight: a friend walking ahead under a clear umbrella'),
     note(
-      'Time to go drink at the bar. We drank too much; one of us started to puke and fell asleep on the side of the street. I took care of that friend, and I almost didn’t sleep.',
+      'Time to go drink at the bar. We drank too much; one of us started to puke and fell asleep on the side of the street. I took care of that friend, and I didn’t sleep that night.',
     ),
     day7('005151', 'A cat sitting behind a gate on a quiet street at night'),
     day7('042515', 'A bag of snacks at dawn'),

@@ -78,6 +78,32 @@ const questions = await Promise.all(
                 {data.photoCaption && <figcaption class="art-caption">* {data.photoCaption}</figcaption>}
               </figure>
             )}
+            {data.photo && data.photo2 && data.photoAt === 'pair' && (
+              <figure class="qa__fig qa__fig--pair">
+                <div class="qa__pair">
+                  {[
+                    { src: data.photo, alt: data.photoAlt },
+                    { src: data.photo2, alt: data.photo2Alt },
+                  ].map((p) => (
+                    <Image src={p.src} alt={p.alt ?? ''} widths={[300, 600]} sizes="(max-width: 760px) 45vw, 280px" class="qa__img" />
+                  ))}
+                </div>
+                {data.photoCaption && <figcaption class="art-caption">* {data.photoCaption}</figcaption>}
+              </figure>
+            )}
+            {data.photo && data.photo2 && data.photoAt === 'row' && (
+              <figure class="qa__fig qa__fig--row">
+                <div class="qa__row">
+                  {[
+                    { src: data.photo, alt: data.photoAlt },
+                    { src: data.photo2, alt: data.photo2Alt },
+                  ].map((p) => (
+                    <Image src={p.src} alt={p.alt ?? ''} widths={[600, 1000]} sizes="(max-width: 600px) 100vw, 490px" class="qa__img" />
+                  ))}
+                </div>
+                {data.photoCaption && <figcaption class="art-caption">* {data.photoCaption}</figcaption>}
+              </figure>
+            )}
           </div>
         </details>
       ))
@@ -168,8 +194,9 @@ const questions = await Promise.all(
     margin-top: clamp(30px, 3.4vw, 48px);
   }
 
+  /* a link to a question lands it a third of the way down the screen (--jump-at), its answer open under it */
   .qa {
-    scroll-margin-top: 90px;
+    scroll-margin-top: var(--jump-at);
   }
 
   /* the question: big uppercase with a thick ink rule under it, the arrow on the right */
@@ -261,6 +288,41 @@ const questions = await Promise.all(
     height: auto;
   }
 
+  /* two tall pages side by side, kept short so the answer doesn't run long; the caption beside them, at the bottom */
+  .qa__fig--pair {
+    margin-top: clamp(22px, 2.6vw, 34px);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 8px clamp(14px, 1.6vw, 22px);
+  }
+
+  .qa__pair {
+    display: flex;
+    gap: clamp(6px, 0.8vw, 10px);
+  }
+
+  .qa__fig--pair :global(.qa__img) {
+    width: auto;
+    height: clamp(260px, 28vw, 380px);
+  }
+
+  .qa__fig--pair figcaption {
+    margin: 0;
+  }
+
+  /* two wide pictures side by side across the answer, the caption under them */
+  .qa__fig--row {
+    margin-top: clamp(22px, 2.6vw, 34px);
+  }
+
+  .qa__row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(8px, 1vw, 14px);
+    margin-bottom: 8px;
+  }
+
   .qa__text-body :global(p) {
     margin: 0;
     font-size: clamp(1rem, 1.3vw, 1.15rem);
@@ -314,6 +376,23 @@ const questions = await Promise.all(
     }
     .qa__a--photo .qa__fig {
       max-width: 260px;
+    }
+    /* phones: the two pages share the width, the caption under them */
+    .qa__pair {
+      width: 100%;
+    }
+    .qa__fig--pair :global(.qa__img) {
+      flex: 1 1 0;
+      min-width: 0;
+      width: 100%;
+      height: auto;
+    }
+  }
+
+  /* small phones: the two wide pictures one under the other, so they aren't too small to see */
+  @media (max-width: 600px) {
+    .qa__row {
+      grid-template-columns: minmax(0, 1fr);
     }
   }
 

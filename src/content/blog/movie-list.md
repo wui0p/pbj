@@ -1,5 +1,5 @@
 ---
-title: "Movie"
+title: "Movies"
 category: thoughts
 section: recommendations
 label: "8 items"
