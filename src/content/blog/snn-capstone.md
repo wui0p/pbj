@@ -3,7 +3,6 @@ title: "A Comparative Single FPGA SoC Accelerator for Rate, Temporal, and Delta-
 date: 2026-11-01
 category: research
 section: academic
-keyword: "SNN"
 summary: "This is my capstone project for my bachelor’s degree in NCHU Lab EE612."
 pinned: true
 buttons:

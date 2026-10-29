@@ -3,7 +3,6 @@ title: "OpenAI’s Math Release and the Backlash"
 date: 2026-10-01
 category: thoughts
 section: memo
-keyword: "AI"
 pinned: true
 # reads like a news report: the ## headings below only show in the side bar
 layout: news

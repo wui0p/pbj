@@ -1,8 +1,8 @@
 ---
-// TEACHING JOB on the Teaching page (mockup v15, pages 19–22): one sand block per job. Clicking a block lights
+// TEACHING JOB on the Teaching page: one sand block per job. Clicking a block lights
 // its border butter and opens the job's details right under it (photo, title, dates, my description, stats),
 // pushing the other jobs down; × or clicking the block again closes it. Arriving at /category/teaching/#<id>
-// (e.g. from Newest News) opens that job.
+// (e.g. a shared link) opens that job.
 import { Image } from 'astro:assets';
 import { render } from 'astro:content';
 import { dateText, isoDate, langOf, type Post } from '../utils';
@@ -146,7 +146,7 @@ const jobs = await Promise.all(
     }
   });
 
-  // reached at #<job id> (Newest News, a shared link): open that job
+  // reached at #<job id> (a shared link): open that job
   const fromHash = () => {
     const card = cards.find((c) => c.id === decodeURIComponent(location.hash.slice(1)));
     if (card) open(card, true);
@@ -177,7 +177,7 @@ const jobs = await Promise.all(
     border: 3px solid var(--sand);
     border-radius: clamp(22px, 2.4vw, 34px);
     padding: clamp(20px, 2.4vw, 34px) clamp(22px, 2.6vw, 38px);
-    scroll-margin-top: var(--jump-at); /* a jump here (Newest News) lands a third of the way down */
+    scroll-margin-top: var(--jump-at); /* a jump here lands a third of the way down */
     transition: border-color 0.25s var(--ease);
   }
 

@@ -31,7 +31,7 @@ interface Props {
 const { slug, posts } = Astro.props;
 const { label, blurb } = CATEGORIES[slug];
 
-// each category page opens with a painting (mockup v11, pages 13, 18 and 21); `note` is the box shown when
+// each category page opens with a painting; `note` is the box shown when
 // hovering the caption. (Misc has its own layout, with its painting inside src/components/MiscPage.astro.)
 type Painted = Exclude<CategorySlug, 'misc'>;
 const PAINTINGS: Record<
@@ -184,7 +184,7 @@ const lines = (text = '') => text.split(/(?<=\.)\s+/).filter(Boolean);
       <>
         {art.titleAt === 'teaching' ? (
           // Teaching: the painting on the left with TEACHING in white on it, and my teaching in numbers
-          // beside it (2026-10-12; replaced the E D U / C A T / I O N block)
+          // beside it
           <figure class="tbanner">
             <div class="tbanner__row">
               <div class="tbanner__left">

@@ -17,8 +17,6 @@ const blog = defineCollection({
       section: z.string().optional(),
       summary: z.string().optional(),
       pinned: z.boolean().default(false),
-      // the one important word shown on the post's tile in Newest News (e.g. AI, JAPAN)
-      keyword: z.string().max(14).optional(),
       // shown instead of the date, e.g. "5 books"
       label: z.string().optional(),
       // the block opens this page instead of a post on this site (no post page is made)
@@ -55,7 +53,7 @@ const blog = defineCollection({
       flag: z.enum(['japan']).optional(),
       // undated items are listed in this order
       order: z.number().default(0),
-      // placeholder content: never shown in Newest News
+      // placeholder content: can't be clicked, gets no page, never in Previous / Next
       placeholder: z.boolean().default(false),
       cover: image().optional(),
       // news: the post page reads like a news report (serif headline and text, byline, no summary under the
@@ -92,7 +90,7 @@ const blog = defineCollection({
     }),
 });
 
-// Misc page (v19, 2026-10-26): small questions about me, each answer hidden until its question is clicked.
+// Misc page: small questions about me, each answer hidden until its question is clicked.
 // One file per question; the file's text is the answer.
 const misc = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/misc' }),
@@ -104,11 +102,13 @@ const misc = defineCollection({
       // a picture with a small caption under it: on the left of the answer ("side"), or across its full width
       // under the text ("below"); or two pictures side by side under the text (with `photo2`): two tall ones kept
       // short, the caption beside them ("pair"), or two wide ones across the full width, the caption under them
-      // ("row")
+      // ("row"). A "pair" with a `photo3` too puts the three in one row filling the width, the caption under them
       photo: image().optional(),
       photoAlt: z.string().optional(),
       photo2: image().optional(),
       photo2Alt: z.string().optional(),
+      photo3: image().optional(),
+      photo3Alt: z.string().optional(),
       photoCaption: z.string().optional(),
       photoAt: z.enum(['side', 'below', 'pair', 'row']).default('side'),
     }),

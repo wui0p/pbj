@@ -5,6 +5,8 @@ photo: ../../assets/misc/guidebook-cover.jpg
 photoAlt: "The cover of the travel guidebook I made: VISIT JAPAN, Nara, Kyoto and Osaka, 2025.1.13 – 2025.1.20, with two photos of Kyoto and the cost box below (the amounts and the QR code blurred)"
 photo2: ../../assets/misc/guidebook-day2.jpg
 photo2Alt: "The guidebook's Day Two page for Kyoto: a photo of an old street and pagoda, then breakfast, the train to Kyoto at 10:10 AM and the hostel at 11:55 AM, each with a picture and a short note in Chinese"
+photo3: ../../assets/misc/trip-schedule.jpg
+photo3Alt: "The first day of my written schedule for the 2026 Japan trip, in Chinese: the flight from Kaohsiung to Narita, the Skyliner into Tokyo, the Airbnb (its address blurred), and things to do in Shinjuku, with prices in red and links"
 photoCaption: "Travel guidebook and schedule I made"
 photoAt: pair
 ---

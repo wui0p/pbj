@@ -4,7 +4,7 @@ import { CATEGORIES, CATEGORY_SLUGS, type CategorySlug } from '../consts';
 import { categoryUrl, url } from '../utils';
 
 interface Props {
-  /** home page: fixed bar that only shows from the portfolio section downwards */
+  /** home page: fixed bar that only shows from the message section (#about) down */
   floating?: boolean;
   current?: CategorySlug;
   /** where the "i" goes (pages without an Information section send it to the home page's) */
@@ -64,9 +64,8 @@ const { floating = false, current, infoHref = '#information' } = Astro.props;
 <script>
   import { scrollUnderBar } from '../scroll';
 
-  // "↓ Skip to the Menu" (home page only, 2026-10-22): glides down to The Menu, landing just under the bar so the
-  // whole Menu fits on screen (the one jump that doesn't use the third-of-the-way-down rule; 2026-10-28).
-  // Once The Menu has reached the top of the screen there's nothing left to skip to, so it fades away.
+  // "↓ Skip to the Menu" (home page only): glides down to The Menu, landing just under the bar so the whole Menu
+  // fits on screen (the one jump that doesn't use the third-of-the-way-down rule). Once The Menu has reached the top of the screen there's nothing left to skip to, so it fades away.
   const skip = document.querySelector<HTMLElement>('[data-skip]');
   const menu = document.querySelector<HTMLElement>('#menu .menu') ?? document.getElementById('menu');
   if (skip && menu) {
@@ -74,9 +73,8 @@ const { floating = false, current, infoHref = '#information' } = Astro.props;
       e.preventDefault();
       scrollUnderBar(menu, 28);
     });
-    // "← MAIN PAGE" (/#menu) stops at the same place (2026-10-28): the Menu box 28px under the bar, not the
-    // whole section at the top of the screen (which left too much empty space above The Menu). This runs after
-    // the browser's own jump and the one in Base.astro.
+    // "← MAIN PAGE" (/#menu) stops at the same place: the Menu box 28px under the bar. This runs after the
+    // browser's own jump and the one in Base.astro.
     addEventListener('load', () => {
       if (location.hash === '#menu') scrollUnderBar(menu, 28, 'instant');
     });
@@ -110,14 +108,13 @@ const { floating = false, current, infoHref = '#information' } = Astro.props;
     past();
   }
 
-  // Floating bar (home page only): show it once About Me reaches the top of the screen,
+  // Floating bar (home page only): show it once the message section reaches the top of the screen,
   // and keep it for the rest of the page; hide it again when scrolling back above.
   const bar = document.querySelector<HTMLElement>('[data-sitebar]');
   const start = document.getElementById('about');
   if (bar && start) {
     let shown: boolean | null = null;
     const update = () => {
-      // 100px: a little below the 84px jump offset, so "Learn More" lands with the bar showing
       const show = start.getBoundingClientRect().top <= 100;
       if (show === shown) return;
       shown = show;
@@ -130,7 +127,7 @@ const { floating = false, current, infoHref = '#information' } = Astro.props;
     update();
   }
 
-  // Category and post pages (2026-10-11): the bar stays at the top of the screen; it slides away while you
+  // Category and post pages: the bar stays at the top of the screen; it slides away while you
   // scroll down (more room to read) and comes back as soon as you scroll up.
   const sticky = document.querySelector<HTMLElement>('[data-sitebar-sticky]');
   if (sticky) {
@@ -372,7 +369,7 @@ const { floating = false, current, infoHref = '#information' } = Astro.props;
       align-items: center;
     }
     .sitebar__nav a {
-      font-size: 0.71rem; /* five categories + "i" next to the logo on one row (since Misc, 2026-10-26) */
+      font-size: 0.71rem; /* five categories + "i" next to the logo on one row */
       padding: 2px 0;
       white-space: nowrap;
     }

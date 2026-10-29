@@ -10,7 +10,7 @@ export function url(path = '/'): string {
   return `${base}${clean}`;
 }
 
-/** A post's page: its trip board (/trip/<trip>/) when it has one, otherwise /blog/<id>/. */
+/** A post's page: its trip album (/trip/<trip>/) when it has one, otherwise /blog/<id>/. */
 export const postUrl = (post: Post) => (post.data.trip ? url(`/trip/${post.data.trip}/`) : url(`/blog/${post.id}/`));
 export const categoryUrl = (slug: CategorySlug) => url(`/category/${slug}/`);
 export const categoryLabel = (slug: CategorySlug) => CATEGORIES[slug].label;
@@ -25,9 +25,8 @@ export const hasPage = (post: Post) => isPageKind(post) && !post.data.placeholde
 export const UNDER_CONSTRUCTION = 'This blog is under construction. Please come back later.';
 
 /**
- * What a block's link opens, shown before its description (v16): "PDF" for a Google Drive file,
- * "Folder" for a Google Drive folder, "GitHub" for a GitHub page (2026-10-18). (Buttons don't get this,
- * only whole blocks.)
+ * What a block's link opens, shown before its description: "PDF" for a Google Drive file, "Folder" for a
+ * Google Drive folder, "GitHub" for a GitHub page. (Buttons don't get this, only whole blocks.)
  */
 export function linkKind(post: Post): 'PDF' | 'Folder' | 'GitHub' | undefined {
   const link = post.data.link ?? '';
@@ -81,7 +80,7 @@ function categoryOrder(category: CategorySlug, posts: Post[]): Post[] {
 
 /**
  * The posts a reader steps through with Previous / Next: only ones with a page to open. Outside links
- * (PDF / Folder / GitHub) and placeholders are jumped over (2026-10-23).
+ * (PDF / Folder / GitHub) and placeholders are jumped over.
  */
 export const readingOrder = (category: CategorySlug, posts: Post[]) =>
   categoryOrder(category, posts).filter(hasPage);

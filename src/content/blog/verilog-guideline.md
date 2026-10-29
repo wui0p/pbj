@@ -3,7 +3,6 @@ title: "Verilog Guideline"
 date: 2025-10-01
 category: research
 section: curiosity
-keyword: "VERILOG"
 summary: "Things I learned throughout the capstone project learning process. These are notes that were taken while watching an online class about the protocol for safe and good Verilog coding style."
 ---
 

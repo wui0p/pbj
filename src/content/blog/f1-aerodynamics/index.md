@@ -3,7 +3,6 @@ title: "Aerodynamics of an F1 Car"
 date: 2025-07-01
 category: research
 section: curiosity
-keyword: "F1"
 summary: "The sport I enjoy watching the most is Formula 1."
 pinned: true
 ---

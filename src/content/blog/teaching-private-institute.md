@@ -4,7 +4,6 @@ date: 2024-07-01
 until: 2024-08-01
 category: teaching
 section: jobs
-keyword: "TUTOR"
 summary: "A summer job at a private institute. My main tasks were helping students with their experiments, checking their work, writing the solution manual, and tutoring them when they got stuck."
 popup:
   image: ../../assets/education/solution-manual.jpg

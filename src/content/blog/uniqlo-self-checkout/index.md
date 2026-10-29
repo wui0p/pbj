@@ -3,7 +3,6 @@ title: "UNIQLO Self-Checkout Spot"
 date: 2025-06-01
 category: research
 section: curiosity
-keyword: "UNIQLO"
 summary: "Ever wonder how UNIQLO has a self-checkout bin that you can throw your purchase inside, and it will scan the items with high accuracy without a barcode?"
 ---
 

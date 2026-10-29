@@ -12,7 +12,7 @@
   --sky-deep: #8fb6ba;
   --paper-deep: #e4e0d4;
 
-  /* the one colour outside the palette: Japan's red sun on the Travel page (asked for in mockup v11) */
+  /* the one colour outside the palette: Japan's red sun on the Travel page */
   --japan-red: #bc002d;
 
   /* "grey" text = ink at reduced strength, so it works on paper, sand and sky */
@@ -45,8 +45,8 @@ html {
   text-size-adjust: 100%;
 }
 
-/* smooth jumps inside a page ("Try It Out"); switched on after load (Base.astro), so arriving from another page
-   at e.g. /#menu jumps straight there instead of a long smooth scroll that loading can interrupt */
+/* smooth jumps inside a page; switched on after load (Base.astro), so arriving from another page at e.g. /#menu
+   jumps straight there instead of a long smooth scroll that loading can interrupt */
 html.smooth-scroll {
   scroll-behavior: smooth;
 }
@@ -57,16 +57,11 @@ html.smooth-scroll {
   }
 }
 
-/* Where a jump from the main page lands (2026-10-28): a third of the way down the screen, not at the very top,
-   so a bit of what's above still shows and the eye can follow. Used as scroll-margin-top by every jump target
-   (and by jumpTo() in src/scroll.ts). */
+/* Where a jump from the main page lands: a third of the way down the screen, not at the very top, so a bit of
+   what's above still shows and the eye can follow. Used as scroll-margin-top by every jump target (and by
+   jumpTo() in src/scroll.ts). */
 :root {
   --jump-at: 33vh;
-}
-
-/* jump targets land below the floating top bar */
-#portfolio {
-  scroll-margin-top: 84px;
 }
 
 body {
@@ -170,9 +165,8 @@ body.home {
     var(--depth) var(--depth) 0 var(--depth-c);
 }
 
-/* a button that "presses in" when clicked.
-   Every 3D button on the site is the same size (2026-10-11): one font, one weight, one height — don't resize
-   them per section. */
+/* a button that "presses in" when clicked. Every 3D button on the site is the same size: one font, one weight,
+   one height — don't resize them per section. */
 .btn-3d {
   --depth: 5px;
   appearance: none;
@@ -309,7 +303,7 @@ a.card:focus-visible {
   line-height: 1.6;
 }
 
-/* ---------- Under construction (v16): a placeholder block can't be opened; hovering (or focusing) it shows
+/* ---------- Under construction: a placeholder block can't be opened; hovering (or focusing) it shows
    "This blog is under construction. Please come back later." over its right side ---------- */
 .soon {
   position: relative;
@@ -356,7 +350,7 @@ a.card:focus-visible {
   transform: translateY(-50%);
 }
 
-/* what a block opens, before its description: [PDF] / [Folder] */
+/* what a block opens, before its description: [PDF] / [Folder] / [GitHub] */
 .link-kind {
   font-weight: 600;
   color: var(--ink);

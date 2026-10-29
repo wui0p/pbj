@@ -3,7 +3,6 @@ title: "Educator · Physics World"
 date: 2026-02-01
 category: teaching
 section: jobs
-keyword: "MUSEUM"
 summary: "Train high schoolers to be volunteers for the “Physics World” exhibition project in the National Museum of Natural Science. Supported by the Delta Electronics Foundation."
 popup:
   image: ../../assets/education/physics-world.jpg

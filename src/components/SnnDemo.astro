@@ -3,7 +3,7 @@ import BlockButtons from './BlockButtons.astro';
 import { url } from '../utils';
 
 interface Props {
-  /** the capstone block's buttons (View full report, View code on GitHub), shown in the demo too (v16) */
+  /** the capstone block's buttons (View full report, View code on GitHub), shown in the demo too */
   buttons?: { label: string; href?: string; action?: 'demo'; note?: string }[];
 }
 
@@ -26,7 +26,7 @@ const nodes = [
 ];
 ---
 
-<!-- Lives on the Research page (v14, 2026-10-11): hidden until "Try demo" on the SNN capstone block opens it,
+<!-- Lives on the Research page: hidden until "Try demo" on the SNN capstone block opens it,
      right under Academic Studies. Any button with data-demo-toggle + aria-controls="snn-demo" opens / closes it. -->
 <section class="snn" id="snn-demo" aria-labelledby="snn-heading" hidden>
   <div class="wrap">
@@ -141,7 +141,7 @@ const nodes = [
       </div>
 
       <!-- the part you clicked opens here -->
-      <!-- the four modes, in a column beside the panel of the brain part you picked (v16) -->
+      <!-- the four modes, in a column beside the panel of the brain part you picked -->
       <div class="lab__bottom">
         <div class="lab__modes" role="radiogroup" aria-label="Encoder and network mode">
           {
@@ -210,7 +210,7 @@ const nodes = [
     let fromTest = false;
     let testIndex = -1;
     let result: RunResult | null = null;
-    // one part of the brain is always shown (v16: the panel can't be closed); Input to start
+    // one part of the brain is always shown (the panel can't be closed); Input to start
     let open: Part = 'input';
     let selT = 0;
     let ch1 = 0;
@@ -1020,7 +1020,7 @@ const nodes = [
     margin: 0;
   }
 
-  /* smaller than before (v16), so all the timesteps fit beside the modes column */
+  /* small, so all the timesteps fit beside the modes column */
   .detail :global(.map--in) {
     width: 96px;
     height: 96px;

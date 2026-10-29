@@ -4,7 +4,7 @@ import { getCollection, render } from 'astro:content';
 import BackLink from './BackLink.astro';
 import mondrian from '../assets/misc/mondrian.jpg';
 
-// Misc (mockup v19, pages 29–31): Mondrian against the left wall with MISC. in white on its red square, the
+// Misc: Mondrian against the left wall with MISC. in white on its red square, the
 // two lines beside it, then the questions. Each answer stays hidden until its question is clicked.
 interface Props {
   backHref: string;
@@ -29,7 +29,7 @@ const questions = await Promise.all(
         class="misc__img"
         loading="eager"
       />
-      <h1 class="heading misc__title">Misc.</h1>
+      <h1 class="heading misc__title">Misc.<span class="misc__sub">miscellaneous</span></h1>
     </div>
     <div class="misc__side">
       <p
@@ -79,13 +79,21 @@ const questions = await Promise.all(
               </figure>
             )}
             {data.photo && data.photo2 && data.photoAt === 'pair' && (
-              <figure class="qa__fig qa__fig--pair">
+              <figure class:list={['qa__fig qa__fig--pair', { 'qa__fig--three': data.photo3 }]}>
                 <div class="qa__pair">
                   {[
                     { src: data.photo, alt: data.photoAlt },
                     { src: data.photo2, alt: data.photo2Alt },
+                    ...(data.photo3 ? [{ src: data.photo3, alt: data.photo3Alt }] : []),
                   ].map((p) => (
-                    <Image src={p.src} alt={p.alt ?? ''} widths={[300, 600]} sizes="(max-width: 760px) 45vw, 280px" class="qa__img" />
+                    <Image
+                      src={p.src}
+                      alt={p.alt ?? ''}
+                      widths={[300, 600, 800]}
+                      sizes="(max-width: 760px) 45vw, 380px"
+                      class="qa__img"
+                      style={`--ratio: ${p.src.width / p.src.height}`}
+                    />
                   ))}
                 </div>
                 {data.photoCaption && <figcaption class="art-caption">* {data.photoCaption}</figcaption>}
@@ -152,6 +160,17 @@ const questions = await Promise.all(
     white-space: nowrap;
   }
 
+  /* "miscellaneous", small white bold right under MISC. */
+  .misc__sub {
+    display: block;
+    margin-top: 0.6cqi;
+    padding-left: 0.6cqi; /* lines up with the M's stem */
+    font-size: 4.2cqi;
+    font-weight: 800;
+    text-transform: none;
+    letter-spacing: 0.02em;
+  }
+
   .misc__side {
     display: flex;
     flex-direction: column;
@@ -163,7 +182,7 @@ const questions = await Promise.all(
     margin-top: clamp(8px, 1vw, 14px);
   }
 
-  /* no full stops on these two (v19) */
+  /* no full stops on these two */
   .misc__lines {
     margin-top: auto;
     padding: clamp(32px, 4vw, 64px) 0 clamp(40px, 9.5vw, 150px); /* sits a little above the painting's bottom */
@@ -311,6 +330,23 @@ const questions = await Promise.all(
     margin: 0;
   }
 
+  /* three pictures: one row filling the width, all the same height (each grows by its width-to-height ratio),
+     the caption under them */
+  .qa__fig--three {
+    display: block;
+  }
+
+  .qa__fig--three .qa__pair {
+    margin-bottom: 8px;
+  }
+
+  .qa__fig--three :global(.qa__img) {
+    flex: var(--ratio) 1 0;
+    min-width: 0;
+    width: 0;
+    height: auto;
+  }
+
   /* two wide pictures side by side across the answer, the caption under them */
   .qa__fig--row {
     margin-top: clamp(22px, 2.6vw, 34px);
@@ -386,6 +422,17 @@ const questions = await Promise.all(
       min-width: 0;
       width: 100%;
       height: auto;
+    }
+    /* three pictures: the first two share a row, the third gets the full width under them */
+    .qa__fig--three .qa__pair {
+      flex-wrap: wrap;
+    }
+    .qa__fig--three :global(.qa__img) {
+      flex: var(--ratio) 1 0;
+      width: 0;
+    }
+    .qa__fig--three :global(.qa__img:nth-child(3)) {
+      flex-basis: 100%;
     }
   }
 

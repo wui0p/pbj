@@ -4,7 +4,6 @@ date: 2026-01-01
 until: 2026-06-01
 category: teaching
 section: jobs
-keyword: "TA"
 summary: "Teaching assistant job that I managed to obtain, even though I’m still an undergrad student. I write problem sets and answer keys for sophomores’ homework."
 popup:
   image: ../../assets/education/ta-note.jpg

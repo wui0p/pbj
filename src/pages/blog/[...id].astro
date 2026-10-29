@@ -137,7 +137,7 @@ const sectionLabel = SECTIONS[category].find((s) => s.id === post.data.section)?
     margin-inline: auto;
   }
 
-  /* album posts (Bravo Songs): the cover sits beside the text, so the column is wider (mockup v18 page 25) */
+  /* album posts (Bravo Songs): the cover sits beside the text, so the column is wider */
   .post--wide {
     width: min(100% - 2 * var(--gutter), 1060px);
   }
@@ -199,7 +199,7 @@ const sectionLabel = SECTIONS[category].find((s) => s.id === post.data.section)?
     margin-bottom: 0;
   }
 
-  /* every line justified, not ragged (v12) */
+  /* every line justified, not ragged */
   .prose :global(p),
   .prose :global(li) {
     text-align: justify;
@@ -213,7 +213,7 @@ const sectionLabel = SECTIONS[category].find((s) => s.id === post.data.section)?
     margin-bottom: 0;
   }
 
-  /* big sections get a line under them (v12); "On this page" in the side bar jumps here */
+  /* big sections get a line under them; their links in the side bar jump here */
   .prose :global(h2) {
     font-size: 1.55rem;
     padding-bottom: 0.4em;
