@@ -4,6 +4,7 @@ import { render } from 'astro:content';
 import Page from '../../layouts/Page.astro';
 import PostDrawer from '../../components/PostDrawer.astro';
 import Albums from '../../components/Albums.astro';
+import Series from '../../components/Series.astro';
 import BackLink from '../../components/BackLink.astro';
 import { SECTIONS } from '../../consts';
 import {
@@ -49,7 +50,7 @@ interface Props {
 
 const { post, siblings, prev, next } = Astro.props;
 const { Content, headings } = await render(post);
-const { title, date, category, summary, label, cover, albums, layout } = post.data;
+const { title, date, category, summary, label, cover, albums, series, layout } = post.data;
 const lang = langOf(title);
 // news layout: the section's name ("My Take") as the small line above the headline
 const news = layout === 'news';
@@ -85,6 +86,7 @@ const sectionLabel = SECTIONS[category].find((s) => s.id === post.data.section)?
     }
 
     {albums && <Albums albums={albums} />}
+    {series && <Series series={series} />}
 
     <div class="prose">
       <Content />

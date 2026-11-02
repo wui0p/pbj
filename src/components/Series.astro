@@ -1,0 +1,492 @@
+---
+// The Series page: one banner per series, wall to wall, all the same height. On the left a solid block in the
+// series' own colour (SKAM's yellow, Frieren's mint green) with what it is ("JAPANESE ANIME"), its name in big ink
+// Inter 800 and the Misc page's arrow; on the right its picture in black and white, tinted with the same colour, so
+// no words sit on faces. Clicking a banner opens my thoughts on that series right under it (the arrow flips up);
+// only one is open at a time, and "↑ Close" at the end closes it and brings its banner back into view.
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  series: {
+    title: string;
+    kind: string;
+    banner: ImageMetadata;
+    alt: string;
+    tint: 'skam-yellow' | 'frieren-green';
+    focus: string;
+    sections: {
+      heading?: string;
+      text: string[];
+      more: string[];
+      photo?: ImageMetadata;
+      photoAlt?: string;
+      photoAt: 'right' | 'left' | 'top';
+      photoFocus: string;
+      credit?: { author: string; source: string; license: string; licenseUrl: string };
+    }[];
+  }[];
+}
+
+const { series } = Astro.props;
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+// *words* in stars are set in italics (e.g. a title): every second part is italic
+const parts = (p: string) => p.split(/\*([^*]+)\*/);
+---
+
+<div class="series">
+  {
+    series.map((s, i) => (
+      <details class="series__item" id={slug(s.title)} name="series">
+        <summary class="series__banner" style={`--tint: var(--${s.tint})`}>
+          <div class="series__block">
+            <p class="series__kind">{s.kind}</p>
+            <h2 class="heading series__name">{s.title}</h2>
+            <svg class="series__arrow" viewBox="0 0 32 20" aria-hidden="true" focusable="false">
+              <path d="M0 0h9.5L16 7.5 22.5 0H32L16 20Z" />
+            </svg>
+          </div>
+          <div class="series__pic">
+            <Image
+              src={s.banner}
+              alt={s.alt}
+              widths={[640, 1000, 1449, 1600]}
+              sizes="(max-width: 640px) 100vw, 62vw"
+              class="series__img"
+              style={`object-position: ${s.focus}`}
+              loading={i === 0 ? 'eager' : 'lazy'}
+            />
+          </div>
+        </summary>
+        <div class="series__body">
+          {s.sections.map((sec) => (
+            <section class="series__sec">
+              <div
+                class:list={[
+                  'series__row',
+                  sec.photo && `series__sec--${sec.photoAt}`,
+                  sec.photo && sec.photo.width > sec.photo.height && 'series__sec--wide',
+                ]}
+              >
+                {sec.photo && (
+                  <figure class="series__fig">
+                    <Image
+                      src={sec.photo}
+                      alt={sec.photoAlt ?? ''}
+                      widths={[480, 760, 1200]}
+                      sizes={sec.photoAt === 'top' ? '(max-width: 1100px) 100vw, 1060px' : '(max-width: 760px) 100vw, 460px'}
+                      class="series__photo"
+                      style={`object-position: ${sec.photoFocus}`}
+                      loading="lazy"
+                    />
+                    {sec.credit && (
+                      <figcaption class="series__credit">
+                        Photo:{' '}
+                        <a href={sec.credit.source} target="_blank" rel="noopener noreferrer">
+                          {sec.credit.author}
+                        </a>
+                        ,{' '}
+                        <a href={sec.credit.licenseUrl} target="_blank" rel="noopener noreferrer">
+                          {sec.credit.license}
+                        </a>
+                      </figcaption>
+                    )}
+                  </figure>
+                )}
+                <div class="series__words">
+                  {sec.heading && <h3 class="heading series__heading">{sec.heading}</h3>}
+                  {sec.text.map((p) => (
+                    <p>{parts(p).map((t, i) => (i % 2 ? <em>{t}</em> : t))}</p>
+                  ))}
+                </div>
+              </div>
+              {sec.more.length > 0 && (
+                <div class="series__words series__more">
+                  {sec.more.map((p) => (
+                    <p>{parts(p).map((t, i) => (i % 2 ? <em>{t}</em> : t))}</p>
+                  ))}
+                </div>
+              )}
+            </section>
+          ))}
+          <button type="button" class="series__close">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M12 19V5.5M6 11l6-6 6 6" />
+            </svg>
+            <span class="series__close-text">Close</span>
+          </button>
+        </div>
+      </details>
+    ))
+  }
+</div>
+
+<script>
+  import { scrollUnderBar } from '../scroll';
+
+  const items = [...document.querySelectorAll<HTMLDetailsElement>('.series__item')];
+
+  // only one open at a time (the shared `name` does this too, where the browser knows it)
+  for (const item of items) {
+    item.addEventListener('toggle', () => {
+      if (item.open) for (const other of items) if (other !== item) other.open = false;
+    });
+  }
+
+  // a link straight to a series (…/series-list/#frieren, from Top Suggestions) opens my thoughts on it
+  const openFromHash = () => {
+    const el = location.hash ? document.getElementById(decodeURIComponent(location.hash.slice(1))) : null;
+    if (!(el instanceof HTMLDetailsElement) || !items.includes(el)) return false;
+    el.open = true;
+    return true;
+  };
+  openFromHash();
+  // a new hash on this page: another series may be folding away above, so land again once it has
+  addEventListener('hashchange', () => {
+    const el = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+    if (!openFromHash() || !el) return;
+    el.scrollIntoView({ behavior: 'instant' });
+    setTimeout(() => el.scrollIntoView({ behavior: 'instant' }), 550);
+  });
+
+  // "↑ Close": fold my thoughts away and bring the banner back into view
+  for (const btn of document.querySelectorAll<HTMLButtonElement>('.series__close')) {
+    btn.addEventListener('click', () => {
+      const item = btn.closest<HTMLDetailsElement>('.series__item');
+      if (!item) return;
+      // while the text folds away, the browser would otherwise keep shifting the page to hold what's on screen
+      // in place, and the scroll up to the banner would stop short
+      const root = document.documentElement;
+      root.style.overflowAnchor = 'none';
+      setTimeout(() => (root.style.overflowAnchor = ''), 1500);
+      item.open = false;
+      // straight there (a smooth scroll gets cut short while the page shrinks); the text then folds away under it
+      scrollUnderBar(item, 12, 'instant');
+      item.querySelector('summary')?.focus({ preventScroll: true });
+    });
+  }
+</script>
+
+<style>
+  /* the whole list runs wall to wall (like the album strips); the banners fill it and the text keeps to a column */
+  .series {
+    display: grid;
+    gap: clamp(20px, 2.6vw, 36px);
+    width: 100vw;
+    margin: clamp(28px, 4vw, 56px) 0 0 calc(50% - 50vw);
+  }
+
+  /* ----- the banner: the name on a solid block, the picture beside it ----- */
+  .series {
+    --banner-h: clamp(160px, 21vw, 440px);
+  }
+
+  .series__banner {
+    display: grid;
+    grid-template-columns: 38% minmax(0, 1fr);
+    height: var(--banner-h);
+    background: var(--tint);
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .series__banner::-webkit-details-marker {
+    display: none;
+  }
+
+  .series__banner:focus-visible {
+    outline: 3px solid var(--ink);
+    outline-offset: -3px;
+  }
+
+  .series__block {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-content: end;
+    align-items: end;
+    column-gap: 16px;
+    /* the left padding keeps the words clear of the side bar's tab on the left edge */
+    padding: clamp(16px, 3vw, 44px) clamp(16px, 3vw, 44px) clamp(16px, 3vw, 44px) clamp(60px, 5vw, 80px);
+    color: var(--ink);
+  }
+
+  .series__kind {
+    grid-column: 1 / -1;
+    margin: 0 0 0.6em;
+    font-size: clamp(0.72rem, 0.95vw, 0.95rem);
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .series__name {
+    font-size: clamp(2.2rem, 6vw, 6.4rem);
+    letter-spacing: 0;
+    line-height: 0.95;
+  }
+
+  /* the Misc page's arrow: points down while closed, flips up when open */
+  .series__arrow {
+    width: clamp(26px, 2.6vw, 38px);
+    margin-bottom: 0.4em;
+    fill: var(--ink);
+    transition: transform 0.35s var(--ease);
+  }
+
+  .series__banner:hover .series__arrow {
+    transform: translateY(3px);
+  }
+
+  .series__item[open] .series__arrow {
+    transform: rotate(180deg);
+  }
+
+  .series__item[open] .series__banner:hover .series__arrow {
+    transform: rotate(180deg) translateY(3px);
+  }
+
+  .series__pic {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .series__pic :global(.series__img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* black and white, multiplied onto the series' colour */
+    filter: grayscale(1);
+    mix-blend-mode: multiply;
+    opacity: 0.85;
+  }
+
+  /* phones: the name on a strip above the picture */
+  @media (max-width: 640px) {
+    .series__banner {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: auto 150px;
+      height: auto;
+    }
+
+    .series__block {
+      padding: 18px var(--gutter) 14px 60px;
+    }
+
+    /* the banner is taller than a third of a phone screen: a jump puts it just under the top bar instead */
+    .series .series__item {
+      scroll-margin-top: 64px;
+    }
+  }
+
+  /* ----- my thoughts, under the banner: slide open where the browser can animate it ----- */
+  .series__item {
+    interpolate-size: allow-keywords;
+    /* a jump here (Top Suggestions) lands my thoughts, not the banner, a third of the way down the screen: the
+       big banner goes up past the top, with its name still showing just above them */
+    scroll-margin-top: calc(var(--jump-at) - var(--banner-h));
+  }
+
+  .series__item::details-content {
+    block-size: 0;
+    overflow: clip;
+    transition:
+      block-size 0.5s var(--ease),
+      content-visibility 0.5s allow-discrete;
+  }
+
+  .series__item[open]::details-content {
+    block-size: auto;
+  }
+
+  .series__body {
+    width: min(100% - 2 * var(--gutter), 1060px);
+    margin-inline: auto;
+    padding: clamp(32px, 4vw, 56px) 0 clamp(8px, 1.5vw, 20px);
+  }
+
+  .series__sec + .series__sec {
+    margin-top: clamp(36px, 4.5vw, 64px);
+  }
+
+  /* a picture beside the words: it runs the full height of the words (cropped to fit), so the two end together */
+  .series__sec--right,
+  .series__sec--left {
+    display: grid;
+    gap: clamp(22px, 3vw, 44px);
+    align-items: stretch;
+  }
+
+  .series__sec--right {
+    grid-template-columns: minmax(0, 1fr) 34%;
+  }
+
+  .series__sec--left {
+    grid-template-columns: 34% minmax(0, 1fr);
+  }
+
+  .series__sec--right.series__sec--wide {
+    grid-template-columns: minmax(0, 1fr) 44%;
+  }
+
+  .series__sec--left.series__sec--wide {
+    grid-template-columns: 44% minmax(0, 1fr);
+  }
+
+  .series__sec--right .series__fig {
+    order: 2;
+  }
+
+  .series__fig {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    min-height: 0;
+  }
+
+  .series__fig :global(.series__photo) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .series__sec--right .series__fig :global(.series__photo),
+  .series__sec--left .series__fig :global(.series__photo) {
+    flex: 1 1 0;
+    min-height: 200px;
+    height: 0;
+    object-fit: cover;
+  }
+
+  .series__sec--top .series__fig {
+    margin-bottom: clamp(18px, 2.2vw, 28px);
+  }
+
+  /* paragraphs that carry on under the picture, across the full width */
+  .series__more {
+    margin-top: 1em;
+  }
+
+  /* who took a licensed photo, and its licence: small and grey, under the picture */
+  .series__credit {
+    margin-top: 6px;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    color: var(--ink-soft);
+    text-align: right;
+  }
+
+  .series__credit a {
+    color: inherit;
+    text-decoration-color: var(--ink-faint);
+    text-underline-offset: 2px;
+  }
+
+  .series__credit a:hover {
+    color: var(--ink);
+  }
+
+  /* big uppercase Inter 800 titles over the Times-like serif text, like the Bravo Songs post */
+  .series__heading {
+    margin: 0 0 0.45em;
+    font-size: clamp(1.7rem, 3vw, 2.6rem);
+    letter-spacing: -0.005em;
+  }
+
+  .series__words p {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    line-height: 1.7;
+    text-align: justify;
+  }
+
+  .series__words p + p {
+    margin-top: 1em;
+  }
+
+  /* phones and narrow windows: the picture over the words */
+  @media (max-width: 760px) {
+    .series__sec--right,
+    .series__sec--left,
+    .series__sec--right.series__sec--wide,
+    .series__sec--left.series__sec--wide {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .series__sec--right .series__fig {
+      order: 0;
+    }
+
+    .series__sec--right .series__fig :global(.series__photo),
+    .series__sec--left .series__fig :global(.series__photo) {
+      flex: none;
+      height: auto;
+      min-height: 0;
+      max-height: 60vh;
+    }
+  }
+
+  /* "↑ Close": quiet, like "← MAIN PAGE"; the arrow lifts and the butter marker sweeps in on hover */
+  .series__close {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: clamp(28px, 3.5vw, 44px);
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    font: inherit;
+    color: var(--ink-soft);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: color 0.2s var(--ease);
+  }
+
+  .series__close svg {
+    flex: none;
+    width: 15px;
+    height: 15px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform 0.3s var(--ease);
+  }
+
+  .series__close-text {
+    background-image: linear-gradient(var(--butter), var(--butter));
+    background-repeat: no-repeat;
+    background-position: 0 88%;
+    background-size: 0% 0.5em;
+    transition: background-size 0.4s var(--ease);
+  }
+
+  .series__close:hover,
+  .series__close:focus-visible {
+    color: var(--ink);
+  }
+
+  .series__close:hover svg,
+  .series__close:focus-visible svg {
+    transform: translateY(-3px);
+  }
+
+  .series__close:hover .series__close-text,
+  .series__close:focus-visible .series__close-text {
+    background-size: 100% 0.5em;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .series__item::details-content,
+    .series__arrow {
+      transition: none;
+    }
+  }
+</style>

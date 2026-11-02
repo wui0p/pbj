@@ -1,6 +1,6 @@
 ---
 title: "Two-Stage Op-Amp Layout in 16nm FinFET"
-date: 2026-10-01
+date: 2026-12-01
 category: research
 section: curiosity
 summary: "Practicing analog IC design with a two-stage op-amp, from schematic to layout, to get comfortable with the ADFP FinFET flow."

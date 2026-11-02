@@ -87,6 +87,41 @@ const blog = defineCollection({
           }),
         )
         .optional(),
+      // the Series page: one wall-to-wall banner per series (its name on a block in its colour, the picture
+      // beside it); clicking the banner opens my thoughts on it under the banner, in `sections`
+      series: z
+        .array(
+          z.object({
+            title: z.string(),
+            // what it is, the small line above the name (e.g. "Japanese anime")
+            kind: z.string(),
+            banner: image(),
+            alt: z.string(),
+            // the colour the black-and-white picture is tinted with: the series' own colour (global.css)
+            tint: z.enum(['skam-yellow', 'frieren-green']),
+            // which part of the picture shows in the strip, as a CSS object-position (e.g. "50% 20%")
+            focus: z.string().default('50% 50%'),
+            // one after another: an optional heading, its paragraphs, and an optional picture on the right or
+            // left of them, or across the top (`credit` for licensed photos, like the albums' photoCredit);
+            // `more` paragraphs follow across the full width, under the picture. *Words* in stars are italic.
+            sections: z.array(
+              z.object({
+                heading: z.string().optional(),
+                text: z.array(z.string()),
+                more: z.array(z.string()).default([]),
+                photo: image().optional(),
+                photoAlt: z.string().optional(),
+                photoAt: z.enum(['right', 'left', 'top']).default('right'),
+                // which part of the picture shows when it is cropped to the text's height
+                photoFocus: z.string().default('50% 50%'),
+                credit: z
+                  .object({ author: z.string(), source: z.url(), license: z.string(), licenseUrl: z.url() })
+                  .optional(),
+              }),
+            ),
+          }),
+        )
+        .optional(),
     }),
 });
 

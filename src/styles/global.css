@@ -12,8 +12,10 @@
   --sky-deep: #8fb6ba;
   --paper-deep: #e4e0d4;
 
-  /* the one colour outside the palette: Japan's red sun on the Travel page */
+  /* colours outside the palette: Japan's red sun on the Travel page, and each series' own colour on the Series page */
   --japan-red: #bc002d;
+  --skam-yellow: #e4df01;
+  --frieren-green: #a8e1b2;
 
   /* "grey" text = ink at reduced strength, so it works on paper, sand and sky */
   --ink-soft: rgb(64 64 64 / 0.74);

@@ -314,17 +314,20 @@ const slug = (s: string) =>
 
   .album__title {
     margin: 0;
-    font-family: var(--font-display);
-    font-weight: 700;
+    font-family: var(--font-sans);
+    font-weight: 800;
     font-size: clamp(2rem, 4.2vw, 3.2rem);
+    letter-spacing: -0.01em;
     line-height: 1.1;
   }
 
-  /* "by Jorge Rivera-Herrans": the same bold serif, smaller, on its own line */
+  /* "by Jorge Rivera-Herrans": the same sans, smaller and lighter, on its own line */
   .album__by {
     display: block;
     margin-top: 0.3em;
-    font-size: 0.6em;
+    font-size: 0.5em;
+    font-weight: 600;
+    letter-spacing: 0;
     line-height: 1.2;
   }
 

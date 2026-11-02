@@ -11,3 +11,5 @@ The only sport I’ll actually watch live is Formula 1. Yes, it is a sport. Driv
 I’m impressed not only by the drivers, but also by the engineers who build the cars. I even went down a rabbit hole researching [how F1 aerodynamics works](../../blog/f1-aerodynamics/), since they play such a heavy role in the car’s speed and its grip in the corners (how fast the car can go when turning).
 
 One thing on my bucket list is to sit in the grandstands during a race weekend and see the cars in person. Everything looks much slower on the live stream. I want to experience it for real and hear the cars roar past. Maybe get a few autographs or fist bumps from drivers.
+
+<p class="qa__aside">Congratulations to Andrea Kimi Antonelli on winning the 2026 World Championship title!!</p>

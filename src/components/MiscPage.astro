@@ -390,6 +390,17 @@ const questions = await Promise.all(
     text-decoration-thickness: 2px;
   }
 
+  /* a small aside after the answer (e.g. a congrats): set apart by a butter bar, a little smaller and bolder,
+     but quieter than the answer itself */
+  .qa__text-body :global(p.qa__aside) {
+    margin-top: 1.6em;
+    padding: 0.15em 0 0.15em 0.85em;
+    border-left: 4px solid var(--butter);
+    font-size: clamp(0.92rem, 1.1vw, 1rem);
+    font-weight: 600;
+    text-align: left;
+  }
+
   @media (max-width: 760px) {
     /* phones: the painting, then the two lines under it; a picture above its answer */
     .misc__top {
