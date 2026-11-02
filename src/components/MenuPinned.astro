@@ -142,7 +142,6 @@ const countText = (slug: (typeof CATEGORY_SLUGS)[number]) =>
   .menu__item {
     position: relative;
     display: block;
-    padding-left: 1.6rem;
     text-decoration: none;
     color: var(--ink);
   }
@@ -164,18 +163,6 @@ const countText = (slug: (typeof CATEGORY_SLUGS)[number]) =>
     transition: background-size 0.45s var(--ease);
     -webkit-box-decoration-break: clone;
     box-decoration-break: clone;
-  }
-
-  /* bullet, sized from the item name so it stays centred on the text */
-  .menu__name::before {
-    content: '';
-    position: absolute;
-    left: calc(-1.6rem + 0.12em);
-    top: 0.5em;
-    width: 0.24em;
-    height: 0.24em;
-    border-radius: 50%;
-    background: var(--ink);
   }
 
   .menu__info {

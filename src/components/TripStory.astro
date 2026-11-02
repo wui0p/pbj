@@ -7,8 +7,8 @@
 // - click a photo: a larger copy opens over the page, which goes grey; click outside, × or Esc closes it
 import { Image, getImage } from 'astro:assets';
 import BackLink from './BackLink.astro';
-import { UNDER_CONSTRUCTION } from '../utils';
-import type { TripEntry } from '../trips/types';
+import { UNDER_CONSTRUCTION, url } from '../utils';
+import type { TripEntry, TripNote } from '../trips/types';
 
 interface Props {
   title: string;
@@ -30,6 +30,13 @@ for (const { entries } of days)
 
 /** a landscape photo takes two tiles side by side */
 const isWide = (w: number, h: number) => w / h > 1.15;
+
+/** a note's text, split around the words that link elsewhere on the site (if it has a link) */
+const noteParts = ({ text, link }: TripNote) => {
+  const at = link ? text.indexOf(link.words) : -1;
+  if (!link || at === -1) return { before: text };
+  return { before: text.slice(0, at), words: link.words, href: url(link.to), after: text.slice(at + link.words.length) };
+};
 ---
 
 <div class="story" data-story>
@@ -81,7 +88,13 @@ const isWide = (w: number, h: number) => w / h > 1.15;
                 </button>
               ) : (
                 <p class="story__tile story__note" style={`--k:${n % 5}`} data-reveal>
-                  {it.text}
+                  {(({ before, words, href, after }) => (
+                    <span>
+                      {before}
+                      {href && <a class="story__link" href={href}>{words}</a>}
+                      {after}
+                    </span>
+                  ))(noteParts(it))}
                 </p>
               ),
             )}
@@ -456,6 +469,20 @@ const isWide = (w: number, h: number) => w / h > 1.15;
     line-height: 1.55;
     text-align: justify;
     color: var(--ink);
+  }
+
+  /* a link inside a note reads like a document's: underlined text */
+  .story__link {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+    transition: text-decoration-thickness 0.2s var(--ease);
+  }
+
+  .story__link:hover,
+  .story__link:focus-visible {
+    text-decoration-thickness: 2px;
   }
 
   /* ----- tiles fade in as they scroll into view, one after another along the row ----- */

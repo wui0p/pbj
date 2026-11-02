@@ -19,7 +19,7 @@ const photo = (day: number, hhmmss: string, alt: string): TripPhoto => {
   if (!file) throw new Error(`Japan 2026: no photo day-${day}/${hhmmss}.jpg (run tools/prepare_trip_images.py)`);
   return { kind: 'photo', src: file.default, alt, time: `${hhmmss.slice(0, 2)}:${hhmmss.slice(2, 4)}` };
 };
-const note = (text: string): TripNote => ({ kind: 'note', text });
+const note = (text: string, link?: TripNote['link']): TripNote => ({ kind: 'note', text, link });
 
 const day1 = (hhmmss: string, alt: string) => photo(1, hhmmss, alt);
 const day2 = (hhmmss: string, alt: string) => photo(2, hhmmss, alt);
@@ -200,7 +200,10 @@ const DAYS: Record<number, TripEntry[]> = {
       'Last time I came here, I never went on these kinds of interactive things, because it was just me looking around. This time I came with friends, so it was worth the wait.',
     ),
     day4('113232', 'A giant stone chessboard set with tall pieces'),
-    note('I’m a 1050-rated player in chess... but I fell off later because I played it less.'),
+    note('I’m a 1050-rated player in chess... but I fell off later because I played it less.', {
+      words: '1050-rated player in chess',
+      to: '/category/misc/#chess',
+    }),
     day4('120953', 'Tall bookshelves and arched windows in a stone library set'),
     day4('121000', 'A huge armillary sphere hanging over a statue of a hooded figure'),
     day4('121756', 'Friends looking at a flying car caught in the trees'),

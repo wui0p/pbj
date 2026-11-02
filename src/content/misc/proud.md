@@ -1,6 +1,6 @@
 ---
 question: "What is something you are proud of?"
-order: 4
+order: 6
 photo: ../../assets/misc/guidebook-cover.jpg
 photoAlt: "The cover of the travel guidebook I made: VISIT JAPAN, Nara, Kyoto and Osaka, 2025.1.13 – 2025.1.20, with two photos of Kyoto and the cost box below (the amounts and the QR code blurred)"
 photo2: ../../assets/misc/guidebook-day2.jpg

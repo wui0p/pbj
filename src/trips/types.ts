@@ -5,5 +5,6 @@
 import type { ImageMetadata } from 'astro';
 
 export type TripPhoto = { kind: 'photo'; src: ImageMetadata; alt: string; /** "13:13" */ time: string };
-export type TripNote = { kind: 'note'; text: string };
+/** `link`: these words of the note (written exactly as in `text`) become a link to `to`, a path on this site */
+export type TripNote = { kind: 'note'; text: string; link?: { words: string; to: string } };
 export type TripEntry = TripPhoto | TripNote;
