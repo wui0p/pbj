@@ -2,12 +2,12 @@
 title: "Series"
 category: thoughts
 section: recommendations
-label: "2 items"
+label: "3 items"
 order: 4
 # each series: a wall-to-wall banner with its name; clicking it opens my thoughts on it under the banner
 series:
   - title: "SKAM"
-    kind: "Norwegian teen drama"
+    kind: "NORWEGIAN TEEN DRAMA"
     banner: ../../assets/thoughts/series-skam.jpg
     alt: "The five girls of SKAM walking down a street together in the evening"
     tint: skam-yellow
@@ -53,7 +53,7 @@ series:
       - text:
           - "SKAM may feel slow if you love action, but for someone like me who enjoys a story that takes its time, soaking up every emotion and every bit of acting, it is the perfect series to watch. Season 3 is my favorite, but every season shines in its own way, with its own emotions, twists, and story to tell. Season 3 just hit me the hardest. I know people who love other seasons more, because what you have lived through shapes which one stays with you. If you have the patience to watch it through, all four seasons of SKAM will stay with you long after the last episode."
   - title: "FRIEREN"
-    kind: "Japanese anime"
+    kind: "JAPANESE ANIME"
     banner: ../../assets/thoughts/series-frieren.jpg
     alt: "Frieren, Fern and Stark on a grassy hill under a big tree, with a castle in the distance"
     tint: frieren-green
@@ -83,4 +83,42 @@ series:
         photo: ../../assets/thoughts/frieren-flowers.jpg
         photoAlt: "A still from Frieren: Frieren standing on a rock above a field of blue flowers, petals blowing in the golden light"
         photoAt: left
+  - title: "TIP2TIP"
+    kind: "MOTORCYCLE TRIP"
+    banner: ../../assets/thoughts/series-tip-to-tip.jpg
+    alt: "Ludwig and Michael Reeves on their red motorcycles by a roadside café in Japan, mountains behind them"
+    tint: tiptotip-red
+    focus: "50% 30%"
+    sections:
+      - heading: "What is Tip to Tip"
+        text:
+          - "This is a documentary-style motorcycle travel series on YouTube, created by one of my favorite YouTubers, Ludwig, and featuring another of my favorites, Michael Reeves. Each season, they choose a country, learn its language ahead of time, and ride across the whole country from one tip to the other. The goal is to learn about the country as a whole, so they don’t use phones (no maps or translation apps) and can’t take highways. Right now, there are two seasons: Japan (2025) and China (2026)."
+          - "Did they learn the language well? It is usable, but not fluent, which is what makes this series fun to watch. You also learn things about a new country that you normally wouldn’t if you traveled the usual way. Also, you don’t need to know the language to follow along and have a blast, because the series has great translations for the local languages as subtitles."
+        photo: ../../assets/thoughts/tip-ludwig.jpg
+        photoAlt: "Ludwig, with bleached blond hair and a green jacket, talking into a microphone"
+        photoCaption: "Ludwig"
+        credit:
+          author: "ZACK"
+          source: "https://commons.wikimedia.org/wiki/File:Ludwig_Ahgren_in_2022_(2).jpg"
+          license: "CC BY 3.0"
+          licenseUrl: "https://creativecommons.org/licenses/by/3.0/"
+        photo2: ../../assets/thoughts/tip-michael.jpg
+        photo2Alt: "Michael Reeves, with glasses and a black T-shirt, sitting at a bar"
+        photo2Caption: "Michael Reeves"
+        credit2:
+          author: "Harada’s Bar"
+          source: "https://commons.wikimedia.org/wiki/File:Michael_Reeves_at_Haradas_Bar_(2025).png"
+          license: "CC BY 3.0"
+          licenseUrl: "https://creativecommons.org/licenses/by/3.0/"
+        photoAt: right
+      - heading: "Favorite season"
+        text:
+          - "Most people who have rated this series give the China season the highest score because of how diverse and chaotic it is. I also love Season 2, China, because it has so much more content, or maybe it’s because I understood Mandarin, so I found it even funnier."
+          - "My favorite moment is when both try to tell a hotel staff member their made-up Chinese names. Michael called himself “Beef Burger,” and Ludwig accidentally said a very rude word, and also kept on saying it throughout the series after this interaction. The staff member looked confused and concerned, and it’s the funniest thing in the whole series."
+        photo: ../../assets/thoughts/tip-china.jpg
+        photoAlt: "A still from the China season: Ludwig taking a selfie with a smiling local man making an OK sign, Michael Reeves peeking in behind them"
+        photoAt: left
+      - heading: "Whom I would recommend it to"
+        text:
+          - "Everyone! You don’t have to love motorcycles, travel, or the culture of the country they visit. I think anyone would have a blast and get a few laughs out of this series. You could start with Season 2, China, if you want, but I still recommend starting from the beginning."
 ---

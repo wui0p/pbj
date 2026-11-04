@@ -1,11 +1,12 @@
 ---
 // The Series page: one banner per series, wall to wall, all the same height. On the left a solid block in the
-// series' own colour (SKAM's yellow, Frieren's mint green) with what it is ("JAPANESE ANIME"), its name in big ink
-// Inter 800 and the Misc page's arrow; on the right its picture in black and white, tinted with the same colour, so
-// no words sit on faces. Clicking a banner opens my thoughts on that series right under it (the arrow flips up);
+// series' own colour (SKAM's yellow, Frieren's mint green, Tip to Tip's red) with what it is ("JAPANESE ANIME"), its name in big ink
+// Inter 800 and the Misc page's arrow; on the right its picture, so no words sit on faces. Clicking a banner opens my thoughts on that series right under it (the arrow flips up);
 // only one is open at a time, and "↑ Close" at the end closes it and brings its banner back into view.
 import { Image } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
+
+type Credit = { author: string; source: string; license: string; licenseUrl: string };
 
 interface Props {
   series: {
@@ -13,7 +14,7 @@ interface Props {
     kind: string;
     banner: ImageMetadata;
     alt: string;
-    tint: 'skam-yellow' | 'frieren-green';
+    tint: 'skam-yellow' | 'frieren-green' | 'tiptotip-red';
     focus: string;
     sections: {
       heading?: string;
@@ -23,12 +24,19 @@ interface Props {
       photoAlt?: string;
       photoAt: 'right' | 'left' | 'top';
       photoFocus: string;
-      credit?: { author: string; source: string; license: string; licenseUrl: string };
+      photoCaption?: string;
+      credit?: Credit;
+      photo2?: ImageMetadata;
+      photo2Alt?: string;
+      photo2Caption?: string;
+      credit2?: Credit;
     }[];
   }[];
 }
 
 const { series } = Astro.props;
+// colours too dark for ink words: the name, the line above it and the arrow are paper white instead
+const DARK_TINTS = ['tiptotip-red'];
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 // *words* in stars are set in italics (e.g. a title): every second part is italic
 const parts = (p: string) => p.split(/\*([^*]+)\*/);
@@ -38,7 +46,10 @@ const parts = (p: string) => p.split(/\*([^*]+)\*/);
   {
     series.map((s, i) => (
       <details class="series__item" id={slug(s.title)} name="series">
-        <summary class="series__banner" style={`--tint: var(--${s.tint})`}>
+        <summary
+          class:list={['series__banner', { 'series__banner--dark': DARK_TINTS.includes(s.tint) }]}
+          style={`--tint: var(--${s.tint})`}
+        >
           <div class="series__block">
             <p class="series__kind">{s.kind}</p>
             <h2 class="heading series__name">{s.title}</h2>
@@ -65,33 +76,49 @@ const parts = (p: string) => p.split(/\*([^*]+)\*/);
                 class:list={[
                   'series__row',
                   sec.photo && `series__sec--${sec.photoAt}`,
-                  sec.photo && sec.photo.width > sec.photo.height && 'series__sec--wide',
+                  sec.photo && (sec.photo.width > sec.photo.height || sec.photo2) && 'series__sec--wide',
+                  sec.photo2 && 'series__row--float',
                 ]}
               >
                 {sec.photo && (
-                  <figure class="series__fig">
-                    <Image
-                      src={sec.photo}
-                      alt={sec.photoAlt ?? ''}
-                      widths={[480, 760, 1200]}
-                      sizes={sec.photoAt === 'top' ? '(max-width: 1100px) 100vw, 1060px' : '(max-width: 760px) 100vw, 460px'}
-                      class="series__photo"
-                      style={`object-position: ${sec.photoFocus}`}
-                      loading="lazy"
-                    />
-                    {sec.credit && (
-                      <figcaption class="series__credit">
-                        Photo:{' '}
-                        <a href={sec.credit.source} target="_blank" rel="noopener noreferrer">
-                          {sec.credit.author}
-                        </a>
-                        ,{' '}
-                        <a href={sec.credit.licenseUrl} target="_blank" rel="noopener noreferrer">
-                          {sec.credit.license}
-                        </a>
-                      </figcaption>
-                    )}
-                  </figure>
+                  <div class:list={['series__fig', { 'series__fig--pair': sec.photo2 }]}>
+                    {[
+                      { src: sec.photo, alt: sec.photoAlt, caption: sec.photoCaption, credit: sec.credit },
+                      ...(sec.photo2
+                        ? [{ src: sec.photo2, alt: sec.photo2Alt, caption: sec.photo2Caption, credit: sec.credit2 }]
+                        : []),
+                    ].map((p) => (
+                      <figure class="series__one">
+                        <Image
+                          src={p.src}
+                          alt={p.alt ?? ''}
+                          widths={[480, 760, 1200]}
+                          sizes={sec.photoAt === 'top' ? '(max-width: 1100px) 100vw, 1060px' : '(max-width: 760px) 100vw, 460px'}
+                          class="series__photo"
+                          style={`object-position: ${sec.photoFocus}`}
+                          loading="lazy"
+                        />
+                        {(p.caption || p.credit) && (
+                          <figcaption class="series__credit">
+                            {p.caption}
+                            {p.caption && p.credit && ' · '}
+                            {p.credit && (
+                              <>
+                                Photo:{' '}
+                                <a href={p.credit.source} target="_blank" rel="noopener noreferrer">
+                                  {p.credit.author}
+                                </a>
+                                ,{' '}
+                                <a href={p.credit.licenseUrl} target="_blank" rel="noopener noreferrer">
+                                  {p.credit.license}
+                                </a>
+                              </>
+                            )}
+                          </figcaption>
+                        )}
+                      </figure>
+                    ))}
+                  </div>
                 )}
                 <div class="series__words">
                   {sec.heading && <h3 class="heading series__heading">{sec.heading}</h3>}
@@ -220,8 +247,10 @@ const parts = (p: string) => p.split(/\*([^*]+)\*/);
     color: var(--ink-soft);
   }
 
+  /* 6vw, but kept smaller on in-between windows (about 640–1000px), where the block is narrow and a 7-letter name
+     would run into the arrow */
   .series__name {
-    font-size: clamp(2.2rem, 6vw, 6.4rem);
+    font-size: clamp(1.8rem, min(6vw, 8.6vw - 28px), 6.4rem);
     letter-spacing: 0;
     line-height: 0.95;
   }
@@ -246,6 +275,22 @@ const parts = (p: string) => p.split(/\*([^*]+)\*/);
     transform: rotate(180deg) translateY(3px);
   }
 
+  .series__banner--dark .series__block {
+    color: var(--paper);
+  }
+
+  .series__banner--dark .series__kind {
+    color: rgb(250 249 246 / 0.82);
+  }
+
+  .series__banner--dark .series__arrow {
+    fill: var(--paper);
+  }
+
+  .series__banner--dark:focus-visible {
+    outline-color: var(--paper);
+  }
+
   .series__pic {
     position: relative;
     overflow: hidden;
@@ -257,10 +302,6 @@ const parts = (p: string) => p.split(/\*([^*]+)\*/);
     width: 100%;
     height: 100%;
     object-fit: cover;
-    /* black and white, multiplied onto the series' colour */
-    filter: grayscale(1);
-    mix-blend-mode: multiply;
-    opacity: 0.85;
   }
 
   /* phones: the name on a strip above the picture */
@@ -275,12 +316,16 @@ const parts = (p: string) => p.split(/\*([^*]+)\*/);
       padding: 18px var(--gutter) 14px 60px;
     }
 
+    .series__name {
+      font-size: 2.2rem;
+    }
+
+
     /* the banner is taller than a third of a phone screen: a jump puts it just under the top bar instead */
     .series .series__item {
       scroll-margin-top: 64px;
     }
   }
-
   /* ----- my thoughts, under the banner: slide open where the browser can animate it ----- */
   .series__item {
     interpolate-size: allow-keywords;
@@ -339,11 +384,16 @@ const parts = (p: string) => p.split(/\*([^*]+)\*/);
     order: 2;
   }
 
-  .series__fig {
+  .series__fig,
+  .series__one {
     display: flex;
     flex-direction: column;
     margin: 0;
     min-height: 0;
+  }
+
+  .series__one {
+    flex: 1 1 auto;
   }
 
   .series__fig :global(.series__photo) {
@@ -358,6 +408,51 @@ const parts = (p: string) => p.split(/\*([^*]+)\*/);
     min-height: 200px;
     height: 0;
     object-fit: cover;
+  }
+
+  /* two people side by side (Ludwig and Michael): the same 4:5 frame each, not stretched to the words, each with
+     its name and credit under it */
+  .series__fig--pair {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: clamp(8px, 1vw, 14px);
+  }
+
+  .series__fig--pair .series__one {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .series__row .series__fig--pair :global(.series__photo) {
+    flex: none;
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+  }
+
+  .series__fig--pair .series__credit {
+    text-align: left;
+  }
+
+  /* the pair keeps its own height, so it floats and the words run on under it instead of leaving a gap */
+  .series__row.series__row--float {
+    display: flow-root;
+  }
+
+  .series__row--float .series__fig {
+    width: 44%;
+  }
+
+  .series__sec--right.series__row--float .series__fig {
+    float: right;
+    margin: 0.4em 0 0.8em clamp(22px, 3vw, 44px);
+  }
+
+  .series__sec--left.series__row--float .series__fig {
+    float: left;
+    margin: 0.4em clamp(22px, 3vw, 44px) 0.8em 0;
   }
 
   .series__sec--top .series__fig {
@@ -426,6 +521,15 @@ const parts = (p: string) => p.split(/\*([^*]+)\*/);
       height: auto;
       min-height: 0;
       max-height: 60vh;
+    }
+
+    /* the pair sits over the words, across the width */
+    .series__sec--right.series__row--float .series__fig,
+    .series__sec--left.series__row--float .series__fig {
+      float: none;
+      width: auto;
+      max-width: 480px;
+      margin: 0 0 clamp(18px, 4vw, 24px);
     }
   }
 

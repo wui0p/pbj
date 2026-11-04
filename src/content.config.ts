@@ -3,6 +3,9 @@ import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 import { CATEGORY_SLUGS } from './consts';
 
+// who took a licensed photo (e.g. CC BY), where it's from, and its licence
+const credit = z.object({ author: z.string(), source: z.url(), license: z.string(), licenseUrl: z.url() });
+
 const blog = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/blog' }),
   schema: ({ image }) =>
@@ -74,9 +77,7 @@ const blog = defineCollection({
             photoAlt: z.string().optional(),
             // credit shown under the second picture (licensed photos, e.g. CC BY): who took it, where it's from,
             // and its licence
-            photoCredit: z
-              .object({ author: z.string(), source: z.url(), license: z.string(), licenseUrl: z.url() })
-              .optional(),
+            photoCredit: credit.optional(),
             // without a link the strip still parts, but isn't a link yet
             link: z.url().optional(),
             call: z.string(),
@@ -98,7 +99,7 @@ const blog = defineCollection({
             banner: image(),
             alt: z.string(),
             // the colour the black-and-white picture is tinted with: the series' own colour (global.css)
-            tint: z.enum(['skam-yellow', 'frieren-green']),
+            tint: z.enum(['skam-yellow', 'frieren-green', 'tiptotip-red']),
             // which part of the picture shows in the strip, as a CSS object-position (e.g. "50% 20%")
             focus: z.string().default('50% 50%'),
             // one after another: an optional heading, its paragraphs, and an optional picture on the right or
@@ -114,9 +115,14 @@ const blog = defineCollection({
                 photoAt: z.enum(['right', 'left', 'top']).default('right'),
                 // which part of the picture shows when it is cropped to the text's height
                 photoFocus: z.string().default('50% 50%'),
-                credit: z
-                  .object({ author: z.string(), source: z.url(), license: z.string(), licenseUrl: z.url() })
-                  .optional(),
+                // a short line under the picture (e.g. who it is), before its credit
+                photoCaption: z.string().optional(),
+                credit: credit.optional(),
+                // a second picture beside the first (two people side by side), with its own caption and credit
+                photo2: image().optional(),
+                photo2Alt: z.string().optional(),
+                photo2Caption: z.string().optional(),
+                credit2: credit.optional(),
               }),
             ),
           }),

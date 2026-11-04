@@ -254,7 +254,7 @@ const lines = (text = '') => text.split(/(?<=\.)\s+/).filter(Boolean);
                     </li>
                   ))}
                   <li class="cat__recs">
-                    <TopRecs compact />
+                    <TopRecs />
                   </li>
                 </ul>
               ) : s.id === 'jobs' ? (
@@ -488,7 +488,9 @@ const lines = (text = '') => text.split(/(?<=\.)\s+/).filter(Boolean);
     column-gap: clamp(20px, 3vw, 44px);
   }
 
+  /* across the whole row, so the icons can be as big as on the home page */
   .cat__recs {
+    grid-column: 1 / -1;
     padding: clamp(10px, 1.2vw, 16px) clamp(8px, 1.4vw, 20px) 0;
   }
 
