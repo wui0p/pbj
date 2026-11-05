@@ -149,12 +149,12 @@ const sectionLabel = SECTIONS[category].find((s) => s.id === post.data.section)?
   }
 
   .post__head .eyebrow a {
-    text-decoration: none;
-    border-bottom: 2px solid var(--sky);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
   }
 
   .post__head .eyebrow a:hover {
-    border-bottom-color: var(--ink);
+    text-decoration-thickness: 2px;
   }
 
   .post__title {
@@ -361,15 +361,17 @@ const sectionLabel = SECTIONS[category].find((s) => s.id === post.data.section)?
     font-size: 1.25rem;
   }
 
+  /* links read like a document's: underlined text */
   .prose :global(a) {
     text-decoration: underline;
-    text-decoration-color: var(--sky);
-    text-decoration-thickness: 2px;
-    text-underline-offset: 4px;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+    transition: text-decoration-thickness 0.2s var(--ease);
   }
 
-  .prose :global(a:hover) {
-    text-decoration-color: var(--ink);
+  .prose :global(a:hover),
+  .prose :global(a:focus-visible) {
+    text-decoration-thickness: 2px;
   }
 
   .prose :global(blockquote) {
@@ -410,6 +412,7 @@ const sectionLabel = SECTIONS[category].find((s) => s.id === post.data.section)?
 
   /* ----- prev / next ----- */
   .post__nav {
+    clear: both; /* below a floating picture at the end of a post */
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 16px;
@@ -449,9 +452,12 @@ const sectionLabel = SECTIONS[category].find((s) => s.id === post.data.section)?
   }
 
   .post__back a {
-    text-decoration-color: var(--sky);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+  }
+
+  .post__back a:hover {
     text-decoration-thickness: 2px;
-    text-underline-offset: 4px;
   }
 
   @media (max-width: 600px) {

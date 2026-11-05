@@ -3,7 +3,6 @@ title: "OpenAI’s Math Release and the Backlash"
 date: 2026-10-01
 category: thoughts
 section: memo
-pinned: true
 # reads like a news report: the ## headings below only show in the side bar
 layout: news
 summary: "My thoughts on the 722 math papers that a single AI model posted on GitHub. The disgust, and a deeper dive into the AI ecosystem our society is creating."
