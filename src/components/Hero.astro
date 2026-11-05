@@ -41,7 +41,14 @@ import almond from '../assets/hero/almond-blossom.jpg';
       * Vincent van Gogh, <em>Almond Blossom</em>, 1890</p>
   </div>
 
-  <a class="scroll-hint" href="#about">
+  <!-- looks like a menu icon, but opens no menu: it glides down to Lonely Ocean, where the top bar appears -->
+  <a class="hero__list" href="#about" data-hero-jump aria-label="Go to Lonely Ocean">
+    <svg viewBox="0 0 28 22" aria-hidden="true" focusable="false">
+      <path d="M1.5 3h25M1.5 11h25M1.5 19h25"></path>
+    </svg>
+  </a>
+
+  <a class="scroll-hint" href="#about" data-hero-jump>
     <span class="sr-only">Skip to the next section</span>
     <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"
       ><path d="M5 9l7 7 7-7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"
@@ -51,6 +58,8 @@ import almond from '../assets/hero/almond-blossom.jpg';
 </header>
 
 <script>
+  import { scrollUnderBar } from '../scroll';
+
   // Fit the title's viewBox to the actual ink bounds of "JEFFREY WU" (same font as
   // PORTFOLIO & BLOGS), so the stretched letters touch the edges of their box exactly.
   async function fitTitle() {
@@ -77,6 +86,18 @@ import almond from '../assets/hero/almond-blossom.jpg';
     }
   }
   fitTitle();
+
+  // The hamburger icon and the down arrow: land with ELECTRICAL just under the top bar, so the whole Lonely Ocean
+  // shows (the bar appears by itself once #about reaches the top of the screen). Without JavaScript the plain #about
+  // link still works.
+  const ocean = document.querySelector<HTMLElement>('#about [data-reveal]');
+  document.querySelectorAll('[data-hero-jump]').forEach((link) => {
+    link.addEventListener('click', (e) => {
+      if (!ocean) return;
+      e.preventDefault();
+      scrollUnderBar(ocean, 28);
+    });
+  });
 </script>
 
 <style>
@@ -172,6 +193,39 @@ import almond from '../assets/hero/almond-blossom.jpg';
     letter-spacing: 0.005em;
     line-height: 0.9;
     white-space: nowrap;
+  }
+
+  /* the hamburger icon, top left: three lines */
+  .hero__list {
+    position: absolute;
+    z-index: 2;
+    left: max(12px, 1.6vw);
+    top: max(12px, 2vh);
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    color: var(--ink);
+    opacity: 0.72;
+    transition: opacity 0.25s var(--ease);
+  }
+
+  .hero__list svg {
+    width: 30px;
+    height: auto;
+    overflow: visible;
+  }
+
+  .hero__list path {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 3;
+    stroke-linecap: round;
+  }
+
+  .hero__list:hover,
+  .hero__list:focus-visible {
+    opacity: 1;
   }
 
   .scroll-hint {

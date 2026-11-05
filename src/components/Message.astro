@@ -148,6 +148,7 @@ const first = await getImage({ src: oceanFirst, width: 1000 });
   /* ---------- 1. Lonely Ocean ---------- */
   .ocean {
     --fs: clamp(2.4rem, 6.2vw, 6.4rem);
+    display: flow-root; /* keeps the room for ELECTRICAL inside this block, so a jump here shows the whole word */
   }
 
   .ocean__band {
