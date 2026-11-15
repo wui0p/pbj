@@ -113,6 +113,19 @@ const { buttons, idPrefix, class: cls } = Astro.props;
     transform: translate(0, -50%);
   }
 
+  /* another button follows it (View Archive after View code on GitHub): the note opens above, so it never covers
+     that button */
+  .block-buttons__later:not(:last-child) .block-buttons__note {
+    left: 0;
+    top: auto;
+    bottom: calc(100% + 12px);
+    transform: translateY(4px);
+  }
+  .block-buttons__later:not(:last-child):hover .block-buttons__note,
+  .block-buttons__later:not(:last-child) .block-buttons__off:focus-visible + .block-buttons__note {
+    transform: none;
+  }
+
   /* narrow screens: no room beside it, so the note opens above the button */
   @media (max-width: 1100px) {
     .block-buttons__note {

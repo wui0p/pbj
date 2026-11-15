@@ -14,4 +14,7 @@ buttons:
   # not public yet: shown, with this note on hover
   - label: "View code on GitHub"
     note: "The code is still being refined. Please come back later."
+  # the Google Drive folder with everything else from the project (last)
+  - label: "View Archive"
+    href: "https://drive.google.com/drive/folders/10EQZ0os6xacZGbcX1BZZNfo6Lo_SUiN6?usp=drive_link"
 ---
