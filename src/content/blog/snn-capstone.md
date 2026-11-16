@@ -10,7 +10,7 @@ buttons:
   - label: "Try demo"
     action: demo
   - label: "View full report"
-    href: "https://drive.google.com/file/d/10EnCfjxJ4OMvNY1SbDZrqG-NAKw4XDlX/view?usp=sharing"
+    href: "https://drive.google.com/file/d/1zwTynTDmlEXzGLwXp7__6mrp9jMPtFlE/view?usp=sharing"
   # not public yet: shown, with this note on hover
   - label: "View code on GitHub"
     note: "The code is still being refined. Please come back later."
