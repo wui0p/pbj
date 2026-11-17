@@ -6,6 +6,37 @@ label: "3 items"
 order: 4
 # each series: a wall-to-wall banner with its name; clicking it opens my thoughts on it under the banner
 series:
+  - title: "FRIEREN"
+    kind: "JAPANESE ANIME"
+    banner: ../../assets/thoughts/series-frieren.jpg
+    alt: "Frieren, Fern and Stark on a grassy hill under a big tree, with a castle in the distance"
+    tint: frieren-green
+    focus: "50% 45%"
+    sections:
+      - heading: "What is Frieren"
+        text:
+          - "This is not your typical anime. It’s slow and quiet, with no battles in every episode, and yet it is one of the most popular anime of recent years. It proves that a story doesn’t need to be loud to be loved by the community. It is pretty in its own way."
+          - "*Frieren: Beyond Journey’s End* is what the title says it is. The story starts after the heroes have already defeated the Demon King. It is a fresh take on the typical hero’s journey and skips past the big climax, following Frieren, an elf who has lived for over a thousand years, as she carries on without her old party. It’s not fast and full of action, but never boring. It’s beautiful and meaningful as you watch everything Frieren encounters. Even though this anime is peaceful, when they have a fight scene, the budget goes way up, and it is full of impact."
+          - "I didn’t watch the whole episode in one sitting. The story is so peaceful that you can enjoy it over a meal, stop whenever you like, and still come away feeling good. That doesn’t mean it’s boring. It’s just easy to take in, enjoyable without any effort, and always welcoming to come back later to continue on the journey."
+        photo: ../../assets/thoughts/frieren-key-visual.jpg
+        photoAlt: "The season 1 poster of Frieren: Frieren, Himmel, Heiter and Eisen sitting together on a sunny cliff among white feathers"
+        photoAt: right
+        photoFocus: "50% 55%"
+      - heading: "Memorable settings"
+        text:
+          - "The coolest part of this world is how its demons are portrayed. They are nothing like the humanoid demons in other stories. The show tells you plainly what demons are, and yet, as a human watching, you still fall for their words, just like any other villagers and people in this anime. It is such a refreshing way of writing about demons."
+        more:
+          - "In Season 1, Episode 3, there’s the story of an old magic spell. The episode starts with a more structural explanation of how magic works in this anime, then delivers a twist that makes complete sense in our own world, yet still feels special. It’s so logical, but no other story depicted magic like this. This kind of setting runs through the whole story."
+        photo: ../../assets/thoughts/frieren-stark.jpg
+        photoAlt: "A still from Frieren: Stark, bleeding and wide-eyed, in the middle of a fight"
+        photoAt: right
+        photoFocus: "50% 40%"
+      - heading: "What is beautiful"
+        text:
+          - "Nothing in this anime is rushed. You could pause on almost any frame, and it would stand as a drawing on its own. The story is about time: Frieren lets 10 years of adventure pass by and spends the rest of her journey learning what she missed by backtracking through her story. She collects small and “useless” spells, but they were all meaningful to her. After watching it, I started looking at life more calmly, and I learned to notice and appreciate the small things it brings me."
+        photo: ../../assets/thoughts/frieren-flowers.jpg
+        photoAlt: "A still from Frieren: Frieren standing on a rock above a field of blue flowers, petals blowing in the golden light"
+        photoAt: left
   - title: "SKAM"
     kind: "NORWEGIAN TEEN DRAMA"
     banner: ../../assets/thoughts/series-skam.jpg
@@ -52,37 +83,6 @@ series:
           licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0/"
       - text:
           - "SKAM may feel slow if you love action, but for someone like me who enjoys a story that takes its time, soaking up every emotion and every bit of acting, it is the perfect series to watch. Season 3 is my favorite, but every season shines in its own way, with its own emotions, twists, and story to tell. Season 3 just hit me the hardest. I know people who love other seasons more, because what you have lived through shapes which one stays with you. If you have the patience to watch it through, all four seasons of SKAM will stay with you long after the last episode."
-  - title: "FRIEREN"
-    kind: "JAPANESE ANIME"
-    banner: ../../assets/thoughts/series-frieren.jpg
-    alt: "Frieren, Fern and Stark on a grassy hill under a big tree, with a castle in the distance"
-    tint: frieren-green
-    focus: "50% 45%"
-    sections:
-      - heading: "What is Frieren"
-        text:
-          - "This is not your typical anime. It’s slow and quiet, with no battles in every episode, and yet it is one of the most popular anime of recent years. It proves that a story doesn’t need to be loud to be loved by the community. It is pretty in its own way."
-          - "*Frieren: Beyond Journey’s End* is what the title says it is. The story starts after the heroes have already defeated the Demon King. It is a fresh take on the typical hero’s journey and skips past the big climax, following Frieren, an elf who has lived for over a thousand years, as she carries on without her old party. It’s not fast and full of action, but never boring. It’s beautiful and meaningful as you watch everything Frieren encounters. Even though this anime is peaceful, when they have a fight scene, the budget goes way up, and it is full of impact."
-          - "I didn’t watch the whole episode in one sitting. The story is so peaceful that you can enjoy it over a meal, stop whenever you like, and still come away feeling good. That doesn’t mean it’s boring. It’s just easy to take in, enjoyable without any effort, and always welcoming to come back later to continue on the journey."
-        photo: ../../assets/thoughts/frieren-key-visual.jpg
-        photoAlt: "The season 1 poster of Frieren: Frieren, Himmel, Heiter and Eisen sitting together on a sunny cliff among white feathers"
-        photoAt: right
-        photoFocus: "50% 55%"
-      - heading: "Memorable settings"
-        text:
-          - "The coolest part of this world is how its demons are portrayed. They are nothing like the humanoid demons in other stories. The show tells you plainly what demons are, and yet, as a human watching, you still fall for their words, just like any other villagers and people in this anime. It is such a refreshing way of writing about demons."
-        more:
-          - "In Season 1, Episode 3, there’s the story of an old magic spell. The episode starts with a more structural explanation of how magic works in this anime, then delivers a twist that makes complete sense in our own world, yet still feels special. It’s so logical, but no other story depicted magic like this. This kind of setting runs through the whole story."
-        photo: ../../assets/thoughts/frieren-stark.jpg
-        photoAlt: "A still from Frieren: Stark, bleeding and wide-eyed, in the middle of a fight"
-        photoAt: right
-        photoFocus: "50% 40%"
-      - heading: "What is beautiful"
-        text:
-          - "Nothing in this anime is rushed. You could pause on almost any frame, and it would stand as a drawing on its own. The story is about time: Frieren lets 10 years of adventure pass by and spends the rest of her journey learning what she missed by backtracking through her story. She collects small and “useless” spells, but they were all meaningful to her. After watching it, I started looking at life more calmly, and I learned to notice and appreciate the small things it brings me."
-        photo: ../../assets/thoughts/frieren-flowers.jpg
-        photoAlt: "A still from Frieren: Frieren standing on a rock above a field of blue flowers, petals blowing in the golden light"
-        photoAt: left
   - title: "TIP2TIP"
     kind: "MOTORCYCLE TRIP"
     banner: ../../assets/thoughts/series-tip-to-tip.jpg

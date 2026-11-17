@@ -34,7 +34,8 @@
   --radius-card: 22px;
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 
-  color-scheme: light;
+  /* "only light": asks phone browsers not to force their own dark mode on the site */
+  color-scheme: only light;
 }
 
 *,

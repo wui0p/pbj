@@ -25,6 +25,8 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <link rel="canonical" href={canonical} />
     <link rel="icon" type="image/svg+xml" href={url('/favicon.svg')} />
     <meta name="theme-color" content="#B6D5D8" />
+    <!-- the site is light only: tells phone browsers not to auto-darken it -->
+    <meta name="color-scheme" content="only light" />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
