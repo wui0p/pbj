@@ -354,6 +354,51 @@ a.card:focus-visible {
   transform: translateY(-50%);
 }
 
+/* the round ">" button in the top-right corner of a block that can be clicked (2026-11-21): only blocks that open
+   something and have no buttons of their own (not the SNN capstone, not placeholders, not trips). A solid ink
+   disc with a thick white (paper) chevron drawn in it; one size everywhere, and always the same distance from the
+   block's top, centred on the date line. On hover only the colours change: the disc
+   turns butter and the chevron ink (nothing moves). */
+.go {
+  --go-size: 30px;
+  position: absolute;
+  /* the date line is ~19px tall and starts at the block's top padding: centre the circle on it */
+  top: calc(clamp(20px, 2.4vw, 34px) + 9.5px - var(--go-size) / 2);
+  right: clamp(16px, 2vw, 28px);
+  width: var(--go-size);
+  height: var(--go-size);
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--paper);
+  pointer-events: none;
+  transition:
+    background-color 0.25s var(--ease),
+    border-color 0.25s var(--ease),
+    color 0.25s var(--ease);
+}
+
+.go svg {
+  display: block;
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transform: translateX(1px); /* a chevron looks centred when it sits a hair right of the middle */
+}
+
+/* hover: like the top bar's "i", the disc turns butter (the chevron goes ink so it still shows) */
+:is(a, button):is(:hover, :focus-visible) > .go {
+  background: var(--butter);
+  border-color: var(--butter);
+  color: var(--ink);
+}
+
 /* what a block opens, before its description: [PDF] / [Folder] / [GitHub] */
 .link-kind {
   font-weight: 600;

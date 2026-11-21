@@ -41,6 +41,11 @@ const jobs = await Promise.all(
             )}
             <span class="jobs__title">{title}</span>
             {summary && <span class="jobs__summary">{summary}</span>}
+            <span class="go" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M9 4.5 16.5 12 9 19.5" />
+              </svg>
+            </span>
           </button>
 
           {popup && (
@@ -166,6 +171,7 @@ const jobs = await Promise.all(
 
   /* the block: like the other small blocks, but it opens its details instead of a page */
   .jobs__card {
+    position: relative; /* for its ">" (global .go), which turns to point down while the job is open */
     appearance: none;
     display: block;
     width: 100%;
@@ -179,6 +185,15 @@ const jobs = await Promise.all(
     padding: clamp(20px, 2.4vw, 34px) clamp(22px, 2.6vw, 38px);
     scroll-margin-top: var(--jump-at); /* a jump here lands a third of the way down */
     transition: border-color 0.25s var(--ease);
+  }
+
+  /* the ">" sits beside the dates line, which leaves room for it */
+  .jobs__card > :first-child {
+    padding-right: 44px;
+  }
+
+  .jobs__card[aria-expanded='true'] > .go {
+    transform: rotate(90deg);
   }
 
   /* hover, keyboard focus, and the job that's open: the border lights up butter */
