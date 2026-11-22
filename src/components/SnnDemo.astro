@@ -3,8 +3,14 @@ import BlockButtons from './BlockButtons.astro';
 import { url } from '../utils';
 
 interface Props {
-  /** the capstone block's buttons (View full report, View code on GitHub), shown in the demo too */
-  buttons?: { label: string; href?: string; action?: 'demo'; note?: string }[];
+  /** the capstone block's buttons (View documents, View code on GitHub), shown in the demo too */
+  buttons?: {
+    label: string;
+    href?: string;
+    action?: 'demo';
+    note?: string;
+    menu?: { label: string; detail?: string; href: string }[];
+  }[];
 }
 
 const { buttons = [] } = Astro.props;

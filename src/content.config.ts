@@ -29,6 +29,7 @@ const blog = defineCollection({
       sidebar: z.boolean().default(false),
       // a big block with its own buttons: the block itself isn't a link, only the buttons are.
       // href: opens that page · action "demo": opens the SNN demo under the section ·
+      // menu: clicking it unrolls these choices under it (each opens its link in a new tab) ·
       // neither: shown but does nothing yet (`note` is shown beside it on hover)
       buttons: z
         .array(
@@ -37,6 +38,9 @@ const blog = defineCollection({
             href: z.string().optional(),
             action: z.enum(['demo']).optional(),
             note: z.string().optional(),
+            menu: z
+              .array(z.object({ label: z.string(), detail: z.string().optional(), href: z.string() }))
+              .optional(),
           }),
         )
         .optional(),

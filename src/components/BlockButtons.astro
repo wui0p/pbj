@@ -2,8 +2,11 @@
 // The 3D buttons of a big block (frontmatter `buttons:`), also shown inside the SNN demo.
 // - href: opens that page in a new tab
 // - action "demo": opens / closes the SNN demo; butter while it's open
+// - menu: clicking it unrolls its choices under it (each opens its link in a new tab); butter while open.
+//   A click outside, Esc or picking a choice rolls it back up.
 // - neither: does nothing yet; its `note` appears beside it on hover / focus
-type Button = { label: string; href?: string; action?: 'demo'; note?: string };
+type MenuItem = { label: string; detail?: string; href: string };
+type Button = { label: string; href?: string; action?: 'demo'; note?: string; menu?: MenuItem[] };
 
 interface Props {
   buttons: Button[];
@@ -28,6 +31,32 @@ const { buttons, idPrefix, class: cls } = Astro.props;
         >
           {b.label}
         </button>
+      ) : b.menu ? (
+        <span class="block-buttons__menu" data-menu>
+          <button
+            type="button"
+            class="btn-3d btn-3d--paper depth block-buttons__menu-toggle"
+            aria-expanded="false"
+            aria-controls={`${idPrefix}-menu-${i}`}
+            data-menu-toggle
+          >
+            {b.label}
+            <svg class="block-buttons__caret" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M5 9l7 7 7-7" />
+            </svg>
+          </button>
+          <ul class="block-buttons__list" id={`${idPrefix}-menu-${i}`} data-menu-list>
+            {b.menu.map((m) => (
+              <li>
+                <a class="block-buttons__choice" href={m.href} target="_blank" rel="noopener noreferrer" tabindex="-1">
+                  <span class="block-buttons__choice-label">{m.label}</span>
+                  {m.detail && <span class="block-buttons__choice-detail">{m.detail}</span>}
+                  <span class="sr-only">(opens in a new tab)</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </span>
       ) : b.href ? (
         <a class="btn-3d btn-3d--paper depth" href={b.href} target="_blank" rel="noopener noreferrer">
           {b.label}
@@ -53,6 +82,40 @@ const { buttons, idPrefix, class: cls } = Astro.props;
   }
 </div>
 
+<script>
+  // buttons with choices: open / close, one at a time; a click outside, Esc or picking a choice closes it
+  const menus = [...document.querySelectorAll<HTMLElement>('[data-menu]')];
+
+  const setOpen = (menu: HTMLElement, open: boolean) => {
+    menu.classList.toggle('is-open', open);
+    menu.querySelector('[data-menu-toggle]')?.setAttribute('aria-expanded', String(open));
+    // the choices can only be reached with Tab while they show
+    menu.querySelectorAll('[data-menu-list] a').forEach((a) => a.setAttribute('tabindex', open ? '0' : '-1'));
+  };
+
+  menus.forEach((menu) => {
+    menu.querySelector('[data-menu-toggle]')?.addEventListener('click', () => {
+      const open = !menu.classList.contains('is-open');
+      menus.forEach((m) => m !== menu && setOpen(m, false));
+      setOpen(menu, open);
+    });
+    menu.querySelectorAll('[data-menu-list] a').forEach((a) => a.addEventListener('click', () => setOpen(menu, false)));
+  });
+
+  document.addEventListener('click', (e) => {
+    menus.forEach((m) => !m.contains(e.target as Node) && setOpen(m, false));
+  });
+
+  addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    const open = menus.find((m) => m.classList.contains('is-open'));
+    if (open) {
+      setOpen(open, false);
+      open.querySelector<HTMLElement>('[data-menu-toggle]')?.focus();
+    }
+  });
+</script>
+
 <style>
   .block-buttons {
     display: flex;
@@ -64,6 +127,95 @@ const { buttons, idPrefix, class: cls } = Astro.props;
   .block-buttons__toggle[aria-expanded='true'] {
     background: var(--butter);
     --depth-c: var(--butter-deep);
+  }
+
+  /* ----- a button with choices (View documents): they unroll under it, top to bottom, over what's below ----- */
+  .block-buttons__menu {
+    position: relative;
+    display: inline-block;
+  }
+
+  .block-buttons__menu-toggle {
+    gap: 0.55em;
+  }
+
+  .block-buttons__menu-toggle[aria-expanded='true'] {
+    background: var(--butter);
+    --depth-c: var(--butter-deep);
+  }
+
+  /* a small drawn chevron: points down while closed, up while open */
+  .block-buttons__caret {
+    width: 15px;
+    height: 15px;
+    flex: none;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform 0.3s var(--ease);
+  }
+
+  .block-buttons__menu-toggle[aria-expanded='true'] .block-buttons__caret {
+    transform: rotate(180deg);
+  }
+
+  .block-buttons__list {
+    position: absolute;
+    z-index: 7;
+    top: calc(100% + 12px);
+    left: 0;
+    min-width: max(100%, 15rem);
+    margin: 0;
+    padding: 6px;
+    list-style: none;
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: 14px;
+    /* rolled up: clipped to nothing from the bottom; it unrolls downwards */
+    clip-path: inset(0 0 100% 0 round 14px);
+    visibility: hidden;
+    transition:
+      clip-path 0.35s var(--ease),
+      visibility 0s linear 0.35s;
+  }
+
+  .block-buttons__menu.is-open .block-buttons__list {
+    clip-path: inset(0 0 0 0 round 14px);
+    visibility: visible;
+    transition:
+      clip-path 0.35s var(--ease),
+      visibility 0s;
+  }
+
+  .block-buttons__choice {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 0.7rem 0.85rem;
+    border-radius: 9px;
+    color: var(--ink);
+    text-decoration: none;
+    transition: background-color 0.2s var(--ease);
+  }
+
+  .block-buttons__choice:hover,
+  .block-buttons__choice:focus-visible {
+    background: var(--butter);
+    outline: none;
+  }
+
+  .block-buttons__choice-label {
+    font-weight: 700;
+    font-size: 1rem;
+  }
+
+  .block-buttons__choice-detail {
+    color: var(--ink-soft);
+    font-size: 0.85rem;
+    white-space: nowrap;
   }
 
   /* a button that isn't ready: stays still, and its note appears beside it */
@@ -113,8 +265,7 @@ const { buttons, idPrefix, class: cls } = Astro.props;
     transform: translate(0, -50%);
   }
 
-  /* another button follows it (View Archive after View code on GitHub): the note opens above, so it never covers
-     that button */
+  /* another button follows it: the note opens above, so it never covers that button */
   .block-buttons__later:not(:last-child) .block-buttons__note {
     left: 0;
     top: auto;
