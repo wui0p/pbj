@@ -468,11 +468,14 @@ const nodes = [
         setText('[data-ts]', `${r.ts} of ${r.T} timesteps`);
         setText('[data-lat]', latency(r));
         setText('[data-note]', '');
+        $('[data-note]').classList.remove('lab__prompt');
       } else {
+        // nothing drawn: a bold prompt, so people notice what to do
+        $('[data-note]').classList.toggle('lab__prompt', !!model);
         setText('[data-cls]', '–');
         setText('[data-ts]', '');
         setText('[data-lat]', '');
-        setText('[data-note]', model ? 'Draw a digit, or press Test digit.' : 'Loading…');
+        setText('[data-note]', model ? '“DRAW A DIGIT OR PRESS TEST DIGIT”' : 'Loading…');
       }
       renderDetail(false);
     }
@@ -489,7 +492,11 @@ const nodes = [
         detail.replaceChildren(
           head,
           el('p', 'detail__about', part.about),
-          el('p', 'detail__empty', model ? 'Draw a digit, or press Test digit, to see it here.' : 'Loading…'),
+          el(
+            'p',
+            model ? 'detail__empty detail__prompt' : 'detail__empty',
+            model ? '“DRAW A DIGIT OR PRESS TEST DIGIT”' : 'Loading…',
+          ),
         );
         return;
       }
@@ -751,6 +758,14 @@ const nodes = [
     margin: 0;
   }
 
+  /* the empty demo's prompt: bold ink, so it's noticed */
+  .lab__small.lab__prompt {
+    font-size: 0.9rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    color: var(--ink);
+  }
+
   /* draw -> brain -> answer */
   .flow {
     display: grid;
@@ -1001,6 +1016,13 @@ const nodes = [
   .detail :global(.detail__empty) {
     margin: 0;
     font-size: 0.95rem;
+  }
+
+  /* nothing drawn yet: the same bold prompt as the predicted-digit card */
+  .detail :global(.detail__prompt) {
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    color: var(--ink);
   }
 
   .detail :global(.detail__about) {
