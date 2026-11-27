@@ -5,7 +5,8 @@
 // - menu: clicking it unrolls its choices under it (each opens its link in a new tab); butter while open.
 //   A click outside, Esc or picking a choice rolls it back up.
 // - neither: does nothing yet; its `note` appears beside it on hover / focus
-type MenuItem = { label: string; detail?: string; href: string };
+// a choice without href can't be opened (e.g. a paper under review): its note pops out on hover / tap instead
+type MenuItem = { label: string; detail?: string; href?: string; note?: string };
 type Button = { label: string; href?: string; action?: 'demo'; note?: string; menu?: MenuItem[] };
 
 interface Props {
@@ -45,16 +46,41 @@ const { buttons, idPrefix, class: cls } = Astro.props;
               <path d="M5 9l7 7 7-7" />
             </svg>
           </button>
-          <ul class="block-buttons__list" id={`${idPrefix}-menu-${i}`} data-menu-list>
-            {b.menu.map((m) => (
-              <li>
-                <a class="block-buttons__choice" href={m.href} target="_blank" rel="noopener noreferrer" tabindex="-1">
-                  <span class="block-buttons__choice-label">{m.label}</span>
-                  {m.detail && <span class="block-buttons__choice-detail">{m.detail}</span>}
-                  <span class="sr-only">(opens in a new tab)</span>
-                </a>
-              </li>
-            ))}
+          <ul
+            class:list={['block-buttons__list', { 'block-buttons__list--wide': b.menu.some((m) => m.href && m.note) }]}
+            id={`${idPrefix}-menu-${i}`}
+            data-menu-list
+          >
+            {b.menu.map((m, j) =>
+              m.href ? (
+                <li>
+                  <a class="block-buttons__choice" href={m.href} target="_blank" rel="noopener noreferrer" tabindex="-1">
+                    <span class="block-buttons__choice-label">{m.label}</span>
+                    {m.detail && <span class="block-buttons__choice-detail">{m.detail}</span>}
+                    {m.note && <span class="block-buttons__choice-note">{m.note}</span>}
+                    <span class="sr-only">(opens in a new tab)</span>
+                  </a>
+                </li>
+              ) : (
+                <li class="block-buttons__shut">
+                  <button
+                    type="button"
+                    class="block-buttons__choice block-buttons__choice--off"
+                    aria-disabled="true"
+                    aria-describedby={m.note ? `${idPrefix}-menu-${i}-note-${j}` : undefined}
+                    tabindex="-1"
+                  >
+                    <span class="block-buttons__choice-label">{m.label}</span>
+                    {m.detail && <span class="block-buttons__choice-detail">{m.detail}</span>}
+                  </button>
+                  {m.note && (
+                    <span class="block-buttons__pop" id={`${idPrefix}-menu-${i}-note-${j}`} role="tooltip">
+                      {m.note}
+                    </span>
+                  )}
+                </li>
+              ),
+            )}
           </ul>
         </span>
       ) : b.href ? (
@@ -86,12 +112,31 @@ const { buttons, idPrefix, class: cls } = Astro.props;
   // buttons with choices: open / close, one at a time; a click outside, Esc or picking a choice closes it
   const menus = [...document.querySelectorAll<HTMLElement>('[data-menu]')];
 
+  // keep the list on screen: if it would run past the right edge (a wide list on a narrow window), it moves left
+  const fit = (menu: HTMLElement) => {
+    const list = menu.querySelector<HTMLElement>('[data-menu-list]');
+    if (!list) return;
+    list.style.left = '';
+    const edge = document.documentElement.clientWidth - 12;
+    const over = list.getBoundingClientRect().right - edge;
+    if (over > 0) list.style.left = `${-over}px`;
+  };
+
   const setOpen = (menu: HTMLElement, open: boolean) => {
+    if (open) fit(menu);
     menu.classList.toggle('is-open', open);
     menu.querySelector('[data-menu-toggle]')?.setAttribute('aria-expanded', String(open));
     // the choices can only be reached with Tab while they show
-    menu.querySelectorAll('[data-menu-list] a').forEach((a) => a.setAttribute('tabindex', open ? '0' : '-1'));
+    menu
+      .querySelectorAll('[data-menu-list] a, [data-menu-list] button')
+      .forEach((a) => a.setAttribute('tabindex', open ? '0' : '-1'));
+    if (!open) menu.querySelectorAll('.block-buttons__shut').forEach((li) => li.classList.remove('is-showing'));
   };
+
+  // a choice that can't be opened: a click / tap shows (or hides) its note, since phones have no hover
+  document.querySelectorAll<HTMLElement>('.block-buttons__shut').forEach((li) => {
+    li.querySelector('button')?.addEventListener('click', () => li.classList.toggle('is-showing'));
+  });
 
   menus.forEach((menu) => {
     menu.querySelector('[data-menu-toggle]')?.addEventListener('click', () => {
@@ -174,26 +219,47 @@ const { buttons, idPrefix, class: cls } = Astro.props;
     border: 2px solid var(--ink);
     border-radius: 14px;
     /* rolled up: clipped to nothing from the bottom; it unrolls downwards */
-    clip-path: inset(0 0 100% 0 round 14px);
+    clip-path: inset(0 0 100% 0);
     visibility: hidden;
     transition:
       clip-path 0.35s var(--ease),
       visibility 0s linear 0.35s;
   }
 
+  /* open: the clip reaches well past the list, so a choice's pop-out note beside it isn't cut off */
   .block-buttons__menu.is-open .block-buttons__list {
-    clip-path: inset(0 0 0 0 round 14px);
+    clip-path: inset(-20rem -30rem -20rem -30rem);
     visibility: visible;
     transition:
       clip-path 0.35s var(--ease),
       visibility 0s;
   }
 
+  /* a list with a note under a choice is wider, so the note takes two lines (three on phones) */
+  .block-buttons__list--wide {
+    width: min(35rem, calc(100vw - 2 * var(--gutter, 16px)));
+  }
+
+  /* phones: less padding, so the note keeps to about three lines */
+  @media (max-width: 560px) {
+    .block-buttons__list--wide {
+      padding: 4px;
+    }
+    .block-buttons__list--wide .block-buttons__choice {
+      padding: 0.65rem 0.5rem;
+    }
+    .block-buttons__list--wide .block-buttons__choice-note {
+      font-size: 0.7rem;
+      letter-spacing: -0.005em;
+    }
+  }
+
   .block-buttons__choice {
     display: flex;
+    flex-wrap: wrap;
     align-items: baseline;
     justify-content: space-between;
-    gap: 1.5rem;
+    gap: 0 1.5rem;
     padding: 0.7rem 0.85rem;
     border-radius: 9px;
     color: var(--ink);
@@ -216,6 +282,91 @@ const { buttons, idPrefix, class: cls } = Astro.props;
     color: var(--ink-soft);
     font-size: 0.85rem;
     white-space: nowrap;
+  }
+
+  /* ----- a choice that can't be opened yet (the paper, under review): greyed, no link; its note pops out ----- */
+  .block-buttons__shut {
+    position: relative;
+  }
+
+  .block-buttons__choice--off {
+    appearance: none;
+    width: 100%;
+    font: inherit;
+    text-align: left;
+    background: none;
+    border: 0;
+    cursor: default;
+  }
+
+  .block-buttons__choice--off .block-buttons__choice-label {
+    color: var(--ink-soft);
+  }
+
+  /* no butter on hover: it doesn't open anything */
+  .block-buttons__choice--off:hover,
+  .block-buttons__choice--off:focus-visible {
+    background: var(--sand);
+  }
+
+  .block-buttons__pop {
+    position: absolute;
+    z-index: 8;
+    left: calc(100% + 18px);
+    top: 50%;
+    width: max-content;
+    max-width: min(21rem, 60vw);
+    padding: 0.45rem 0.75rem;
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-size: 0.98rem;
+    line-height: 1.35;
+    text-align: justify;
+    opacity: 0;
+    visibility: hidden;
+    transform: translate(-4px, -50%);
+    transition:
+      opacity 0.2s var(--ease),
+      transform 0.2s var(--ease),
+      visibility 0.2s;
+    pointer-events: none;
+  }
+
+  .block-buttons__shut:hover .block-buttons__pop,
+  .block-buttons__shut.is-showing .block-buttons__pop,
+  .block-buttons__choice--off:focus-visible + .block-buttons__pop {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(0, -50%);
+  }
+
+  /* narrower windows: no room beside the list, so the note pops out just under the choice, over the others */
+  @media (max-width: 760px) {
+    .block-buttons__pop {
+      left: 0;
+      right: 0;
+      top: calc(100% + 6px);
+      width: auto;
+      max-width: none;
+      transform: translateY(-4px);
+    }
+    .block-buttons__shut:hover .block-buttons__pop,
+    .block-buttons__shut.is-showing .block-buttons__pop,
+    .block-buttons__choice--off:focus-visible + .block-buttons__pop {
+      transform: none;
+    }
+  }
+
+  /* the small line under a choice: its own row, italic, lighter and smaller */
+  .block-buttons__choice-note {
+    flex-basis: 100%;
+    margin-top: 0.3rem;
+    font-size: 0.76rem;
+    font-style: italic;
+    line-height: 1.4;
+    color: var(--ink-soft);
   }
 
   /* a button that isn't ready: stays still, and its note appears beside it */

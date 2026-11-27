@@ -12,9 +12,10 @@ buttons:
   # one button for everything written about the project: clicking it unrolls the three choices under it
   - label: "View documents"
     menu:
+      # under double-blind review: no link for now (it can't be opened); hovering / tapping it shows this note
       - label: "Paper"
         detail: "4 pages"
-        href: "https://drive.google.com/file/d/1-L0S5FWVsflt88r0ix_D48Y98U6bNfjR/view?usp=drive_link"
+        note: "Paper submitted to the 2027 International VLSI Symposium on Technology, Systems and Applications (VLSI TSA 2027), DAT track. Under double-blind review."
       - label: "Full report"
         detail: "59 pages"
         href: "https://drive.google.com/file/d/1zwTynTDmlEXzGLwXp7__6mrp9jMPtFlE/view?usp=sharing"

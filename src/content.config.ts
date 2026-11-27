@@ -39,7 +39,16 @@ const blog = defineCollection({
             action: z.enum(['demo']).optional(),
             note: z.string().optional(),
             menu: z
-              .array(z.object({ label: z.string(), detail: z.string().optional(), href: z.string() }))
+              .array(
+                z.object({
+                  label: z.string(),
+                  detail: z.string().optional(),
+                  // no href: the choice can't be opened; its note pops out on hover / tap instead
+                  href: z.string().optional(),
+                  // with href: a small italic line under the choice · without: the pop-out note
+                  note: z.string().optional(),
+                }),
+              )
               .optional(),
           }),
         )
